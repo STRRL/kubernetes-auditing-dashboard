@@ -13,24 +13,48 @@ import (
 func init() {
 	auditeventFields := schema.AuditEvent{}.Fields()
 	_ = auditeventFields
+	// auditeventDescRaw is the schema descriptor for raw field.
+	auditeventDescRaw := auditeventFields[0].Descriptor()
+	// auditevent.RawValidator is a validator for the "raw" field. It is called by the builders before save.
+	auditevent.RawValidator = auditeventDescRaw.Validators[0].(func(string) error)
 	// auditeventDescLevel is the schema descriptor for level field.
-	auditeventDescLevel := auditeventFields[0].Descriptor()
+	auditeventDescLevel := auditeventFields[1].Descriptor()
 	// auditevent.LevelValidator is a validator for the "level" field. It is called by the builders before save.
 	auditevent.LevelValidator = auditeventDescLevel.Validators[0].(func(string) error)
 	// auditeventDescAuditID is the schema descriptor for auditID field.
-	auditeventDescAuditID := auditeventFields[1].Descriptor()
+	auditeventDescAuditID := auditeventFields[2].Descriptor()
 	// auditevent.AuditIDValidator is a validator for the "auditID" field. It is called by the builders before save.
 	auditevent.AuditIDValidator = auditeventDescAuditID.Validators[0].(func(string) error)
 	// auditeventDescVerb is the schema descriptor for verb field.
-	auditeventDescVerb := auditeventFields[2].Descriptor()
+	auditeventDescVerb := auditeventFields[3].Descriptor()
 	// auditevent.VerbValidator is a validator for the "verb" field. It is called by the builders before save.
 	auditevent.VerbValidator = auditeventDescVerb.Validators[0].(func(string) error)
 	// auditeventDescUserAgent is the schema descriptor for userAgent field.
-	auditeventDescUserAgent := auditeventFields[3].Descriptor()
+	auditeventDescUserAgent := auditeventFields[4].Descriptor()
 	// auditevent.UserAgentValidator is a validator for the "userAgent" field. It is called by the builders before save.
 	auditevent.UserAgentValidator = auditeventDescUserAgent.Validators[0].(func(string) error)
-	// auditeventDescRaw is the schema descriptor for raw field.
-	auditeventDescRaw := auditeventFields[4].Descriptor()
-	// auditevent.RawValidator is a validator for the "raw" field. It is called by the builders before save.
-	auditevent.RawValidator = auditeventDescRaw.Validators[0].(func(string) error)
+	// auditeventDescNamespace is the schema descriptor for namespace field.
+	auditeventDescNamespace := auditeventFields[7].Descriptor()
+	// auditevent.DefaultNamespace holds the default value on creation for the namespace field.
+	auditevent.DefaultNamespace = auditeventDescNamespace.Default.(string)
+	// auditeventDescName is the schema descriptor for name field.
+	auditeventDescName := auditeventFields[8].Descriptor()
+	// auditevent.DefaultName holds the default value on creation for the name field.
+	auditevent.DefaultName = auditeventDescName.Default.(string)
+	// auditeventDescApiVersion is the schema descriptor for apiVersion field.
+	auditeventDescApiVersion := auditeventFields[9].Descriptor()
+	// auditevent.DefaultApiVersion holds the default value on creation for the apiVersion field.
+	auditevent.DefaultApiVersion = auditeventDescApiVersion.Default.(string)
+	// auditeventDescApiGroup is the schema descriptor for apiGroup field.
+	auditeventDescApiGroup := auditeventFields[10].Descriptor()
+	// auditevent.DefaultApiGroup holds the default value on creation for the apiGroup field.
+	auditevent.DefaultApiGroup = auditeventDescApiGroup.Default.(string)
+	// auditeventDescResource is the schema descriptor for resource field.
+	auditeventDescResource := auditeventFields[11].Descriptor()
+	// auditevent.DefaultResource holds the default value on creation for the resource field.
+	auditevent.DefaultResource = auditeventDescResource.Default.(string)
+	// auditeventDescSubResource is the schema descriptor for subResource field.
+	auditeventDescSubResource := auditeventFields[12].Descriptor()
+	// auditevent.DefaultSubResource holds the default value on creation for the subResource field.
+	auditevent.DefaultSubResource = auditeventDescSubResource.Default.(string)
 }

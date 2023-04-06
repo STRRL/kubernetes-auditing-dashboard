@@ -20,6 +20,12 @@ type AuditEventCreate struct {
 	hooks    []Hook
 }
 
+// SetRaw sets the "raw" field.
+func (aec *AuditEventCreate) SetRaw(s string) *AuditEventCreate {
+	aec.mutation.SetRaw(s)
+	return aec
+}
+
 // SetLevel sets the "level" field.
 func (aec *AuditEventCreate) SetLevel(s string) *AuditEventCreate {
 	aec.mutation.SetLevel(s)
@@ -44,12 +50,6 @@ func (aec *AuditEventCreate) SetUserAgent(s string) *AuditEventCreate {
 	return aec
 }
 
-// SetRaw sets the "raw" field.
-func (aec *AuditEventCreate) SetRaw(s string) *AuditEventCreate {
-	aec.mutation.SetRaw(s)
-	return aec
-}
-
 // SetRequestTimestamp sets the "requestTimestamp" field.
 func (aec *AuditEventCreate) SetRequestTimestamp(t time.Time) *AuditEventCreate {
 	aec.mutation.SetRequestTimestamp(t)
@@ -62,6 +62,96 @@ func (aec *AuditEventCreate) SetStageTimestamp(t time.Time) *AuditEventCreate {
 	return aec
 }
 
+// SetNamespace sets the "namespace" field.
+func (aec *AuditEventCreate) SetNamespace(s string) *AuditEventCreate {
+	aec.mutation.SetNamespace(s)
+	return aec
+}
+
+// SetNillableNamespace sets the "namespace" field if the given value is not nil.
+func (aec *AuditEventCreate) SetNillableNamespace(s *string) *AuditEventCreate {
+	if s != nil {
+		aec.SetNamespace(*s)
+	}
+	return aec
+}
+
+// SetName sets the "name" field.
+func (aec *AuditEventCreate) SetName(s string) *AuditEventCreate {
+	aec.mutation.SetName(s)
+	return aec
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (aec *AuditEventCreate) SetNillableName(s *string) *AuditEventCreate {
+	if s != nil {
+		aec.SetName(*s)
+	}
+	return aec
+}
+
+// SetApiVersion sets the "apiVersion" field.
+func (aec *AuditEventCreate) SetApiVersion(s string) *AuditEventCreate {
+	aec.mutation.SetApiVersion(s)
+	return aec
+}
+
+// SetNillableApiVersion sets the "apiVersion" field if the given value is not nil.
+func (aec *AuditEventCreate) SetNillableApiVersion(s *string) *AuditEventCreate {
+	if s != nil {
+		aec.SetApiVersion(*s)
+	}
+	return aec
+}
+
+// SetApiGroup sets the "apiGroup" field.
+func (aec *AuditEventCreate) SetApiGroup(s string) *AuditEventCreate {
+	aec.mutation.SetApiGroup(s)
+	return aec
+}
+
+// SetNillableApiGroup sets the "apiGroup" field if the given value is not nil.
+func (aec *AuditEventCreate) SetNillableApiGroup(s *string) *AuditEventCreate {
+	if s != nil {
+		aec.SetApiGroup(*s)
+	}
+	return aec
+}
+
+// SetResource sets the "resource" field.
+func (aec *AuditEventCreate) SetResource(s string) *AuditEventCreate {
+	aec.mutation.SetResource(s)
+	return aec
+}
+
+// SetNillableResource sets the "resource" field if the given value is not nil.
+func (aec *AuditEventCreate) SetNillableResource(s *string) *AuditEventCreate {
+	if s != nil {
+		aec.SetResource(*s)
+	}
+	return aec
+}
+
+// SetSubResource sets the "subResource" field.
+func (aec *AuditEventCreate) SetSubResource(s string) *AuditEventCreate {
+	aec.mutation.SetSubResource(s)
+	return aec
+}
+
+// SetNillableSubResource sets the "subResource" field if the given value is not nil.
+func (aec *AuditEventCreate) SetNillableSubResource(s *string) *AuditEventCreate {
+	if s != nil {
+		aec.SetSubResource(*s)
+	}
+	return aec
+}
+
+// SetStage sets the "stage" field.
+func (aec *AuditEventCreate) SetStage(s string) *AuditEventCreate {
+	aec.mutation.SetStage(s)
+	return aec
+}
+
 // Mutation returns the AuditEventMutation object of the builder.
 func (aec *AuditEventCreate) Mutation() *AuditEventMutation {
 	return aec.mutation
@@ -69,6 +159,7 @@ func (aec *AuditEventCreate) Mutation() *AuditEventMutation {
 
 // Save creates the AuditEvent in the database.
 func (aec *AuditEventCreate) Save(ctx context.Context) (*AuditEvent, error) {
+	aec.defaults()
 	return withHooks[*AuditEvent, AuditEventMutation](ctx, aec.sqlSave, aec.mutation, aec.hooks)
 }
 
@@ -94,8 +185,44 @@ func (aec *AuditEventCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (aec *AuditEventCreate) defaults() {
+	if _, ok := aec.mutation.Namespace(); !ok {
+		v := auditevent.DefaultNamespace
+		aec.mutation.SetNamespace(v)
+	}
+	if _, ok := aec.mutation.Name(); !ok {
+		v := auditevent.DefaultName
+		aec.mutation.SetName(v)
+	}
+	if _, ok := aec.mutation.ApiVersion(); !ok {
+		v := auditevent.DefaultApiVersion
+		aec.mutation.SetApiVersion(v)
+	}
+	if _, ok := aec.mutation.ApiGroup(); !ok {
+		v := auditevent.DefaultApiGroup
+		aec.mutation.SetApiGroup(v)
+	}
+	if _, ok := aec.mutation.Resource(); !ok {
+		v := auditevent.DefaultResource
+		aec.mutation.SetResource(v)
+	}
+	if _, ok := aec.mutation.SubResource(); !ok {
+		v := auditevent.DefaultSubResource
+		aec.mutation.SetSubResource(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (aec *AuditEventCreate) check() error {
+	if _, ok := aec.mutation.Raw(); !ok {
+		return &ValidationError{Name: "raw", err: errors.New(`ent: missing required field "AuditEvent.raw"`)}
+	}
+	if v, ok := aec.mutation.Raw(); ok {
+		if err := auditevent.RawValidator(v); err != nil {
+			return &ValidationError{Name: "raw", err: fmt.Errorf(`ent: validator failed for field "AuditEvent.raw": %w`, err)}
+		}
+	}
 	if _, ok := aec.mutation.Level(); !ok {
 		return &ValidationError{Name: "level", err: errors.New(`ent: missing required field "AuditEvent.level"`)}
 	}
@@ -128,19 +255,32 @@ func (aec *AuditEventCreate) check() error {
 			return &ValidationError{Name: "userAgent", err: fmt.Errorf(`ent: validator failed for field "AuditEvent.userAgent": %w`, err)}
 		}
 	}
-	if _, ok := aec.mutation.Raw(); !ok {
-		return &ValidationError{Name: "raw", err: errors.New(`ent: missing required field "AuditEvent.raw"`)}
-	}
-	if v, ok := aec.mutation.Raw(); ok {
-		if err := auditevent.RawValidator(v); err != nil {
-			return &ValidationError{Name: "raw", err: fmt.Errorf(`ent: validator failed for field "AuditEvent.raw": %w`, err)}
-		}
-	}
 	if _, ok := aec.mutation.RequestTimestamp(); !ok {
 		return &ValidationError{Name: "requestTimestamp", err: errors.New(`ent: missing required field "AuditEvent.requestTimestamp"`)}
 	}
 	if _, ok := aec.mutation.StageTimestamp(); !ok {
 		return &ValidationError{Name: "stageTimestamp", err: errors.New(`ent: missing required field "AuditEvent.stageTimestamp"`)}
+	}
+	if _, ok := aec.mutation.Namespace(); !ok {
+		return &ValidationError{Name: "namespace", err: errors.New(`ent: missing required field "AuditEvent.namespace"`)}
+	}
+	if _, ok := aec.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "AuditEvent.name"`)}
+	}
+	if _, ok := aec.mutation.ApiVersion(); !ok {
+		return &ValidationError{Name: "apiVersion", err: errors.New(`ent: missing required field "AuditEvent.apiVersion"`)}
+	}
+	if _, ok := aec.mutation.ApiGroup(); !ok {
+		return &ValidationError{Name: "apiGroup", err: errors.New(`ent: missing required field "AuditEvent.apiGroup"`)}
+	}
+	if _, ok := aec.mutation.Resource(); !ok {
+		return &ValidationError{Name: "resource", err: errors.New(`ent: missing required field "AuditEvent.resource"`)}
+	}
+	if _, ok := aec.mutation.SubResource(); !ok {
+		return &ValidationError{Name: "subResource", err: errors.New(`ent: missing required field "AuditEvent.subResource"`)}
+	}
+	if _, ok := aec.mutation.Stage(); !ok {
+		return &ValidationError{Name: "stage", err: errors.New(`ent: missing required field "AuditEvent.stage"`)}
 	}
 	return nil
 }
@@ -168,6 +308,10 @@ func (aec *AuditEventCreate) createSpec() (*AuditEvent, *sqlgraph.CreateSpec) {
 		_node = &AuditEvent{config: aec.config}
 		_spec = sqlgraph.NewCreateSpec(auditevent.Table, sqlgraph.NewFieldSpec(auditevent.FieldID, field.TypeInt))
 	)
+	if value, ok := aec.mutation.Raw(); ok {
+		_spec.SetField(auditevent.FieldRaw, field.TypeString, value)
+		_node.Raw = value
+	}
 	if value, ok := aec.mutation.Level(); ok {
 		_spec.SetField(auditevent.FieldLevel, field.TypeString, value)
 		_node.Level = value
@@ -184,10 +328,6 @@ func (aec *AuditEventCreate) createSpec() (*AuditEvent, *sqlgraph.CreateSpec) {
 		_spec.SetField(auditevent.FieldUserAgent, field.TypeString, value)
 		_node.UserAgent = value
 	}
-	if value, ok := aec.mutation.Raw(); ok {
-		_spec.SetField(auditevent.FieldRaw, field.TypeString, value)
-		_node.Raw = value
-	}
 	if value, ok := aec.mutation.RequestTimestamp(); ok {
 		_spec.SetField(auditevent.FieldRequestTimestamp, field.TypeTime, value)
 		_node.RequestTimestamp = value
@@ -195,6 +335,34 @@ func (aec *AuditEventCreate) createSpec() (*AuditEvent, *sqlgraph.CreateSpec) {
 	if value, ok := aec.mutation.StageTimestamp(); ok {
 		_spec.SetField(auditevent.FieldStageTimestamp, field.TypeTime, value)
 		_node.StageTimestamp = value
+	}
+	if value, ok := aec.mutation.Namespace(); ok {
+		_spec.SetField(auditevent.FieldNamespace, field.TypeString, value)
+		_node.Namespace = value
+	}
+	if value, ok := aec.mutation.Name(); ok {
+		_spec.SetField(auditevent.FieldName, field.TypeString, value)
+		_node.Name = value
+	}
+	if value, ok := aec.mutation.ApiVersion(); ok {
+		_spec.SetField(auditevent.FieldApiVersion, field.TypeString, value)
+		_node.ApiVersion = value
+	}
+	if value, ok := aec.mutation.ApiGroup(); ok {
+		_spec.SetField(auditevent.FieldApiGroup, field.TypeString, value)
+		_node.ApiGroup = value
+	}
+	if value, ok := aec.mutation.Resource(); ok {
+		_spec.SetField(auditevent.FieldResource, field.TypeString, value)
+		_node.Resource = value
+	}
+	if value, ok := aec.mutation.SubResource(); ok {
+		_spec.SetField(auditevent.FieldSubResource, field.TypeString, value)
+		_node.SubResource = value
+	}
+	if value, ok := aec.mutation.Stage(); ok {
+		_spec.SetField(auditevent.FieldStage, field.TypeString, value)
+		_node.Stage = value
 	}
 	return _node, _spec
 }
@@ -213,6 +381,7 @@ func (aecb *AuditEventCreateBulk) Save(ctx context.Context) ([]*AuditEvent, erro
 	for i := range aecb.builders {
 		func(i int, root context.Context) {
 			builder := aecb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*AuditEventMutation)
 				if !ok {

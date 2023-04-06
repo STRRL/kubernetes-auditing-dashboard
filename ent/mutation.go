@@ -33,13 +33,20 @@ type AuditEventMutation struct {
 	op               Op
 	typ              string
 	id               *int
+	raw              *string
 	level            *string
 	auditID          *string
 	verb             *string
 	userAgent        *string
-	raw              *string
 	requestTimestamp *time.Time
 	stageTimestamp   *time.Time
+	namespace        *string
+	name             *string
+	apiVersion       *string
+	apiGroup         *string
+	resource         *string
+	subResource      *string
+	stage            *string
 	clearedFields    map[string]struct{}
 	done             bool
 	oldValue         func(context.Context) (*AuditEvent, error)
@@ -142,6 +149,42 @@ func (m *AuditEventMutation) IDs(ctx context.Context) ([]int, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetRaw sets the "raw" field.
+func (m *AuditEventMutation) SetRaw(s string) {
+	m.raw = &s
+}
+
+// Raw returns the value of the "raw" field in the mutation.
+func (m *AuditEventMutation) Raw() (r string, exists bool) {
+	v := m.raw
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRaw returns the old "raw" field's value of the AuditEvent entity.
+// If the AuditEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuditEventMutation) OldRaw(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRaw is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRaw requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRaw: %w", err)
+	}
+	return oldValue.Raw, nil
+}
+
+// ResetRaw resets all changes to the "raw" field.
+func (m *AuditEventMutation) ResetRaw() {
+	m.raw = nil
 }
 
 // SetLevel sets the "level" field.
@@ -288,42 +331,6 @@ func (m *AuditEventMutation) ResetUserAgent() {
 	m.userAgent = nil
 }
 
-// SetRaw sets the "raw" field.
-func (m *AuditEventMutation) SetRaw(s string) {
-	m.raw = &s
-}
-
-// Raw returns the value of the "raw" field in the mutation.
-func (m *AuditEventMutation) Raw() (r string, exists bool) {
-	v := m.raw
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldRaw returns the old "raw" field's value of the AuditEvent entity.
-// If the AuditEvent object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AuditEventMutation) OldRaw(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldRaw is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldRaw requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRaw: %w", err)
-	}
-	return oldValue.Raw, nil
-}
-
-// ResetRaw resets all changes to the "raw" field.
-func (m *AuditEventMutation) ResetRaw() {
-	m.raw = nil
-}
-
 // SetRequestTimestamp sets the "requestTimestamp" field.
 func (m *AuditEventMutation) SetRequestTimestamp(t time.Time) {
 	m.requestTimestamp = &t
@@ -396,6 +403,258 @@ func (m *AuditEventMutation) ResetStageTimestamp() {
 	m.stageTimestamp = nil
 }
 
+// SetNamespace sets the "namespace" field.
+func (m *AuditEventMutation) SetNamespace(s string) {
+	m.namespace = &s
+}
+
+// Namespace returns the value of the "namespace" field in the mutation.
+func (m *AuditEventMutation) Namespace() (r string, exists bool) {
+	v := m.namespace
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNamespace returns the old "namespace" field's value of the AuditEvent entity.
+// If the AuditEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuditEventMutation) OldNamespace(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNamespace is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNamespace requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNamespace: %w", err)
+	}
+	return oldValue.Namespace, nil
+}
+
+// ResetNamespace resets all changes to the "namespace" field.
+func (m *AuditEventMutation) ResetNamespace() {
+	m.namespace = nil
+}
+
+// SetName sets the "name" field.
+func (m *AuditEventMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *AuditEventMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the AuditEvent entity.
+// If the AuditEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuditEventMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *AuditEventMutation) ResetName() {
+	m.name = nil
+}
+
+// SetApiVersion sets the "apiVersion" field.
+func (m *AuditEventMutation) SetApiVersion(s string) {
+	m.apiVersion = &s
+}
+
+// ApiVersion returns the value of the "apiVersion" field in the mutation.
+func (m *AuditEventMutation) ApiVersion() (r string, exists bool) {
+	v := m.apiVersion
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldApiVersion returns the old "apiVersion" field's value of the AuditEvent entity.
+// If the AuditEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuditEventMutation) OldApiVersion(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldApiVersion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldApiVersion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldApiVersion: %w", err)
+	}
+	return oldValue.ApiVersion, nil
+}
+
+// ResetApiVersion resets all changes to the "apiVersion" field.
+func (m *AuditEventMutation) ResetApiVersion() {
+	m.apiVersion = nil
+}
+
+// SetApiGroup sets the "apiGroup" field.
+func (m *AuditEventMutation) SetApiGroup(s string) {
+	m.apiGroup = &s
+}
+
+// ApiGroup returns the value of the "apiGroup" field in the mutation.
+func (m *AuditEventMutation) ApiGroup() (r string, exists bool) {
+	v := m.apiGroup
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldApiGroup returns the old "apiGroup" field's value of the AuditEvent entity.
+// If the AuditEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuditEventMutation) OldApiGroup(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldApiGroup is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldApiGroup requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldApiGroup: %w", err)
+	}
+	return oldValue.ApiGroup, nil
+}
+
+// ResetApiGroup resets all changes to the "apiGroup" field.
+func (m *AuditEventMutation) ResetApiGroup() {
+	m.apiGroup = nil
+}
+
+// SetResource sets the "resource" field.
+func (m *AuditEventMutation) SetResource(s string) {
+	m.resource = &s
+}
+
+// Resource returns the value of the "resource" field in the mutation.
+func (m *AuditEventMutation) Resource() (r string, exists bool) {
+	v := m.resource
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldResource returns the old "resource" field's value of the AuditEvent entity.
+// If the AuditEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuditEventMutation) OldResource(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldResource is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldResource requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldResource: %w", err)
+	}
+	return oldValue.Resource, nil
+}
+
+// ResetResource resets all changes to the "resource" field.
+func (m *AuditEventMutation) ResetResource() {
+	m.resource = nil
+}
+
+// SetSubResource sets the "subResource" field.
+func (m *AuditEventMutation) SetSubResource(s string) {
+	m.subResource = &s
+}
+
+// SubResource returns the value of the "subResource" field in the mutation.
+func (m *AuditEventMutation) SubResource() (r string, exists bool) {
+	v := m.subResource
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSubResource returns the old "subResource" field's value of the AuditEvent entity.
+// If the AuditEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuditEventMutation) OldSubResource(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSubResource is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSubResource requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSubResource: %w", err)
+	}
+	return oldValue.SubResource, nil
+}
+
+// ResetSubResource resets all changes to the "subResource" field.
+func (m *AuditEventMutation) ResetSubResource() {
+	m.subResource = nil
+}
+
+// SetStage sets the "stage" field.
+func (m *AuditEventMutation) SetStage(s string) {
+	m.stage = &s
+}
+
+// Stage returns the value of the "stage" field in the mutation.
+func (m *AuditEventMutation) Stage() (r string, exists bool) {
+	v := m.stage
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStage returns the old "stage" field's value of the AuditEvent entity.
+// If the AuditEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuditEventMutation) OldStage(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStage: %w", err)
+	}
+	return oldValue.Stage, nil
+}
+
+// ResetStage resets all changes to the "stage" field.
+func (m *AuditEventMutation) ResetStage() {
+	m.stage = nil
+}
+
 // Where appends a list predicates to the AuditEventMutation builder.
 func (m *AuditEventMutation) Where(ps ...predicate.AuditEvent) {
 	m.predicates = append(m.predicates, ps...)
@@ -430,7 +689,10 @@ func (m *AuditEventMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AuditEventMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 14)
+	if m.raw != nil {
+		fields = append(fields, auditevent.FieldRaw)
+	}
 	if m.level != nil {
 		fields = append(fields, auditevent.FieldLevel)
 	}
@@ -443,14 +705,32 @@ func (m *AuditEventMutation) Fields() []string {
 	if m.userAgent != nil {
 		fields = append(fields, auditevent.FieldUserAgent)
 	}
-	if m.raw != nil {
-		fields = append(fields, auditevent.FieldRaw)
-	}
 	if m.requestTimestamp != nil {
 		fields = append(fields, auditevent.FieldRequestTimestamp)
 	}
 	if m.stageTimestamp != nil {
 		fields = append(fields, auditevent.FieldStageTimestamp)
+	}
+	if m.namespace != nil {
+		fields = append(fields, auditevent.FieldNamespace)
+	}
+	if m.name != nil {
+		fields = append(fields, auditevent.FieldName)
+	}
+	if m.apiVersion != nil {
+		fields = append(fields, auditevent.FieldApiVersion)
+	}
+	if m.apiGroup != nil {
+		fields = append(fields, auditevent.FieldApiGroup)
+	}
+	if m.resource != nil {
+		fields = append(fields, auditevent.FieldResource)
+	}
+	if m.subResource != nil {
+		fields = append(fields, auditevent.FieldSubResource)
+	}
+	if m.stage != nil {
+		fields = append(fields, auditevent.FieldStage)
 	}
 	return fields
 }
@@ -460,6 +740,8 @@ func (m *AuditEventMutation) Fields() []string {
 // schema.
 func (m *AuditEventMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case auditevent.FieldRaw:
+		return m.Raw()
 	case auditevent.FieldLevel:
 		return m.Level()
 	case auditevent.FieldAuditID:
@@ -468,12 +750,24 @@ func (m *AuditEventMutation) Field(name string) (ent.Value, bool) {
 		return m.Verb()
 	case auditevent.FieldUserAgent:
 		return m.UserAgent()
-	case auditevent.FieldRaw:
-		return m.Raw()
 	case auditevent.FieldRequestTimestamp:
 		return m.RequestTimestamp()
 	case auditevent.FieldStageTimestamp:
 		return m.StageTimestamp()
+	case auditevent.FieldNamespace:
+		return m.Namespace()
+	case auditevent.FieldName:
+		return m.Name()
+	case auditevent.FieldApiVersion:
+		return m.ApiVersion()
+	case auditevent.FieldApiGroup:
+		return m.ApiGroup()
+	case auditevent.FieldResource:
+		return m.Resource()
+	case auditevent.FieldSubResource:
+		return m.SubResource()
+	case auditevent.FieldStage:
+		return m.Stage()
 	}
 	return nil, false
 }
@@ -483,6 +777,8 @@ func (m *AuditEventMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *AuditEventMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case auditevent.FieldRaw:
+		return m.OldRaw(ctx)
 	case auditevent.FieldLevel:
 		return m.OldLevel(ctx)
 	case auditevent.FieldAuditID:
@@ -491,12 +787,24 @@ func (m *AuditEventMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldVerb(ctx)
 	case auditevent.FieldUserAgent:
 		return m.OldUserAgent(ctx)
-	case auditevent.FieldRaw:
-		return m.OldRaw(ctx)
 	case auditevent.FieldRequestTimestamp:
 		return m.OldRequestTimestamp(ctx)
 	case auditevent.FieldStageTimestamp:
 		return m.OldStageTimestamp(ctx)
+	case auditevent.FieldNamespace:
+		return m.OldNamespace(ctx)
+	case auditevent.FieldName:
+		return m.OldName(ctx)
+	case auditevent.FieldApiVersion:
+		return m.OldApiVersion(ctx)
+	case auditevent.FieldApiGroup:
+		return m.OldApiGroup(ctx)
+	case auditevent.FieldResource:
+		return m.OldResource(ctx)
+	case auditevent.FieldSubResource:
+		return m.OldSubResource(ctx)
+	case auditevent.FieldStage:
+		return m.OldStage(ctx)
 	}
 	return nil, fmt.Errorf("unknown AuditEvent field %s", name)
 }
@@ -506,6 +814,13 @@ func (m *AuditEventMutation) OldField(ctx context.Context, name string) (ent.Val
 // type.
 func (m *AuditEventMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case auditevent.FieldRaw:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRaw(v)
+		return nil
 	case auditevent.FieldLevel:
 		v, ok := value.(string)
 		if !ok {
@@ -534,13 +849,6 @@ func (m *AuditEventMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUserAgent(v)
 		return nil
-	case auditevent.FieldRaw:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetRaw(v)
-		return nil
 	case auditevent.FieldRequestTimestamp:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -554,6 +862,55 @@ func (m *AuditEventMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStageTimestamp(v)
+		return nil
+	case auditevent.FieldNamespace:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNamespace(v)
+		return nil
+	case auditevent.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case auditevent.FieldApiVersion:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetApiVersion(v)
+		return nil
+	case auditevent.FieldApiGroup:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetApiGroup(v)
+		return nil
+	case auditevent.FieldResource:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetResource(v)
+		return nil
+	case auditevent.FieldSubResource:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSubResource(v)
+		return nil
+	case auditevent.FieldStage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStage(v)
 		return nil
 	}
 	return fmt.Errorf("unknown AuditEvent field %s", name)
@@ -604,6 +961,9 @@ func (m *AuditEventMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *AuditEventMutation) ResetField(name string) error {
 	switch name {
+	case auditevent.FieldRaw:
+		m.ResetRaw()
+		return nil
 	case auditevent.FieldLevel:
 		m.ResetLevel()
 		return nil
@@ -616,14 +976,32 @@ func (m *AuditEventMutation) ResetField(name string) error {
 	case auditevent.FieldUserAgent:
 		m.ResetUserAgent()
 		return nil
-	case auditevent.FieldRaw:
-		m.ResetRaw()
-		return nil
 	case auditevent.FieldRequestTimestamp:
 		m.ResetRequestTimestamp()
 		return nil
 	case auditevent.FieldStageTimestamp:
 		m.ResetStageTimestamp()
+		return nil
+	case auditevent.FieldNamespace:
+		m.ResetNamespace()
+		return nil
+	case auditevent.FieldName:
+		m.ResetName()
+		return nil
+	case auditevent.FieldApiVersion:
+		m.ResetApiVersion()
+		return nil
+	case auditevent.FieldApiGroup:
+		m.ResetApiGroup()
+		return nil
+	case auditevent.FieldResource:
+		m.ResetResource()
+		return nil
+	case auditevent.FieldSubResource:
+		m.ResetSubResource()
+		return nil
+	case auditevent.FieldStage:
+		m.ResetStage()
 		return nil
 	}
 	return fmt.Errorf("unknown AuditEvent field %s", name)

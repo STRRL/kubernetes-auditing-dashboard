@@ -14,13 +14,20 @@ type AuditEvent struct {
 // Fields of the AuditEvent.
 func (AuditEvent) Fields() []ent.Field {
 	return []ent.Field{
+		field.Text("raw").NotEmpty().Immutable(),
 		field.String("level").NotEmpty().Immutable(),
 		field.String("auditID").NotEmpty().Immutable(),
 		field.String("verb").NotEmpty().Immutable(),
 		field.String("userAgent").NotEmpty().Immutable(),
-		field.Text("raw").NotEmpty().Immutable(),
 		field.Time("requestTimestamp").Immutable(),
 		field.Time("stageTimestamp").Immutable(),
+		field.String("namespace").Immutable().Default(""),
+		field.String("name").Immutable().Default(""),
+		field.String("apiVersion").Immutable().Default(""),
+		field.String("apiGroup").Immutable().Default(""),
+		field.String("resource").Immutable().Default(""),
+		field.String("subResource").Immutable().Default(""),
+		field.String("stage").Immutable(),
 	}
 }
 

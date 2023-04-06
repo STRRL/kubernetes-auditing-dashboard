@@ -6,7 +6,86 @@ rules:
     resources:
     - group: ""
       resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "admissionregistration.k8s.io"
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "apiextensions.k8s.io"
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "apiregistration.k8s.io"
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "apps"
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "authentication.k8s.io"
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "authorization.k8s.io"
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "autoscaling"
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "batch"
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: ""
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "certificates.k8s.io"
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "coordination.k8s.io"
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "discovery.k8s.io"
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "events.k8s.io"
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "flowcontrol.apiserver.k8s.io"
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "networking.k8s.io"
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "node.k8s.io"
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "policy"
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "rbac.authorization.k8s.io"
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "scheduling.k8s.io"
+        resources: ["*"]
+  - level: RequestResponse
+    resources:
+      - group: "storage.k8s.io"
+        resources: ["*"]
   - level: Metadata
     nonResourceURLs:
-    - "/api*"
-    - "/version"
+    - "/*"

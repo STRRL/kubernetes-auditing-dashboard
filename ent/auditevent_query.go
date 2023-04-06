@@ -261,12 +261,12 @@ func (aeq *AuditEventQuery) Clone() *AuditEventQuery {
 // Example:
 //
 //	var v []struct {
-//		Level string `json:"level,omitempty"`
+//		Raw string `json:"raw,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.AuditEvent.Query().
-//		GroupBy(auditevent.FieldLevel).
+//		GroupBy(auditevent.FieldRaw).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (aeq *AuditEventQuery) GroupBy(field string, fields ...string) *AuditEventGroupBy {
@@ -284,11 +284,11 @@ func (aeq *AuditEventQuery) GroupBy(field string, fields ...string) *AuditEventG
 // Example:
 //
 //	var v []struct {
-//		Level string `json:"level,omitempty"`
+//		Raw string `json:"raw,omitempty"`
 //	}
 //
 //	client.AuditEvent.Query().
-//		Select(auditevent.FieldLevel).
+//		Select(auditevent.FieldRaw).
 //		Scan(ctx, &v)
 func (aeq *AuditEventQuery) Select(fields ...string) *AuditEventSelect {
 	aeq.ctx.Fields = append(aeq.ctx.Fields, fields...)

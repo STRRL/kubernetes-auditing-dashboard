@@ -54,16 +54,25 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			entities = append(entities,
-				entClient.AuditEvent.Create().
-					SetAuditID(string(event.AuditID)).
-					SetVerb(event.Verb).
-					SetUserAgent(event.UserAgent).
-					SetLevel(string(event.Level)).
-					SetRequestTimestamp(event.RequestReceivedTimestamp.Time).
-					SetStageTimestamp(event.StageTimestamp.Time).
-					SetRaw(string(raw)),
-			)
+			item := entClient.AuditEvent.Create().
+				SetStage(string(event.Stage)).
+				SetAuditID(string(event.AuditID)).
+				SetVerb(event.Verb).
+				SetUserAgent(event.UserAgent).
+				SetLevel(string(event.Level)).
+				SetRequestTimestamp(event.RequestReceivedTimestamp.Time).
+				SetStageTimestamp(event.StageTimestamp.Time).
+				SetRaw(string(raw))
+
+			if event.ObjectRef != nil {
+				item.SetNamespace(event.ObjectRef.Namespace).
+					SetName(event.ObjectRef.Name).
+					SetApiVersion(event.ObjectRef.APIVersion).
+					SetApiGroup(event.ObjectRef.APIGroup).
+					SetResource(event.ObjectRef.Resource).
+					SetSubResource(event.ObjectRef.Subresource)
+			}
+			entities = append(entities, item)
 		}
 		_, err = entClient.AuditEvent.CreateBulk(entities...).Save(ctx)
 		if err != nil {
