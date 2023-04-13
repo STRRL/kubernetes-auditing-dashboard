@@ -3,6 +3,9 @@ package main
 import (
 	"bytes"
 	"context"
+	"io"
+	"log"
+
 	"entgo.io/ent/dialect"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -11,11 +14,9 @@ import (
 	"github.com/strrl/kubernetes-auditing-dashboard/ent"
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/migrate"
 	"github.com/strrl/kubernetes-auditing-dashboard/gql"
-	"io"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	auditv1 "k8s.io/apiserver/pkg/apis/audit/v1"
-	"log"
 )
 
 func main() {
@@ -35,7 +36,7 @@ func main() {
 	}
 	codec := json.NewSerializerWithOptions(json.DefaultMetaFactory, scheme, scheme, json.SerializerOptions{Yaml: false, Pretty: false, Strict: false})
 	app := gin.Default()
-	apiGroup := app.Group(2"/api")
+	apiGroup := app.Group("/api")
 	apiGroup.POST("/audit-webhook", func(c *gin.Context) {
 		requestBody, err := io.ReadAll(c.Request.Body)
 		if err != nil {
