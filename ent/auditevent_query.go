@@ -21,6 +21,8 @@ type AuditEventQuery struct {
 	order      []OrderFunc
 	inters     []Interceptor
 	predicates []predicate.AuditEvent
+	modifiers  []func(*sql.Selector)
+	loadTotal  []func(context.Context, []*AuditEvent) error
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -342,6 +344,9 @@ func (aeq *AuditEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
+	if len(aeq.modifiers) > 0 {
+		_spec.Modifiers = aeq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -351,11 +356,19 @@ func (aeq *AuditEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	for i := range aeq.loadTotal {
+		if err := aeq.loadTotal[i](ctx, nodes); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
 func (aeq *AuditEventQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := aeq.querySpec()
+	if len(aeq.modifiers) > 0 {
+		_spec.Modifiers = aeq.modifiers
+	}
 	_spec.Node.Columns = aeq.ctx.Fields
 	if len(aeq.ctx.Fields) > 0 {
 		_spec.Unique = aeq.ctx.Unique != nil && *aeq.ctx.Unique

@@ -64,9 +64,20 @@ var (
 			},
 		},
 	}
+	// ViewsColumns holds the columns for the "views" table.
+	ViewsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+	}
+	// ViewsTable holds the schema information for the "views" table.
+	ViewsTable = &schema.Table{
+		Name:       "views",
+		Columns:    ViewsColumns,
+		PrimaryKey: []*schema.Column{ViewsColumns[0]},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AuditEventsTable,
+		ViewsTable,
 	}
 )
 

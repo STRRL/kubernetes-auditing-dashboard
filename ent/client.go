@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/auditevent"
+	"github.com/strrl/kubernetes-auditing-dashboard/ent/view"
 )
 
 // Client is the client that holds all ent builders.
@@ -23,6 +24,10 @@ type Client struct {
 	Schema *migrate.Schema
 	// AuditEvent is the client for interacting with the AuditEvent builders.
 	AuditEvent *AuditEventClient
+	// View is the client for interacting with the View builders.
+	View *ViewClient
+	// additional fields for node api
+	tables tables
 }
 
 // NewClient creates a new client configured with the given options.
@@ -37,6 +42,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.AuditEvent = NewAuditEventClient(c.config)
+	c.View = NewViewClient(c.config)
 }
 
 type (
@@ -120,6 +126,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:        ctx,
 		config:     cfg,
 		AuditEvent: NewAuditEventClient(cfg),
+		View:       NewViewClient(cfg),
 	}, nil
 }
 
@@ -140,6 +147,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:        ctx,
 		config:     cfg,
 		AuditEvent: NewAuditEventClient(cfg),
+		View:       NewViewClient(cfg),
 	}, nil
 }
 
@@ -169,12 +177,14 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.AuditEvent.Use(hooks...)
+	c.View.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.AuditEvent.Intercept(interceptors...)
+	c.View.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
@@ -182,6 +192,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *AuditEventMutation:
 		return c.AuditEvent.mutate(ctx, m)
+	case *ViewMutation:
+		return c.View.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -305,12 +317,130 @@ func (c *AuditEventClient) mutate(ctx context.Context, m *AuditEventMutation) (V
 	}
 }
 
+// ViewClient is a client for the View schema.
+type ViewClient struct {
+	config
+}
+
+// NewViewClient returns a client for the View from the given config.
+func NewViewClient(c config) *ViewClient {
+	return &ViewClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `view.Hooks(f(g(h())))`.
+func (c *ViewClient) Use(hooks ...Hook) {
+	c.hooks.View = append(c.hooks.View, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `view.Intercept(f(g(h())))`.
+func (c *ViewClient) Intercept(interceptors ...Interceptor) {
+	c.inters.View = append(c.inters.View, interceptors...)
+}
+
+// Create returns a builder for creating a View entity.
+func (c *ViewClient) Create() *ViewCreate {
+	mutation := newViewMutation(c.config, OpCreate)
+	return &ViewCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of View entities.
+func (c *ViewClient) CreateBulk(builders ...*ViewCreate) *ViewCreateBulk {
+	return &ViewCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for View.
+func (c *ViewClient) Update() *ViewUpdate {
+	mutation := newViewMutation(c.config, OpUpdate)
+	return &ViewUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ViewClient) UpdateOne(v *View) *ViewUpdateOne {
+	mutation := newViewMutation(c.config, OpUpdateOne, withView(v))
+	return &ViewUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ViewClient) UpdateOneID(id int) *ViewUpdateOne {
+	mutation := newViewMutation(c.config, OpUpdateOne, withViewID(id))
+	return &ViewUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for View.
+func (c *ViewClient) Delete() *ViewDelete {
+	mutation := newViewMutation(c.config, OpDelete)
+	return &ViewDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ViewClient) DeleteOne(v *View) *ViewDeleteOne {
+	return c.DeleteOneID(v.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ViewClient) DeleteOneID(id int) *ViewDeleteOne {
+	builder := c.Delete().Where(view.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ViewDeleteOne{builder}
+}
+
+// Query returns a query builder for View.
+func (c *ViewClient) Query() *ViewQuery {
+	return &ViewQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeView},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a View entity by its id.
+func (c *ViewClient) Get(ctx context.Context, id int) (*View, error) {
+	return c.Query().Where(view.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ViewClient) GetX(ctx context.Context, id int) *View {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ViewClient) Hooks() []Hook {
+	return c.hooks.View
+}
+
+// Interceptors returns the client interceptors.
+func (c *ViewClient) Interceptors() []Interceptor {
+	return c.inters.View
+}
+
+func (c *ViewClient) mutate(ctx context.Context, m *ViewMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ViewCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ViewUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ViewUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ViewDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown View mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		AuditEvent []ent.Hook
+		AuditEvent, View []ent.Hook
 	}
 	inters struct {
-		AuditEvent []ent.Interceptor
+		AuditEvent, View []ent.Interceptor
 	}
 )

@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// AuditEvent is the client for interacting with the AuditEvent builders.
 	AuditEvent *AuditEventClient
+	// View is the client for interacting with the View builders.
+	View *ViewClient
 
 	// lazily loaded.
 	client     *Client
@@ -146,6 +148,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.AuditEvent = NewAuditEventClient(tx.config)
+	tx.View = NewViewClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

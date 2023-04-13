@@ -4,9 +4,13 @@ import (
 	"bytes"
 	"context"
 	"entgo.io/ent/dialect"
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/strrl/kubernetes-auditing-dashboard/ent"
+	"github.com/strrl/kubernetes-auditing-dashboard/ent/migrate"
+	"github.com/strrl/kubernetes-auditing-dashboard/gql"
 	"io"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
@@ -26,12 +30,12 @@ func main() {
 	defer entClient.Close()
 	ctx := context.Background()
 	// Run the automatic migration tool to create all schema resources.
-	if err := entClient.Schema.Create(ctx); err != nil {
+	if err := entClient.Schema.Create(ctx, migrate.WithGlobalUniqueID(true)); err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 	codec := json.NewSerializerWithOptions(json.DefaultMetaFactory, scheme, scheme, json.SerializerOptions{Yaml: false, Pretty: false, Strict: false})
 	app := gin.Default()
-	apiGroup := app.Group("/api")
+	apiGroup := app.Group(2"/api")
 	apiGroup.POST("/audit-webhook", func(c *gin.Context) {
 		requestBody, err := io.ReadAll(c.Request.Body)
 		if err != nil {
@@ -81,5 +85,11 @@ func main() {
 		println(len(eventList.Items))
 		c.Status(200)
 	})
+	apiGroup.GET("/playground", gin.WrapF(playground.Handler("", "/api/query")))
+	graphqlServer := handler.NewDefaultServer(gql.NewExecutableSchema(
+		gql.Config{
+			Resolvers: gql.NewResolver(entClient),
+		}))
+	apiGroup.Any("/query", gin.WrapH(graphqlServer))
 	app.Run("0.0.0.0:23333")
 }

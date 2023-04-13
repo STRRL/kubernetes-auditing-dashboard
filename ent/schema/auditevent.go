@@ -1,7 +1,9 @@
 package schema
 
 import (
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 )
@@ -44,5 +46,13 @@ func (AuditEvent) Indexes() []ent.Index {
 		index.Fields("userAgent"),
 		index.Fields("requestTimestamp"),
 		index.Fields("stageTimestamp"),
+	}
+}
+
+func (AuditEvent) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.RelayConnection(),
+		entgql.QueryField(),
+		//entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
 	}
 }

@@ -8,3 +8,6 @@ import (
 
 // AuditEvent is the predicate function for auditevent builders.
 type AuditEvent func(*sql.Selector)
+
+// View is the predicate function for view builders.
+type View func(*sql.Selector)

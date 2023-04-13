@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/auditevent"
+	"github.com/strrl/kubernetes-auditing-dashboard/ent/view"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -66,6 +67,7 @@ type OrderFunc func(*sql.Selector)
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
 		auditevent.Table: auditevent.ValidColumn,
+		view.Table:       view.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {
