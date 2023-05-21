@@ -4,6 +4,7 @@ package ent
 
 import (
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/auditevent"
+	"github.com/strrl/kubernetes-auditing-dashboard/ent/resourcekind"
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/schema"
 )
 
@@ -57,4 +58,22 @@ func init() {
 	auditeventDescSubResource := auditeventFields[12].Descriptor()
 	// auditevent.DefaultSubResource holds the default value on creation for the subResource field.
 	auditevent.DefaultSubResource = auditeventDescSubResource.Default.(string)
+	resourcekindFields := schema.ResourceKind{}.Fields()
+	_ = resourcekindFields
+	// resourcekindDescName is the schema descriptor for name field.
+	resourcekindDescName := resourcekindFields[0].Descriptor()
+	// resourcekind.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	resourcekind.NameValidator = resourcekindDescName.Validators[0].(func(string) error)
+	// resourcekindDescApiVersion is the schema descriptor for apiVersion field.
+	resourcekindDescApiVersion := resourcekindFields[1].Descriptor()
+	// resourcekind.ApiVersionValidator is a validator for the "apiVersion" field. It is called by the builders before save.
+	resourcekind.ApiVersionValidator = resourcekindDescApiVersion.Validators[0].(func(string) error)
+	// resourcekindDescNamespaced is the schema descriptor for namespaced field.
+	resourcekindDescNamespaced := resourcekindFields[2].Descriptor()
+	// resourcekind.DefaultNamespaced holds the default value on creation for the namespaced field.
+	resourcekind.DefaultNamespaced = resourcekindDescNamespaced.Default.(bool)
+	// resourcekindDescKind is the schema descriptor for kind field.
+	resourcekindDescKind := resourcekindFields[3].Descriptor()
+	// resourcekind.KindValidator is a validator for the "kind" field. It is called by the builders before save.
+	resourcekind.KindValidator = resourcekindDescKind.Validators[0].(func(string) error)
 }

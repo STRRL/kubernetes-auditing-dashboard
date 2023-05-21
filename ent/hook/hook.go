@@ -21,6 +21,18 @@ func (f AuditEventFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AuditEventMutation", m)
 }
 
+// The ResourceKindFunc type is an adapter to allow the use of ordinary
+// function as ResourceKind mutator.
+type ResourceKindFunc func(context.Context, *ent.ResourceKindMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ResourceKindFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ResourceKindMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ResourceKindMutation", m)
+}
+
 // The ViewFunc type is an adapter to allow the use of ordinary
 // function as View mutator.
 type ViewFunc func(context.Context, *ent.ViewMutation) (ent.Value, error)

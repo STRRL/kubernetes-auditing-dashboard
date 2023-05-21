@@ -15,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/auditevent"
+	"github.com/strrl/kubernetes-auditing-dashboard/ent/resourcekind"
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/view"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vmihailenco/msgpack/v5"
@@ -470,6 +471,237 @@ func (ae *AuditEvent) ToEdge(order *AuditEventOrder) *AuditEventEdge {
 	return &AuditEventEdge{
 		Node:   ae,
 		Cursor: order.Field.toCursor(ae),
+	}
+}
+
+// ResourceKindEdge is the edge representation of ResourceKind.
+type ResourceKindEdge struct {
+	Node   *ResourceKind `json:"node"`
+	Cursor Cursor        `json:"cursor"`
+}
+
+// ResourceKindConnection is the connection containing edges to ResourceKind.
+type ResourceKindConnection struct {
+	Edges      []*ResourceKindEdge `json:"edges"`
+	PageInfo   PageInfo            `json:"pageInfo"`
+	TotalCount int                 `json:"totalCount"`
+}
+
+func (c *ResourceKindConnection) build(nodes []*ResourceKind, pager *resourcekindPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *ResourceKind
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *ResourceKind {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *ResourceKind {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*ResourceKindEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &ResourceKindEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// ResourceKindPaginateOption enables pagination customization.
+type ResourceKindPaginateOption func(*resourcekindPager) error
+
+// WithResourceKindOrder configures pagination ordering.
+func WithResourceKindOrder(order *ResourceKindOrder) ResourceKindPaginateOption {
+	if order == nil {
+		order = DefaultResourceKindOrder
+	}
+	o := *order
+	return func(pager *resourcekindPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultResourceKindOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithResourceKindFilter configures pagination filter.
+func WithResourceKindFilter(filter func(*ResourceKindQuery) (*ResourceKindQuery, error)) ResourceKindPaginateOption {
+	return func(pager *resourcekindPager) error {
+		if filter == nil {
+			return errors.New("ResourceKindQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type resourcekindPager struct {
+	order  *ResourceKindOrder
+	filter func(*ResourceKindQuery) (*ResourceKindQuery, error)
+}
+
+func newResourceKindPager(opts []ResourceKindPaginateOption) (*resourcekindPager, error) {
+	pager := &resourcekindPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultResourceKindOrder
+	}
+	return pager, nil
+}
+
+func (p *resourcekindPager) applyFilter(query *ResourceKindQuery) (*ResourceKindQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *resourcekindPager) toCursor(rk *ResourceKind) Cursor {
+	return p.order.Field.toCursor(rk)
+}
+
+func (p *resourcekindPager) applyCursors(query *ResourceKindQuery, after, before *Cursor) *ResourceKindQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultResourceKindOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *resourcekindPager) applyOrder(query *ResourceKindQuery, reverse bool) *ResourceKindQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultResourceKindOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultResourceKindOrder.Field.field))
+	}
+	return query
+}
+
+func (p *resourcekindPager) orderExpr(reverse bool) sql.Querier {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.field).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultResourceKindOrder.Field {
+			b.Comma().Ident(DefaultResourceKindOrder.Field.field).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to ResourceKind.
+func (rk *ResourceKindQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...ResourceKindPaginateOption,
+) (*ResourceKindConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newResourceKindPager(opts)
+	if err != nil {
+		return nil, err
+	}
+	if rk, err = pager.applyFilter(rk); err != nil {
+		return nil, err
+	}
+	conn := &ResourceKindConnection{Edges: []*ResourceKindEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			if conn.TotalCount, err = rk.Clone().Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+
+	rk = pager.applyCursors(rk, after, before)
+	rk = pager.applyOrder(rk, last != nil)
+	if limit := paginateLimit(first, last); limit != 0 {
+		rk.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := rk.collectField(ctx, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+
+	nodes, err := rk.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// ResourceKindOrderField defines the ordering field of ResourceKind.
+type ResourceKindOrderField struct {
+	field    string
+	toCursor func(*ResourceKind) Cursor
+}
+
+// ResourceKindOrder defines the ordering of ResourceKind.
+type ResourceKindOrder struct {
+	Direction OrderDirection          `json:"direction"`
+	Field     *ResourceKindOrderField `json:"field"`
+}
+
+// DefaultResourceKindOrder is the default ordering of ResourceKind.
+var DefaultResourceKindOrder = &ResourceKindOrder{
+	Direction: OrderDirectionAsc,
+	Field: &ResourceKindOrderField{
+		field: resourcekind.FieldID,
+		toCursor: func(rk *ResourceKind) Cursor {
+			return Cursor{ID: rk.ID}
+		},
+	},
+}
+
+// ToEdge converts ResourceKind into ResourceKindEdge.
+func (rk *ResourceKind) ToEdge(order *ResourceKindOrder) *ResourceKindEdge {
+	if order == nil {
+		order = DefaultResourceKindOrder
+	}
+	return &ResourceKindEdge{
+		Node:   rk,
+		Cursor: order.Field.toCursor(rk),
 	}
 }
 

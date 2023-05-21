@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// AuditEvent is the client for interacting with the AuditEvent builders.
 	AuditEvent *AuditEventClient
+	// ResourceKind is the client for interacting with the ResourceKind builders.
+	ResourceKind *ResourceKindClient
 	// View is the client for interacting with the View builders.
 	View *ViewClient
 
@@ -148,6 +150,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.AuditEvent = NewAuditEventClient(tx.config)
+	tx.ResourceKind = NewResourceKindClient(tx.config)
 	tx.View = NewViewClient(tx.config)
 }
 

@@ -60,6 +60,16 @@ export type AuditEventEdge = {
   node?: Maybe<AuditEvent>;
 };
 
+export type Mutation = {
+  __typename?: 'Mutation';
+  importResourceKindTSV: Scalars['Int'];
+};
+
+
+export type MutationImportResourceKindTsvArgs = {
+  tsv: Scalars['String'];
+};
+
 /**
  * An object with an ID.
  * Follows the [Relay Global Object Identification Specification](https://relay.dev/graphql/objectidentification.htm)
@@ -100,6 +110,7 @@ export type Query = {
   node?: Maybe<Node>;
   /** Lookup nodes by a list of IDs. */
   nodes: Array<Maybe<Node>>;
+  resourceKinds: ResourceKindConnection;
 };
 
 
@@ -118,6 +129,43 @@ export type QueryNodeArgs = {
 
 export type QueryNodesArgs = {
   ids: Array<Scalars['ID']>;
+};
+
+
+export type QueryResourceKindsArgs = {
+  after?: InputMaybe<Scalars['Cursor']>;
+  before?: InputMaybe<Scalars['Cursor']>;
+  first?: InputMaybe<Scalars['Int']>;
+  last?: InputMaybe<Scalars['Int']>;
+};
+
+export type ResourceKind = Node & {
+  __typename?: 'ResourceKind';
+  apiversion: Scalars['String'];
+  id: Scalars['ID'];
+  kind: Scalars['String'];
+  name: Scalars['String'];
+  namespaced: Scalars['Boolean'];
+};
+
+/** A connection to a list of items. */
+export type ResourceKindConnection = {
+  __typename?: 'ResourceKindConnection';
+  /** A list of edges. */
+  edges?: Maybe<Array<Maybe<ResourceKindEdge>>>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** Identifies the total count of items in the connection. */
+  totalCount: Scalars['Int'];
+};
+
+/** An edge in a connection. */
+export type ResourceKindEdge = {
+  __typename?: 'ResourceKindEdge';
+  /** A cursor for use in pagination. */
+  cursor: Scalars['Cursor'];
+  /** The item at the end of the edge. */
+  node?: Maybe<ResourceKind>;
 };
 
 export type View = Node & {

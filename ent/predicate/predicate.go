@@ -9,5 +9,8 @@ import (
 // AuditEvent is the predicate function for auditevent builders.
 type AuditEvent func(*sql.Selector)
 
+// ResourceKind is the predicate function for resourcekind builders.
+type ResourceKind func(*sql.Selector)
+
 // View is the predicate function for view builders.
 type View func(*sql.Selector)

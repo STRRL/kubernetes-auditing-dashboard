@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/auditevent"
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/predicate"
+	"github.com/strrl/kubernetes-auditing-dashboard/ent/resourcekind"
 )
 
 const (
@@ -24,8 +25,9 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAuditEvent = "AuditEvent"
-	TypeView       = "View"
+	TypeAuditEvent   = "AuditEvent"
+	TypeResourceKind = "ResourceKind"
+	TypeView         = "View"
 )
 
 // AuditEventMutation represents an operation that mutates the AuditEvent nodes in the graph.
@@ -1054,6 +1056,494 @@ func (m *AuditEventMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *AuditEventMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown AuditEvent edge %s", name)
+}
+
+// ResourceKindMutation represents an operation that mutates the ResourceKind nodes in the graph.
+type ResourceKindMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	name          *string
+	apiVersion    *string
+	namespaced    *bool
+	kind          *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*ResourceKind, error)
+	predicates    []predicate.ResourceKind
+}
+
+var _ ent.Mutation = (*ResourceKindMutation)(nil)
+
+// resourcekindOption allows management of the mutation configuration using functional options.
+type resourcekindOption func(*ResourceKindMutation)
+
+// newResourceKindMutation creates new mutation for the ResourceKind entity.
+func newResourceKindMutation(c config, op Op, opts ...resourcekindOption) *ResourceKindMutation {
+	m := &ResourceKindMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeResourceKind,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withResourceKindID sets the ID field of the mutation.
+func withResourceKindID(id int) resourcekindOption {
+	return func(m *ResourceKindMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ResourceKind
+		)
+		m.oldValue = func(ctx context.Context) (*ResourceKind, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ResourceKind.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withResourceKind sets the old ResourceKind of the mutation.
+func withResourceKind(node *ResourceKind) resourcekindOption {
+	return func(m *ResourceKindMutation) {
+		m.oldValue = func(context.Context) (*ResourceKind, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ResourceKindMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ResourceKindMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ResourceKindMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ResourceKindMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().ResourceKind.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *ResourceKindMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *ResourceKindMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the ResourceKind entity.
+// If the ResourceKind object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ResourceKindMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *ResourceKindMutation) ResetName() {
+	m.name = nil
+}
+
+// SetApiVersion sets the "apiVersion" field.
+func (m *ResourceKindMutation) SetApiVersion(s string) {
+	m.apiVersion = &s
+}
+
+// ApiVersion returns the value of the "apiVersion" field in the mutation.
+func (m *ResourceKindMutation) ApiVersion() (r string, exists bool) {
+	v := m.apiVersion
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldApiVersion returns the old "apiVersion" field's value of the ResourceKind entity.
+// If the ResourceKind object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ResourceKindMutation) OldApiVersion(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldApiVersion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldApiVersion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldApiVersion: %w", err)
+	}
+	return oldValue.ApiVersion, nil
+}
+
+// ResetApiVersion resets all changes to the "apiVersion" field.
+func (m *ResourceKindMutation) ResetApiVersion() {
+	m.apiVersion = nil
+}
+
+// SetNamespaced sets the "namespaced" field.
+func (m *ResourceKindMutation) SetNamespaced(b bool) {
+	m.namespaced = &b
+}
+
+// Namespaced returns the value of the "namespaced" field in the mutation.
+func (m *ResourceKindMutation) Namespaced() (r bool, exists bool) {
+	v := m.namespaced
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNamespaced returns the old "namespaced" field's value of the ResourceKind entity.
+// If the ResourceKind object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ResourceKindMutation) OldNamespaced(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNamespaced is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNamespaced requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNamespaced: %w", err)
+	}
+	return oldValue.Namespaced, nil
+}
+
+// ResetNamespaced resets all changes to the "namespaced" field.
+func (m *ResourceKindMutation) ResetNamespaced() {
+	m.namespaced = nil
+}
+
+// SetKind sets the "kind" field.
+func (m *ResourceKindMutation) SetKind(s string) {
+	m.kind = &s
+}
+
+// Kind returns the value of the "kind" field in the mutation.
+func (m *ResourceKindMutation) Kind() (r string, exists bool) {
+	v := m.kind
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKind returns the old "kind" field's value of the ResourceKind entity.
+// If the ResourceKind object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ResourceKindMutation) OldKind(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKind is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKind requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKind: %w", err)
+	}
+	return oldValue.Kind, nil
+}
+
+// ResetKind resets all changes to the "kind" field.
+func (m *ResourceKindMutation) ResetKind() {
+	m.kind = nil
+}
+
+// Where appends a list predicates to the ResourceKindMutation builder.
+func (m *ResourceKindMutation) Where(ps ...predicate.ResourceKind) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ResourceKindMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ResourceKindMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ResourceKind, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ResourceKindMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ResourceKindMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (ResourceKind).
+func (m *ResourceKindMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ResourceKindMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.name != nil {
+		fields = append(fields, resourcekind.FieldName)
+	}
+	if m.apiVersion != nil {
+		fields = append(fields, resourcekind.FieldApiVersion)
+	}
+	if m.namespaced != nil {
+		fields = append(fields, resourcekind.FieldNamespaced)
+	}
+	if m.kind != nil {
+		fields = append(fields, resourcekind.FieldKind)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ResourceKindMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case resourcekind.FieldName:
+		return m.Name()
+	case resourcekind.FieldApiVersion:
+		return m.ApiVersion()
+	case resourcekind.FieldNamespaced:
+		return m.Namespaced()
+	case resourcekind.FieldKind:
+		return m.Kind()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ResourceKindMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case resourcekind.FieldName:
+		return m.OldName(ctx)
+	case resourcekind.FieldApiVersion:
+		return m.OldApiVersion(ctx)
+	case resourcekind.FieldNamespaced:
+		return m.OldNamespaced(ctx)
+	case resourcekind.FieldKind:
+		return m.OldKind(ctx)
+	}
+	return nil, fmt.Errorf("unknown ResourceKind field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ResourceKindMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case resourcekind.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case resourcekind.FieldApiVersion:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetApiVersion(v)
+		return nil
+	case resourcekind.FieldNamespaced:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNamespaced(v)
+		return nil
+	case resourcekind.FieldKind:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKind(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ResourceKind field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ResourceKindMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ResourceKindMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ResourceKindMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown ResourceKind numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ResourceKindMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ResourceKindMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ResourceKindMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown ResourceKind nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ResourceKindMutation) ResetField(name string) error {
+	switch name {
+	case resourcekind.FieldName:
+		m.ResetName()
+		return nil
+	case resourcekind.FieldApiVersion:
+		m.ResetApiVersion()
+		return nil
+	case resourcekind.FieldNamespaced:
+		m.ResetNamespaced()
+		return nil
+	case resourcekind.FieldKind:
+		m.ResetKind()
+		return nil
+	}
+	return fmt.Errorf("unknown ResourceKind field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ResourceKindMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ResourceKindMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ResourceKindMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ResourceKindMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ResourceKindMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ResourceKindMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ResourceKindMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown ResourceKind unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ResourceKindMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown ResourceKind edge %s", name)
 }
 
 // ViewMutation represents an operation that mutates the View nodes in the graph.
