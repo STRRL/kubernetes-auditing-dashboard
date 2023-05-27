@@ -13,8 +13,8 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Therefore it is highly recommended to use the babel or swc plugin for production.
  */
 const documents = {
-    "\nquery eventsCount{\n  auditEvents{\n    totalCount\n    pageInfo{\n      hasNextPage\n      hasPreviousPage\n      startCursor\n      endCursor\n    }\n  }\n}\n": types.EventsCountDocument,
-    "\nquery eventsList($first: Int, $after: Cursor){\n  auditEvents(first: $first, after: $after){\n    totalCount\n    pageInfo{\n      hasNextPage\n      hasPreviousPage\n      startCursor\n      endCursor\n    }\n    edges{\n      node{\n        id\n        level\n        stage\n        verb\n        useragent\n        resource\n        namespace\n        name\n        stagetimestamp\n      }\n    }\n  }}\n": types.EventsListDocument,
+    "\n  query eventsCount{\n    auditEvents{\n      totalCount\n      pageInfo{\n        hasNextPage\n        hasPreviousPage\n        startCursor\n        endCursor\n      }\n    }\n  }\n": types.EventsCountDocument,
+    "\n  query completedRequestResponseAuditEvents($page: Int, $pageSize: Int){\n    completedRequestResponseAuditEvents(page: $page, pageSize: $pageSize) {\n    total\n    page\n    pageSize\n    totalPages\n    hasNextPage\n    hasPreviousPage\n    rows {\n      id\n      level\n      stage\n      verb\n      useragent\n      resource\n      namespace\n      name\n      stagetimestamp\n      apigroup\n      apiversion\n    }\n  }\n  }\n": types.CompletedRequestResponseAuditEventsDocument,
 };
 
 /**
@@ -34,11 +34,11 @@ export function graphql(source: string): unknown;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\nquery eventsCount{\n  auditEvents{\n    totalCount\n    pageInfo{\n      hasNextPage\n      hasPreviousPage\n      startCursor\n      endCursor\n    }\n  }\n}\n"): (typeof documents)["\nquery eventsCount{\n  auditEvents{\n    totalCount\n    pageInfo{\n      hasNextPage\n      hasPreviousPage\n      startCursor\n      endCursor\n    }\n  }\n}\n"];
+export function graphql(source: "\n  query eventsCount{\n    auditEvents{\n      totalCount\n      pageInfo{\n        hasNextPage\n        hasPreviousPage\n        startCursor\n        endCursor\n      }\n    }\n  }\n"): (typeof documents)["\n  query eventsCount{\n    auditEvents{\n      totalCount\n      pageInfo{\n        hasNextPage\n        hasPreviousPage\n        startCursor\n        endCursor\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\nquery eventsList($first: Int, $after: Cursor){\n  auditEvents(first: $first, after: $after){\n    totalCount\n    pageInfo{\n      hasNextPage\n      hasPreviousPage\n      startCursor\n      endCursor\n    }\n    edges{\n      node{\n        id\n        level\n        stage\n        verb\n        useragent\n        resource\n        namespace\n        name\n        stagetimestamp\n      }\n    }\n  }}\n"): (typeof documents)["\nquery eventsList($first: Int, $after: Cursor){\n  auditEvents(first: $first, after: $after){\n    totalCount\n    pageInfo{\n      hasNextPage\n      hasPreviousPage\n      startCursor\n      endCursor\n    }\n    edges{\n      node{\n        id\n        level\n        stage\n        verb\n        useragent\n        resource\n        namespace\n        name\n        stagetimestamp\n      }\n    }\n  }}\n"];
+export function graphql(source: "\n  query completedRequestResponseAuditEvents($page: Int, $pageSize: Int){\n    completedRequestResponseAuditEvents(page: $page, pageSize: $pageSize) {\n    total\n    page\n    pageSize\n    totalPages\n    hasNextPage\n    hasPreviousPage\n    rows {\n      id\n      level\n      stage\n      verb\n      useragent\n      resource\n      namespace\n      name\n      stagetimestamp\n      apigroup\n      apiversion\n    }\n  }\n  }\n"): (typeof documents)["\n  query completedRequestResponseAuditEvents($page: Int, $pageSize: Int){\n    completedRequestResponseAuditEvents(page: $page, pageSize: $pageSize) {\n    total\n    page\n    pageSize\n    totalPages\n    hasNextPage\n    hasPreviousPage\n    rows {\n      id\n      level\n      stage\n      verb\n      useragent\n      resource\n      namespace\n      name\n      stagetimestamp\n      apigroup\n      apiversion\n    }\n  }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

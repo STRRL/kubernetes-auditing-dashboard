@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/auditevent"
+	"github.com/strrl/kubernetes-auditing-dashboard/ent/resourcekind"
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/view"
 )
 
@@ -66,8 +67,9 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
-		auditevent.Table: auditevent.ValidColumn,
-		view.Table:       view.ValidColumn,
+		auditevent.Table:   auditevent.ValidColumn,
+		resourcekind.Table: resourcekind.ValidColumn,
+		view.Table:         view.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {

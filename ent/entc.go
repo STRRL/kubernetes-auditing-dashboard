@@ -11,6 +11,8 @@ import (
 	"entgo.io/ent/entc/gen"
 )
 
+//go:generate go run -mod=mod ./ent/entc.go
+
 func main() {
 	ex, err := entgql.NewExtension(
 		// Tell Ent to generate a GraphQL schema for

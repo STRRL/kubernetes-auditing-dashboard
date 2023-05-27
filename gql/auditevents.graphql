@@ -1,0 +1,16 @@
+extend type Query{
+    completedRequestResponseAuditEvents(
+        page:Int,
+        pageSize:Int,
+    ): AuditEventPagination!
+}
+
+type AuditEventPagination{
+    total:Int!
+    page:Int!
+    pageSize:Int!
+    totalPages:Int!
+    hasNextPage:Boolean!
+    hasPreviousPage:Boolean!
+    rows:[AuditEvent]!
+}

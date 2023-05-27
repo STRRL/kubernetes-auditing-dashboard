@@ -64,6 +64,32 @@ var (
 			},
 		},
 	}
+	// ResourceKindsColumns holds the columns for the "resource_kinds" table.
+	ResourceKindsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "api_version", Type: field.TypeString, Unique: true},
+		{Name: "namespaced", Type: field.TypeBool, Default: true},
+		{Name: "kind", Type: field.TypeString, Unique: true},
+	}
+	// ResourceKindsTable holds the schema information for the "resource_kinds" table.
+	ResourceKindsTable = &schema.Table{
+		Name:       "resource_kinds",
+		Columns:    ResourceKindsColumns,
+		PrimaryKey: []*schema.Column{ResourceKindsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "resourcekind_api_version_name",
+				Unique:  false,
+				Columns: []*schema.Column{ResourceKindsColumns[2], ResourceKindsColumns[1]},
+			},
+			{
+				Name:    "resourcekind_name",
+				Unique:  false,
+				Columns: []*schema.Column{ResourceKindsColumns[1]},
+			},
+		},
+	}
 	// ViewsColumns holds the columns for the "views" table.
 	ViewsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -77,6 +103,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AuditEventsTable,
+		ResourceKindsTable,
 		ViewsTable,
 	}
 )

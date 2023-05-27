@@ -15,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/hashicorp/go-multierror"
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/auditevent"
+	"github.com/strrl/kubernetes-auditing-dashboard/ent/resourcekind"
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/view"
 	"golang.org/x/sync/semaphore"
 )
@@ -26,6 +27,9 @@ type Noder interface {
 
 // IsNode implements the Node interface check for GQLGen.
 func (n *AuditEvent) IsNode() {}
+
+// IsNode implements the Node interface check for GQLGen.
+func (n *ResourceKind) IsNode() {}
 
 // IsNode implements the Node interface check for GQLGen.
 func (n *View) IsNode() {}
@@ -92,6 +96,18 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 		query := c.AuditEvent.Query().
 			Where(auditevent.ID(id))
 		query, err := query.CollectFields(ctx, "AuditEvent")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case resourcekind.Table:
+		query := c.ResourceKind.Query().
+			Where(resourcekind.ID(id))
+		query, err := query.CollectFields(ctx, "ResourceKind")
 		if err != nil {
 			return nil, err
 		}
@@ -189,6 +205,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		query := c.AuditEvent.Query().
 			Where(auditevent.IDIn(ids...))
 		query, err := query.CollectFields(ctx, "AuditEvent")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case resourcekind.Table:
+		query := c.ResourceKind.Query().
+			Where(resourcekind.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "ResourceKind")
 		if err != nil {
 			return nil, err
 		}

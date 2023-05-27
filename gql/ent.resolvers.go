@@ -24,6 +24,11 @@ func (r *queryResolver) AuditEvents(ctx context.Context, after *ent.Cursor, firs
 	return r.entClient.AuditEvent.Query().Paginate(ctx, after, first, before, last)
 }
 
+// ResourceKinds is the resolver for the resourceKinds field.
+func (r *queryResolver) ResourceKinds(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int) (*ent.ResourceKindConnection, error) {
+	return r.entClient.ResourceKind.Query().Paginate(ctx, after, first, before, last)
+}
+
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 

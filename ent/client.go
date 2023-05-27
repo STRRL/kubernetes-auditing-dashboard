@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/auditevent"
+	"github.com/strrl/kubernetes-auditing-dashboard/ent/resourcekind"
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/view"
 )
 
@@ -24,6 +25,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// AuditEvent is the client for interacting with the AuditEvent builders.
 	AuditEvent *AuditEventClient
+	// ResourceKind is the client for interacting with the ResourceKind builders.
+	ResourceKind *ResourceKindClient
 	// View is the client for interacting with the View builders.
 	View *ViewClient
 	// additional fields for node api
@@ -42,6 +45,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.AuditEvent = NewAuditEventClient(c.config)
+	c.ResourceKind = NewResourceKindClient(c.config)
 	c.View = NewViewClient(c.config)
 }
 
@@ -123,10 +127,11 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:        ctx,
-		config:     cfg,
-		AuditEvent: NewAuditEventClient(cfg),
-		View:       NewViewClient(cfg),
+		ctx:          ctx,
+		config:       cfg,
+		AuditEvent:   NewAuditEventClient(cfg),
+		ResourceKind: NewResourceKindClient(cfg),
+		View:         NewViewClient(cfg),
 	}, nil
 }
 
@@ -144,10 +149,11 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:        ctx,
-		config:     cfg,
-		AuditEvent: NewAuditEventClient(cfg),
-		View:       NewViewClient(cfg),
+		ctx:          ctx,
+		config:       cfg,
+		AuditEvent:   NewAuditEventClient(cfg),
+		ResourceKind: NewResourceKindClient(cfg),
+		View:         NewViewClient(cfg),
 	}, nil
 }
 
@@ -177,6 +183,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.AuditEvent.Use(hooks...)
+	c.ResourceKind.Use(hooks...)
 	c.View.Use(hooks...)
 }
 
@@ -184,6 +191,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.AuditEvent.Intercept(interceptors...)
+	c.ResourceKind.Intercept(interceptors...)
 	c.View.Intercept(interceptors...)
 }
 
@@ -192,6 +200,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *AuditEventMutation:
 		return c.AuditEvent.mutate(ctx, m)
+	case *ResourceKindMutation:
+		return c.ResourceKind.mutate(ctx, m)
 	case *ViewMutation:
 		return c.View.mutate(ctx, m)
 	default:
@@ -317,6 +327,124 @@ func (c *AuditEventClient) mutate(ctx context.Context, m *AuditEventMutation) (V
 	}
 }
 
+// ResourceKindClient is a client for the ResourceKind schema.
+type ResourceKindClient struct {
+	config
+}
+
+// NewResourceKindClient returns a client for the ResourceKind from the given config.
+func NewResourceKindClient(c config) *ResourceKindClient {
+	return &ResourceKindClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `resourcekind.Hooks(f(g(h())))`.
+func (c *ResourceKindClient) Use(hooks ...Hook) {
+	c.hooks.ResourceKind = append(c.hooks.ResourceKind, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `resourcekind.Intercept(f(g(h())))`.
+func (c *ResourceKindClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ResourceKind = append(c.inters.ResourceKind, interceptors...)
+}
+
+// Create returns a builder for creating a ResourceKind entity.
+func (c *ResourceKindClient) Create() *ResourceKindCreate {
+	mutation := newResourceKindMutation(c.config, OpCreate)
+	return &ResourceKindCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ResourceKind entities.
+func (c *ResourceKindClient) CreateBulk(builders ...*ResourceKindCreate) *ResourceKindCreateBulk {
+	return &ResourceKindCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ResourceKind.
+func (c *ResourceKindClient) Update() *ResourceKindUpdate {
+	mutation := newResourceKindMutation(c.config, OpUpdate)
+	return &ResourceKindUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ResourceKindClient) UpdateOne(rk *ResourceKind) *ResourceKindUpdateOne {
+	mutation := newResourceKindMutation(c.config, OpUpdateOne, withResourceKind(rk))
+	return &ResourceKindUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ResourceKindClient) UpdateOneID(id int) *ResourceKindUpdateOne {
+	mutation := newResourceKindMutation(c.config, OpUpdateOne, withResourceKindID(id))
+	return &ResourceKindUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ResourceKind.
+func (c *ResourceKindClient) Delete() *ResourceKindDelete {
+	mutation := newResourceKindMutation(c.config, OpDelete)
+	return &ResourceKindDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ResourceKindClient) DeleteOne(rk *ResourceKind) *ResourceKindDeleteOne {
+	return c.DeleteOneID(rk.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ResourceKindClient) DeleteOneID(id int) *ResourceKindDeleteOne {
+	builder := c.Delete().Where(resourcekind.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ResourceKindDeleteOne{builder}
+}
+
+// Query returns a query builder for ResourceKind.
+func (c *ResourceKindClient) Query() *ResourceKindQuery {
+	return &ResourceKindQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeResourceKind},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ResourceKind entity by its id.
+func (c *ResourceKindClient) Get(ctx context.Context, id int) (*ResourceKind, error) {
+	return c.Query().Where(resourcekind.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ResourceKindClient) GetX(ctx context.Context, id int) *ResourceKind {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ResourceKindClient) Hooks() []Hook {
+	return c.hooks.ResourceKind
+}
+
+// Interceptors returns the client interceptors.
+func (c *ResourceKindClient) Interceptors() []Interceptor {
+	return c.inters.ResourceKind
+}
+
+func (c *ResourceKindClient) mutate(ctx context.Context, m *ResourceKindMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ResourceKindCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ResourceKindUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ResourceKindUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ResourceKindDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ResourceKind mutation op: %q", m.Op())
+	}
+}
+
 // ViewClient is a client for the View schema.
 type ViewClient struct {
 	config
@@ -438,9 +566,9 @@ func (c *ViewClient) mutate(ctx context.Context, m *ViewMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		AuditEvent, View []ent.Hook
+		AuditEvent, ResourceKind, View []ent.Hook
 	}
 	inters struct {
-		AuditEvent, View []ent.Interceptor
+		AuditEvent, ResourceKind, View []ent.Interceptor
 	}
 )

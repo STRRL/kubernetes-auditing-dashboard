@@ -38,6 +38,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Mutation() MutationResolver
 	Query() QueryResolver
 }
 
@@ -74,6 +75,20 @@ type ComplexityRoot struct {
 		Node   func(childComplexity int) int
 	}
 
+	AuditEventPagination struct {
+		HasNextPage     func(childComplexity int) int
+		HasPreviousPage func(childComplexity int) int
+		Page            func(childComplexity int) int
+		PageSize        func(childComplexity int) int
+		Rows            func(childComplexity int) int
+		Total           func(childComplexity int) int
+		TotalPages      func(childComplexity int) int
+	}
+
+	Mutation struct {
+		ImportResourceKindTsv func(childComplexity int, tsv string) int
+	}
+
 	PageInfo struct {
 		EndCursor       func(childComplexity int) int
 		HasNextPage     func(childComplexity int) int
@@ -82,9 +97,30 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		AuditEvents func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int) int
-		Node        func(childComplexity int, id int) int
-		Nodes       func(childComplexity int, ids []int) int
+		AuditEvents                         func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int) int
+		CompletedRequestResponseAuditEvents func(childComplexity int, page *int, pageSize *int) int
+		Node                                func(childComplexity int, id int) int
+		Nodes                               func(childComplexity int, ids []int) int
+		ResourceKinds                       func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int) int
+	}
+
+	ResourceKind struct {
+		ApiVersion func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Kind       func(childComplexity int) int
+		Name       func(childComplexity int) int
+		Namespaced func(childComplexity int) int
+	}
+
+	ResourceKindConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	ResourceKindEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
 	}
 
 	View struct {
@@ -92,10 +128,15 @@ type ComplexityRoot struct {
 	}
 }
 
+type MutationResolver interface {
+	ImportResourceKindTsv(ctx context.Context, tsv string) (int, error)
+}
 type QueryResolver interface {
 	Node(ctx context.Context, id int) (ent.Noder, error)
 	Nodes(ctx context.Context, ids []int) ([]ent.Noder, error)
 	AuditEvents(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int) (*ent.AuditEventConnection, error)
+	ResourceKinds(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int) (*ent.ResourceKindConnection, error)
+	CompletedRequestResponseAuditEvents(ctx context.Context, page *int, pageSize *int) (*AuditEventPagination, error)
 }
 
 type executableSchema struct {
@@ -253,6 +294,67 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.AuditEventEdge.Node(childComplexity), true
 
+	case "AuditEventPagination.hasNextPage":
+		if e.complexity.AuditEventPagination.HasNextPage == nil {
+			break
+		}
+
+		return e.complexity.AuditEventPagination.HasNextPage(childComplexity), true
+
+	case "AuditEventPagination.hasPreviousPage":
+		if e.complexity.AuditEventPagination.HasPreviousPage == nil {
+			break
+		}
+
+		return e.complexity.AuditEventPagination.HasPreviousPage(childComplexity), true
+
+	case "AuditEventPagination.page":
+		if e.complexity.AuditEventPagination.Page == nil {
+			break
+		}
+
+		return e.complexity.AuditEventPagination.Page(childComplexity), true
+
+	case "AuditEventPagination.pageSize":
+		if e.complexity.AuditEventPagination.PageSize == nil {
+			break
+		}
+
+		return e.complexity.AuditEventPagination.PageSize(childComplexity), true
+
+	case "AuditEventPagination.rows":
+		if e.complexity.AuditEventPagination.Rows == nil {
+			break
+		}
+
+		return e.complexity.AuditEventPagination.Rows(childComplexity), true
+
+	case "AuditEventPagination.total":
+		if e.complexity.AuditEventPagination.Total == nil {
+			break
+		}
+
+		return e.complexity.AuditEventPagination.Total(childComplexity), true
+
+	case "AuditEventPagination.totalPages":
+		if e.complexity.AuditEventPagination.TotalPages == nil {
+			break
+		}
+
+		return e.complexity.AuditEventPagination.TotalPages(childComplexity), true
+
+	case "Mutation.importResourceKindTSV":
+		if e.complexity.Mutation.ImportResourceKindTsv == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_importResourceKindTSV_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ImportResourceKindTsv(childComplexity, args["tsv"].(string)), true
+
 	case "PageInfo.endCursor":
 		if e.complexity.PageInfo.EndCursor == nil {
 			break
@@ -293,6 +395,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.AuditEvents(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int)), true
 
+	case "Query.completedRequestResponseAuditEvents":
+		if e.complexity.Query.CompletedRequestResponseAuditEvents == nil {
+			break
+		}
+
+		args, err := ec.field_Query_completedRequestResponseAuditEvents_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.CompletedRequestResponseAuditEvents(childComplexity, args["page"].(*int), args["pageSize"].(*int)), true
+
 	case "Query.node":
 		if e.complexity.Query.Node == nil {
 			break
@@ -316,6 +430,88 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Nodes(childComplexity, args["ids"].([]int)), true
+
+	case "Query.resourceKinds":
+		if e.complexity.Query.ResourceKinds == nil {
+			break
+		}
+
+		args, err := ec.field_Query_resourceKinds_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ResourceKinds(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int)), true
+
+	case "ResourceKind.apiversion":
+		if e.complexity.ResourceKind.ApiVersion == nil {
+			break
+		}
+
+		return e.complexity.ResourceKind.ApiVersion(childComplexity), true
+
+	case "ResourceKind.id":
+		if e.complexity.ResourceKind.ID == nil {
+			break
+		}
+
+		return e.complexity.ResourceKind.ID(childComplexity), true
+
+	case "ResourceKind.kind":
+		if e.complexity.ResourceKind.Kind == nil {
+			break
+		}
+
+		return e.complexity.ResourceKind.Kind(childComplexity), true
+
+	case "ResourceKind.name":
+		if e.complexity.ResourceKind.Name == nil {
+			break
+		}
+
+		return e.complexity.ResourceKind.Name(childComplexity), true
+
+	case "ResourceKind.namespaced":
+		if e.complexity.ResourceKind.Namespaced == nil {
+			break
+		}
+
+		return e.complexity.ResourceKind.Namespaced(childComplexity), true
+
+	case "ResourceKindConnection.edges":
+		if e.complexity.ResourceKindConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.ResourceKindConnection.Edges(childComplexity), true
+
+	case "ResourceKindConnection.pageInfo":
+		if e.complexity.ResourceKindConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.ResourceKindConnection.PageInfo(childComplexity), true
+
+	case "ResourceKindConnection.totalCount":
+		if e.complexity.ResourceKindConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.ResourceKindConnection.TotalCount(childComplexity), true
+
+	case "ResourceKindEdge.cursor":
+		if e.complexity.ResourceKindEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.ResourceKindEdge.Cursor(childComplexity), true
+
+	case "ResourceKindEdge.node":
+		if e.complexity.ResourceKindEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.ResourceKindEdge.Node(childComplexity), true
 
 	case "View.id":
 		if e.complexity.View.ID == nil {
@@ -350,6 +546,21 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 				Data: buf.Bytes(),
 			}
 		}
+	case ast.Mutation:
+		return func(ctx context.Context) *graphql.Response {
+			if !first {
+				return nil
+			}
+			first = false
+			ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
+			data := ec._Mutation(ctx, rc.Operation.SelectionSet)
+			var buf bytes.Buffer
+			data.MarshalGQL(&buf)
+
+			return &graphql.Response{
+				Data: buf.Bytes(),
+			}
+		}
 
 	default:
 		return graphql.OneShot(graphql.ErrorResponse(ctx, "unsupported GraphQL operation"))
@@ -375,7 +586,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(parsedSchema, parsedSchema.Types[name]), nil
 }
 
-//go:embed "ent.graphql"
+//go:embed "ent.graphql" "mutation.graphql" "auditevents.graphql" "resourcekind.graphql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -388,12 +599,30 @@ func sourceData(filename string) string {
 
 var sources = []*ast.Source{
 	{Name: "ent.graphql", Input: sourceData("ent.graphql"), BuiltIn: false},
+	{Name: "mutation.graphql", Input: sourceData("mutation.graphql"), BuiltIn: false},
+	{Name: "auditevents.graphql", Input: sourceData("auditevents.graphql"), BuiltIn: false},
+	{Name: "resourcekind.graphql", Input: sourceData("resourcekind.graphql"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_importResourceKindTSV_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["tsv"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tsv"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tsv"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -452,6 +681,30 @@ func (ec *executionContext) field_Query_auditEvents_args(ctx context.Context, ra
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_completedRequestResponseAuditEvents_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["pageSize"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pageSize"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["pageSize"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_node_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -479,6 +732,48 @@ func (ec *executionContext) field_Query_nodes_args(ctx context.Context, rawArgs 
 		}
 	}
 	args["ids"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_resourceKinds_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *ent.Cursor
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *ent.Cursor
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
 	return args, nil
 }
 
@@ -1442,6 +1737,401 @@ func (ec *executionContext) fieldContext_AuditEventEdge_cursor(ctx context.Conte
 	return fc, nil
 }
 
+func (ec *executionContext) _AuditEventPagination_total(ctx context.Context, field graphql.CollectedField, obj *AuditEventPagination) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AuditEventPagination_total(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Total, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AuditEventPagination_total(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AuditEventPagination",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AuditEventPagination_page(ctx context.Context, field graphql.CollectedField, obj *AuditEventPagination) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AuditEventPagination_page(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Page, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AuditEventPagination_page(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AuditEventPagination",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AuditEventPagination_pageSize(ctx context.Context, field graphql.CollectedField, obj *AuditEventPagination) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AuditEventPagination_pageSize(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageSize, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AuditEventPagination_pageSize(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AuditEventPagination",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AuditEventPagination_totalPages(ctx context.Context, field graphql.CollectedField, obj *AuditEventPagination) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AuditEventPagination_totalPages(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalPages, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AuditEventPagination_totalPages(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AuditEventPagination",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AuditEventPagination_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *AuditEventPagination) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AuditEventPagination_hasNextPage(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HasNextPage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AuditEventPagination_hasNextPage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AuditEventPagination",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AuditEventPagination_hasPreviousPage(ctx context.Context, field graphql.CollectedField, obj *AuditEventPagination) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AuditEventPagination_hasPreviousPage(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HasPreviousPage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AuditEventPagination_hasPreviousPage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AuditEventPagination",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AuditEventPagination_rows(ctx context.Context, field graphql.CollectedField, obj *AuditEventPagination) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AuditEventPagination_rows(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Rows, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.AuditEvent)
+	fc.Result = res
+	return ec.marshalNAuditEvent2ᚕᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐAuditEvent(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AuditEventPagination_rows(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AuditEventPagination",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_AuditEvent_id(ctx, field)
+			case "raw":
+				return ec.fieldContext_AuditEvent_raw(ctx, field)
+			case "level":
+				return ec.fieldContext_AuditEvent_level(ctx, field)
+			case "auditid":
+				return ec.fieldContext_AuditEvent_auditid(ctx, field)
+			case "verb":
+				return ec.fieldContext_AuditEvent_verb(ctx, field)
+			case "useragent":
+				return ec.fieldContext_AuditEvent_useragent(ctx, field)
+			case "requesttimestamp":
+				return ec.fieldContext_AuditEvent_requesttimestamp(ctx, field)
+			case "stagetimestamp":
+				return ec.fieldContext_AuditEvent_stagetimestamp(ctx, field)
+			case "namespace":
+				return ec.fieldContext_AuditEvent_namespace(ctx, field)
+			case "name":
+				return ec.fieldContext_AuditEvent_name(ctx, field)
+			case "apiversion":
+				return ec.fieldContext_AuditEvent_apiversion(ctx, field)
+			case "apigroup":
+				return ec.fieldContext_AuditEvent_apigroup(ctx, field)
+			case "resource":
+				return ec.fieldContext_AuditEvent_resource(ctx, field)
+			case "subresource":
+				return ec.fieldContext_AuditEvent_subresource(ctx, field)
+			case "stage":
+				return ec.fieldContext_AuditEvent_stage(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AuditEvent", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_importResourceKindTSV(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_importResourceKindTSV(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ImportResourceKindTsv(rctx, fc.Args["tsv"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_importResourceKindTSV(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_importResourceKindTSV_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *ent.PageInfo) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PageInfo_hasNextPage(ctx, field)
 	if err != nil {
@@ -1782,6 +2472,140 @@ func (ec *executionContext) fieldContext_Query_auditEvents(ctx context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_resourceKinds(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_resourceKinds(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ResourceKinds(rctx, fc.Args["after"].(*ent.Cursor), fc.Args["first"].(*int), fc.Args["before"].(*ent.Cursor), fc.Args["last"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.ResourceKindConnection)
+	fc.Result = res
+	return ec.marshalNResourceKindConnection2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐResourceKindConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_resourceKinds(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "edges":
+				return ec.fieldContext_ResourceKindConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_ResourceKindConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_ResourceKindConnection_totalCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ResourceKindConnection", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_resourceKinds_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_completedRequestResponseAuditEvents(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_completedRequestResponseAuditEvents(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().CompletedRequestResponseAuditEvents(rctx, fc.Args["page"].(*int), fc.Args["pageSize"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*AuditEventPagination)
+	fc.Result = res
+	return ec.marshalNAuditEventPagination2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐAuditEventPagination(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_completedRequestResponseAuditEvents(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "total":
+				return ec.fieldContext_AuditEventPagination_total(ctx, field)
+			case "page":
+				return ec.fieldContext_AuditEventPagination_page(ctx, field)
+			case "pageSize":
+				return ec.fieldContext_AuditEventPagination_pageSize(ctx, field)
+			case "totalPages":
+				return ec.fieldContext_AuditEventPagination_totalPages(ctx, field)
+			case "hasNextPage":
+				return ec.fieldContext_AuditEventPagination_hasNextPage(ctx, field)
+			case "hasPreviousPage":
+				return ec.fieldContext_AuditEventPagination_hasPreviousPage(ctx, field)
+			case "rows":
+				return ec.fieldContext_AuditEventPagination_rows(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AuditEventPagination", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_completedRequestResponseAuditEvents_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query___type(ctx, field)
 	if err != nil {
@@ -1906,6 +2730,468 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ResourceKind_id(ctx context.Context, field graphql.CollectedField, obj *ent.ResourceKind) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ResourceKind_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNID2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ResourceKind_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ResourceKind",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ResourceKind_name(ctx context.Context, field graphql.CollectedField, obj *ent.ResourceKind) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ResourceKind_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ResourceKind_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ResourceKind",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ResourceKind_apiversion(ctx context.Context, field graphql.CollectedField, obj *ent.ResourceKind) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ResourceKind_apiversion(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ApiVersion, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ResourceKind_apiversion(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ResourceKind",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ResourceKind_namespaced(ctx context.Context, field graphql.CollectedField, obj *ent.ResourceKind) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ResourceKind_namespaced(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Namespaced, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ResourceKind_namespaced(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ResourceKind",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ResourceKind_kind(ctx context.Context, field graphql.CollectedField, obj *ent.ResourceKind) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ResourceKind_kind(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Kind, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ResourceKind_kind(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ResourceKind",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ResourceKindConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.ResourceKindConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ResourceKindConnection_edges(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.ResourceKindEdge)
+	fc.Result = res
+	return ec.marshalOResourceKindEdge2ᚕᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐResourceKindEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ResourceKindConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ResourceKindConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "node":
+				return ec.fieldContext_ResourceKindEdge_node(ctx, field)
+			case "cursor":
+				return ec.fieldContext_ResourceKindEdge_cursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ResourceKindEdge", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ResourceKindConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.ResourceKindConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ResourceKindConnection_pageInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ent.PageInfo)
+	fc.Result = res
+	return ec.marshalNPageInfo2githubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ResourceKindConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ResourceKindConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "hasNextPage":
+				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+			case "hasPreviousPage":
+				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
+			case "startCursor":
+				return ec.fieldContext_PageInfo_startCursor(ctx, field)
+			case "endCursor":
+				return ec.fieldContext_PageInfo_endCursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ResourceKindConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.ResourceKindConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ResourceKindConnection_totalCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ResourceKindConnection_totalCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ResourceKindConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ResourceKindEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.ResourceKindEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ResourceKindEdge_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.ResourceKind)
+	fc.Result = res
+	return ec.marshalOResourceKind2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐResourceKind(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ResourceKindEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ResourceKindEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_ResourceKind_id(ctx, field)
+			case "name":
+				return ec.fieldContext_ResourceKind_name(ctx, field)
+			case "apiversion":
+				return ec.fieldContext_ResourceKind_apiversion(ctx, field)
+			case "namespaced":
+				return ec.fieldContext_ResourceKind_namespaced(ctx, field)
+			case "kind":
+				return ec.fieldContext_ResourceKind_kind(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ResourceKind", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ResourceKindEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.ResourceKindEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ResourceKindEdge_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ent.Cursor)
+	fc.Result = res
+	return ec.marshalNCursor2githubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐCursor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ResourceKindEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ResourceKindEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Cursor does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3741,6 +5027,11 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._AuditEvent(ctx, sel, obj)
+	case *ent.ResourceKind:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._ResourceKind(ctx, sel, obj)
 	case *ent.View:
 		if obj == nil {
 			return graphql.Null
@@ -3952,6 +5243,115 @@ func (ec *executionContext) _AuditEventEdge(ctx context.Context, sel ast.Selecti
 	return out
 }
 
+var auditEventPaginationImplementors = []string{"AuditEventPagination"}
+
+func (ec *executionContext) _AuditEventPagination(ctx context.Context, sel ast.SelectionSet, obj *AuditEventPagination) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, auditEventPaginationImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AuditEventPagination")
+		case "total":
+
+			out.Values[i] = ec._AuditEventPagination_total(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "page":
+
+			out.Values[i] = ec._AuditEventPagination_page(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "pageSize":
+
+			out.Values[i] = ec._AuditEventPagination_pageSize(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "totalPages":
+
+			out.Values[i] = ec._AuditEventPagination_totalPages(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "hasNextPage":
+
+			out.Values[i] = ec._AuditEventPagination_hasNextPage(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "hasPreviousPage":
+
+			out.Values[i] = ec._AuditEventPagination_hasPreviousPage(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "rows":
+
+			out.Values[i] = ec._AuditEventPagination_rows(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var mutationImplementors = []string{"Mutation"}
+
+func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mutationImplementors)
+	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
+		Object: "Mutation",
+	})
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		innerCtx := graphql.WithRootFieldContext(ctx, &graphql.RootFieldContext{
+			Object: field.Name,
+			Field:  field,
+		})
+
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Mutation")
+		case "importResourceKindTSV":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_importResourceKindTSV(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var pageInfoImplementors = []string{"PageInfo"}
 
 func (ec *executionContext) _PageInfo(ctx context.Context, sel ast.SelectionSet, obj *ent.PageInfo) graphql.Marshaler {
@@ -4080,6 +5480,52 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "resourceKinds":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_resourceKinds(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "completedRequestResponseAuditEvents":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_completedRequestResponseAuditEvents(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "__type":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -4092,6 +5538,133 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				return ec._Query___schema(ctx, field)
 			})
 
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var resourceKindImplementors = []string{"ResourceKind", "Node"}
+
+func (ec *executionContext) _ResourceKind(ctx context.Context, sel ast.SelectionSet, obj *ent.ResourceKind) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, resourceKindImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ResourceKind")
+		case "id":
+
+			out.Values[i] = ec._ResourceKind_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "name":
+
+			out.Values[i] = ec._ResourceKind_name(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "apiversion":
+
+			out.Values[i] = ec._ResourceKind_apiversion(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "namespaced":
+
+			out.Values[i] = ec._ResourceKind_namespaced(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "kind":
+
+			out.Values[i] = ec._ResourceKind_kind(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var resourceKindConnectionImplementors = []string{"ResourceKindConnection"}
+
+func (ec *executionContext) _ResourceKindConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.ResourceKindConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, resourceKindConnectionImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ResourceKindConnection")
+		case "edges":
+
+			out.Values[i] = ec._ResourceKindConnection_edges(ctx, field, obj)
+
+		case "pageInfo":
+
+			out.Values[i] = ec._ResourceKindConnection_pageInfo(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "totalCount":
+
+			out.Values[i] = ec._ResourceKindConnection_totalCount(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var resourceKindEdgeImplementors = []string{"ResourceKindEdge"}
+
+func (ec *executionContext) _ResourceKindEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.ResourceKindEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, resourceKindEdgeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ResourceKindEdge")
+		case "node":
+
+			out.Values[i] = ec._ResourceKindEdge_node(ctx, field, obj)
+
+		case "cursor":
+
+			out.Values[i] = ec._ResourceKindEdge_cursor(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4449,6 +6022,44 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) marshalNAuditEvent2ᚕᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐAuditEvent(ctx context.Context, sel ast.SelectionSet, v []*ent.AuditEvent) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOAuditEvent2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐAuditEvent(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
 func (ec *executionContext) marshalNAuditEventConnection2githubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐAuditEventConnection(ctx context.Context, sel ast.SelectionSet, v ent.AuditEventConnection) graphql.Marshaler {
 	return ec._AuditEventConnection(ctx, sel, &v)
 }
@@ -4461,6 +6072,20 @@ func (ec *executionContext) marshalNAuditEventConnection2ᚖgithubᚗcomᚋstrrl
 		return graphql.Null
 	}
 	return ec._AuditEventConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNAuditEventPagination2githubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐAuditEventPagination(ctx context.Context, sel ast.SelectionSet, v AuditEventPagination) graphql.Marshaler {
+	return ec._AuditEventPagination(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAuditEventPagination2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐAuditEventPagination(ctx context.Context, sel ast.SelectionSet, v *AuditEventPagination) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AuditEventPagination(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
@@ -4590,6 +6215,20 @@ func (ec *executionContext) marshalNNode2ᚕgithubᚗcomᚋstrrlᚋkubernetesᚑ
 
 func (ec *executionContext) marshalNPageInfo2githubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v ent.PageInfo) graphql.Marshaler {
 	return ec._PageInfo(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNResourceKindConnection2githubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐResourceKindConnection(ctx context.Context, sel ast.SelectionSet, v ent.ResourceKindConnection) graphql.Marshaler {
+	return ec._ResourceKindConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNResourceKindConnection2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐResourceKindConnection(ctx context.Context, sel ast.SelectionSet, v *ent.ResourceKindConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ResourceKindConnection(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -4993,6 +6632,61 @@ func (ec *executionContext) marshalONode2githubᚗcomᚋstrrlᚋkubernetesᚑaud
 		return graphql.Null
 	}
 	return ec._Node(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOResourceKind2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐResourceKind(ctx context.Context, sel ast.SelectionSet, v *ent.ResourceKind) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ResourceKind(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOResourceKindEdge2ᚕᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐResourceKindEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.ResourceKindEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOResourceKindEdge2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐResourceKindEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOResourceKindEdge2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐResourceKindEdge(ctx context.Context, sel ast.SelectionSet, v *ent.ResourceKindEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ResourceKindEdge(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
