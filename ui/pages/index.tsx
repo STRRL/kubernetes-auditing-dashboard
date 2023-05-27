@@ -64,7 +64,9 @@ export default function Home() {
 
   const eventsCountQuery = useQuery({
     queryKey: ['eventsCount'],
-    queryFn: async () => request('/api/query', eventsCountDocumentations)
+    queryFn: async () => request('/api/query', eventsCountDocumentations),
+    // refresh every 15 seconds
+    refetchInterval: 15000,
   })
 
   const eventsListQuery = useQuery({
