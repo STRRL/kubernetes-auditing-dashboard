@@ -5,6 +5,7 @@ const config: CodegenConfig = {
         "../gql/*.graphql"
     ],
     documents: [
+        'services/**/*.ts',
         'components/**/*.tsx',
         'pages/**/*.tsx',
     ],
