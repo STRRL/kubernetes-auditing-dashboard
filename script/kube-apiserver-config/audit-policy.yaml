@@ -86,6 +86,3 @@ rules:
     resources:
       - group: "storage.k8s.io"
         resources: ["*"]
-  - level: Metadata
-    nonResourceURLs:
-    - "/*"
