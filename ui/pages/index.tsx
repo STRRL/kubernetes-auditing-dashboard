@@ -132,8 +132,8 @@ export default function Home() {
           <label htmlFor="drawer-indicator" className="drawer-overlay"></label>
           <ul className="menu p-4 w-80 bg-base-100 text-base-content">
             <li><a href='/'>Home</a></li>
-            <li><a href='/events'>Auditing Events</a></li>
-            <li><a href='/lifecycle'>Resource Lifecycle</a></li>
+            <li><a href='/events'>Recent Changes</a></li>
+            <li><a href='/lifecycle'>Resource Lifecycle(TBD)</a></li>
           </ul>
         </div>
       </div>

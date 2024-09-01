@@ -16,6 +16,7 @@ func (r *queryResolver) CompletedRequestResponseAuditEvents(ctx context.Context,
 	count, err := r.Resolver.entClient.AuditEvent.Query().
 		Where(auditevent.LevelEQ("RequestResponse")).
 		Where(auditevent.StageEQ("ResponseComplete")).
+		Where(auditevent.VerbNotIn("get", "list", "watch")).
 		Count(ctx)
 	if err != nil {
 		return nil, err
@@ -24,6 +25,7 @@ func (r *queryResolver) CompletedRequestResponseAuditEvents(ctx context.Context,
 	rows, err := r.Resolver.entClient.AuditEvent.Query().
 		Where(auditevent.LevelEQ("RequestResponse")).
 		Where(auditevent.StageEQ("ResponseComplete")).
+		Where(auditevent.VerbNotIn("get", "list", "watch")).
 		Order(ent.Desc(auditevent.FieldID)).
 		Offset(offset).
 		Limit(limit).
