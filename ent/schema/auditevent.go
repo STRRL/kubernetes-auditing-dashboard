@@ -21,8 +21,12 @@ func (AuditEvent) Fields() []ent.Field {
 		field.String("auditID").NotEmpty().Immutable(),
 		field.String("verb").NotEmpty().Immutable(),
 		field.String("userAgent").NotEmpty().Immutable(),
-		field.Time("requestTimestamp").Immutable(),
-		field.Time("stageTimestamp").Immutable(),
+		field.Time("requestTimestamp").Immutable().Annotations(
+			entgql.OrderField("REQUEST_TIMESTAMP"),
+		),
+		field.Time("stageTimestamp").Immutable().Annotations(
+			entgql.OrderField("STAGE_TIMESTAMP"),
+		),
 		field.String("namespace").Immutable().Default(""),
 		field.String("name").Immutable().Default(""),
 		field.String("apiVersion").Immutable().Default(""),

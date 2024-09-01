@@ -100,7 +100,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		AuditEvents                         func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.AuditEventWhereInput) int
+		AuditEvents                         func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.AuditEventOrder, where *ent.AuditEventWhereInput) int
 		CompletedRequestResponseAuditEvents func(childComplexity int, page *int, pageSize *int) int
 		Node                                func(childComplexity int, id int) int
 		Nodes                               func(childComplexity int, ids []int) int
@@ -137,7 +137,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Node(ctx context.Context, id int) (ent.Noder, error)
 	Nodes(ctx context.Context, ids []int) ([]ent.Noder, error)
-	AuditEvents(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.AuditEventWhereInput) (*ent.AuditEventConnection, error)
+	AuditEvents(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.AuditEventOrder, where *ent.AuditEventWhereInput) (*ent.AuditEventConnection, error)
 	ResourceKinds(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.ResourceKindWhereInput) (*ent.ResourceKindConnection, error)
 	CompletedRequestResponseAuditEvents(ctx context.Context, page *int, pageSize *int) (*AuditEventPagination, error)
 }
@@ -400,7 +400,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.AuditEvents(childComplexity, args["after"].(*entgql.Cursor[int]), args["first"].(*int), args["before"].(*entgql.Cursor[int]), args["last"].(*int), args["where"].(*ent.AuditEventWhereInput)), true
+		return e.complexity.Query.AuditEvents(childComplexity, args["after"].(*entgql.Cursor[int]), args["first"].(*int), args["before"].(*entgql.Cursor[int]), args["last"].(*int), args["orderBy"].(*ent.AuditEventOrder), args["where"].(*ent.AuditEventWhereInput)), true
 
 	case "Query.completedRequestResponseAuditEvents":
 		if e.complexity.Query.CompletedRequestResponseAuditEvents == nil {
@@ -535,6 +535,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputAuditEventOrder,
 		ec.unmarshalInputAuditEventWhereInput,
 		ec.unmarshalInputResourceKindWhereInput,
 		ec.unmarshalInputViewWhereInput,
@@ -727,15 +728,24 @@ func (ec *executionContext) field_Query_auditEvents_args(ctx context.Context, ra
 		}
 	}
 	args["last"] = arg3
-	var arg4 *ent.AuditEventWhereInput
-	if tmp, ok := rawArgs["where"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
-		arg4, err = ec.unmarshalOAuditEventWhereInput2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐAuditEventWhereInput(ctx, tmp)
+	var arg4 *ent.AuditEventOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalOAuditEventOrder2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐAuditEventOrder(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["where"] = arg4
+	args["orderBy"] = arg4
+	var arg5 *ent.AuditEventWhereInput
+	if tmp, ok := rawArgs["where"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+		arg5, err = ec.unmarshalOAuditEventWhereInput2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐAuditEventWhereInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["where"] = arg5
 	return args, nil
 }
 
@@ -2490,7 +2500,7 @@ func (ec *executionContext) _Query_auditEvents(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().AuditEvents(rctx, fc.Args["after"].(*entgql.Cursor[int]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[int]), fc.Args["last"].(*int), fc.Args["where"].(*ent.AuditEventWhereInput))
+		return ec.resolvers.Query().AuditEvents(rctx, fc.Args["after"].(*entgql.Cursor[int]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[int]), fc.Args["last"].(*int), fc.Args["orderBy"].(*ent.AuditEventOrder), fc.Args["where"].(*ent.AuditEventWhereInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5080,6 +5090,44 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(_ context.Context
 // endregion **************************** field.gotpl *****************************
 
 // region    **************************** input.gotpl *****************************
+
+func (ec *executionContext) unmarshalInputAuditEventOrder(ctx context.Context, obj interface{}) (ent.AuditEventOrder, error) {
+	var it ent.AuditEventOrder
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "ASC"
+	}
+
+	fieldsInOrder := [...]string{"direction", "field"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "direction":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			data, err := ec.unmarshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Direction = data
+		case "field":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNAuditEventOrderField2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐAuditEventOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
+		}
+	}
+
+	return it, nil
+}
 
 func (ec *executionContext) unmarshalInputAuditEventWhereInput(ctx context.Context, obj interface{}) (ent.AuditEventWhereInput, error) {
 	var it ent.AuditEventWhereInput
@@ -7977,6 +8025,22 @@ func (ec *executionContext) marshalNAuditEventConnection2ᚖgithubᚗcomᚋstrrl
 	return ec._AuditEventConnection(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNAuditEventOrderField2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐAuditEventOrderField(ctx context.Context, v interface{}) (*ent.AuditEventOrderField, error) {
+	var res = new(ent.AuditEventOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNAuditEventOrderField2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐAuditEventOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.AuditEventOrderField) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return v
+}
+
 func (ec *executionContext) marshalNAuditEventPagination2githubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐAuditEventPagination(ctx context.Context, sel ast.SelectionSet, v AuditEventPagination) graphql.Marshaler {
 	return ec._AuditEventPagination(ctx, sel, &v)
 }
@@ -8119,6 +8183,16 @@ func (ec *executionContext) marshalNNode2ᚕgithubᚗcomᚋstrrlᚋkubernetesᚑ
 	wg.Wait()
 
 	return ret
+}
+
+func (ec *executionContext) unmarshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx context.Context, v interface{}) (entgql.OrderDirection, error) {
+	var res entgql.OrderDirection
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx context.Context, sel ast.SelectionSet, v entgql.OrderDirection) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v entgql.PageInfo[int]) graphql.Marshaler {
@@ -8485,6 +8559,14 @@ func (ec *executionContext) marshalOAuditEventEdge2ᚖgithubᚗcomᚋstrrlᚋkub
 		return graphql.Null
 	}
 	return ec._AuditEventEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOAuditEventOrder2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐAuditEventOrder(ctx context.Context, v interface{}) (*ent.AuditEventOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputAuditEventOrder(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOAuditEventWhereInput2ᚕᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐAuditEventWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.AuditEventWhereInput, error) {

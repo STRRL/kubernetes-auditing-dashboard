@@ -5,6 +5,9 @@ package ent
 import (
 	"context"
 	"errors"
+	"fmt"
+	"io"
+	"strconv"
 
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
@@ -303,6 +306,71 @@ func (ae *AuditEventQuery) Paginate(
 	}
 	conn.build(nodes, pager, after, first, before, last)
 	return conn, nil
+}
+
+var (
+	// AuditEventOrderFieldRequestTimestamp orders AuditEvent by requestTimestamp.
+	AuditEventOrderFieldRequestTimestamp = &AuditEventOrderField{
+		Value: func(ae *AuditEvent) (ent.Value, error) {
+			return ae.RequestTimestamp, nil
+		},
+		column: auditevent.FieldRequestTimestamp,
+		toTerm: auditevent.ByRequestTimestamp,
+		toCursor: func(ae *AuditEvent) Cursor {
+			return Cursor{
+				ID:    ae.ID,
+				Value: ae.RequestTimestamp,
+			}
+		},
+	}
+	// AuditEventOrderFieldStageTimestamp orders AuditEvent by stageTimestamp.
+	AuditEventOrderFieldStageTimestamp = &AuditEventOrderField{
+		Value: func(ae *AuditEvent) (ent.Value, error) {
+			return ae.StageTimestamp, nil
+		},
+		column: auditevent.FieldStageTimestamp,
+		toTerm: auditevent.ByStageTimestamp,
+		toCursor: func(ae *AuditEvent) Cursor {
+			return Cursor{
+				ID:    ae.ID,
+				Value: ae.StageTimestamp,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f AuditEventOrderField) String() string {
+	var str string
+	switch f.column {
+	case AuditEventOrderFieldRequestTimestamp.column:
+		str = "REQUEST_TIMESTAMP"
+	case AuditEventOrderFieldStageTimestamp.column:
+		str = "STAGE_TIMESTAMP"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f AuditEventOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *AuditEventOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("AuditEventOrderField %T must be a string", v)
+	}
+	switch str {
+	case "REQUEST_TIMESTAMP":
+		*f = *AuditEventOrderFieldRequestTimestamp
+	case "STAGE_TIMESTAMP":
+		*f = *AuditEventOrderFieldStageTimestamp
+	default:
+		return fmt.Errorf("%s is not a valid AuditEventOrderField", str)
+	}
+	return nil
 }
 
 // AuditEventOrderField defines the ordering field of AuditEvent.

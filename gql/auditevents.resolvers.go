@@ -24,7 +24,7 @@ func (r *queryResolver) CompletedRequestResponseAuditEvents(ctx context.Context,
 	rows, err := r.Resolver.entClient.AuditEvent.Query().
 		Where(auditevent.LevelEQ("RequestResponse")).
 		Where(auditevent.StageEQ("ResponseComplete")).
-		Order(ent.Asc(auditevent.FieldID)).
+		Order(ent.Desc(auditevent.FieldID)).
 		Offset(offset).
 		Limit(limit).
 		All(ctx)

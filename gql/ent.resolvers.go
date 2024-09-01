@@ -22,7 +22,7 @@ func (r *queryResolver) Nodes(ctx context.Context, ids []int) ([]ent.Noder, erro
 }
 
 // AuditEvents is the resolver for the auditEvents field.
-func (r *queryResolver) AuditEvents(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.AuditEventWhereInput) (*ent.AuditEventConnection, error) {
+func (r *queryResolver) AuditEvents(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.AuditEventOrder, where *ent.AuditEventWhereInput) (*ent.AuditEventConnection, error) {
 	return r.entClient.AuditEvent.Query().Paginate(ctx, after, first, before, last,
 		ent.WithAuditEventFilter(where.Filter),
 	)

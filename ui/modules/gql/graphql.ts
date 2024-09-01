@@ -59,6 +59,20 @@ export type AuditEventEdge = {
   node?: Maybe<AuditEvent>;
 };
 
+/** Ordering options for AuditEvent connections */
+export type AuditEventOrder = {
+  /** The ordering direction. */
+  direction?: OrderDirection;
+  /** The field by which to order AuditEvents. */
+  field: AuditEventOrderField;
+};
+
+/** Properties by which AuditEvent connections can be ordered. */
+export enum AuditEventOrderField {
+  RequestTimestamp = 'REQUEST_TIMESTAMP',
+  StageTimestamp = 'STAGE_TIMESTAMP'
+}
+
 export type AuditEventPagination = {
   __typename?: 'AuditEventPagination';
   hasNextPage: Scalars['Boolean'];
@@ -335,6 +349,7 @@ export type QueryAuditEventsArgs = {
   before?: InputMaybe<Scalars['Cursor']>;
   first?: InputMaybe<Scalars['Int']>;
   last?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<AuditEventOrder>;
   where?: InputMaybe<AuditEventWhereInput>;
 };
 
