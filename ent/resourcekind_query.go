@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -18,7 +19,7 @@ import (
 type ResourceKindQuery struct {
 	config
 	ctx        *QueryContext
-	order      []OrderFunc
+	order      []resourcekind.OrderOption
 	inters     []Interceptor
 	predicates []predicate.ResourceKind
 	modifiers  []func(*sql.Selector)
@@ -54,7 +55,7 @@ func (rkq *ResourceKindQuery) Unique(unique bool) *ResourceKindQuery {
 }
 
 // Order specifies how the records should be ordered.
-func (rkq *ResourceKindQuery) Order(o ...OrderFunc) *ResourceKindQuery {
+func (rkq *ResourceKindQuery) Order(o ...resourcekind.OrderOption) *ResourceKindQuery {
 	rkq.order = append(rkq.order, o...)
 	return rkq
 }
@@ -62,7 +63,7 @@ func (rkq *ResourceKindQuery) Order(o ...OrderFunc) *ResourceKindQuery {
 // First returns the first ResourceKind entity from the query.
 // Returns a *NotFoundError when no ResourceKind was found.
 func (rkq *ResourceKindQuery) First(ctx context.Context) (*ResourceKind, error) {
-	nodes, err := rkq.Limit(1).All(setContextOp(ctx, rkq.ctx, "First"))
+	nodes, err := rkq.Limit(1).All(setContextOp(ctx, rkq.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +86,7 @@ func (rkq *ResourceKindQuery) FirstX(ctx context.Context) *ResourceKind {
 // Returns a *NotFoundError when no ResourceKind ID was found.
 func (rkq *ResourceKindQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = rkq.Limit(1).IDs(setContextOp(ctx, rkq.ctx, "FirstID")); err != nil {
+	if ids, err = rkq.Limit(1).IDs(setContextOp(ctx, rkq.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -108,7 +109,7 @@ func (rkq *ResourceKindQuery) FirstIDX(ctx context.Context) int {
 // Returns a *NotSingularError when more than one ResourceKind entity is found.
 // Returns a *NotFoundError when no ResourceKind entities are found.
 func (rkq *ResourceKindQuery) Only(ctx context.Context) (*ResourceKind, error) {
-	nodes, err := rkq.Limit(2).All(setContextOp(ctx, rkq.ctx, "Only"))
+	nodes, err := rkq.Limit(2).All(setContextOp(ctx, rkq.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +137,7 @@ func (rkq *ResourceKindQuery) OnlyX(ctx context.Context) *ResourceKind {
 // Returns a *NotFoundError when no entities are found.
 func (rkq *ResourceKindQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = rkq.Limit(2).IDs(setContextOp(ctx, rkq.ctx, "OnlyID")); err != nil {
+	if ids, err = rkq.Limit(2).IDs(setContextOp(ctx, rkq.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -161,7 +162,7 @@ func (rkq *ResourceKindQuery) OnlyIDX(ctx context.Context) int {
 
 // All executes the query and returns a list of ResourceKinds.
 func (rkq *ResourceKindQuery) All(ctx context.Context) ([]*ResourceKind, error) {
-	ctx = setContextOp(ctx, rkq.ctx, "All")
+	ctx = setContextOp(ctx, rkq.ctx, ent.OpQueryAll)
 	if err := rkq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
@@ -183,7 +184,7 @@ func (rkq *ResourceKindQuery) IDs(ctx context.Context) (ids []int, err error) {
 	if rkq.ctx.Unique == nil && rkq.path != nil {
 		rkq.Unique(true)
 	}
-	ctx = setContextOp(ctx, rkq.ctx, "IDs")
+	ctx = setContextOp(ctx, rkq.ctx, ent.OpQueryIDs)
 	if err = rkq.Select(resourcekind.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -201,7 +202,7 @@ func (rkq *ResourceKindQuery) IDsX(ctx context.Context) []int {
 
 // Count returns the count of the given query.
 func (rkq *ResourceKindQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, rkq.ctx, "Count")
+	ctx = setContextOp(ctx, rkq.ctx, ent.OpQueryCount)
 	if err := rkq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
@@ -219,7 +220,7 @@ func (rkq *ResourceKindQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (rkq *ResourceKindQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, rkq.ctx, "Exist")
+	ctx = setContextOp(ctx, rkq.ctx, ent.OpQueryExist)
 	switch _, err := rkq.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
@@ -248,7 +249,7 @@ func (rkq *ResourceKindQuery) Clone() *ResourceKindQuery {
 	return &ResourceKindQuery{
 		config:     rkq.config,
 		ctx:        rkq.ctx.Clone(),
-		order:      append([]OrderFunc{}, rkq.order...),
+		order:      append([]resourcekind.OrderOption{}, rkq.order...),
 		inters:     append([]Interceptor{}, rkq.inters...),
 		predicates: append([]predicate.ResourceKind{}, rkq.predicates...),
 		// clone intermediate query.
@@ -462,7 +463,7 @@ func (rkgb *ResourceKindGroupBy) Aggregate(fns ...AggregateFunc) *ResourceKindGr
 
 // Scan applies the selector query and scans the result into the given value.
 func (rkgb *ResourceKindGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, rkgb.build.ctx, "GroupBy")
+	ctx = setContextOp(ctx, rkgb.build.ctx, ent.OpQueryGroupBy)
 	if err := rkgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -510,7 +511,7 @@ func (rks *ResourceKindSelect) Aggregate(fns ...AggregateFunc) *ResourceKindSele
 
 // Scan applies the selector query and scans the result into the given value.
 func (rks *ResourceKindSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, rks.ctx, "Select")
+	ctx = setContextOp(ctx, rks.ctx, ent.OpQuerySelect)
 	if err := rks.prepareQuery(ctx); err != nil {
 		return err
 	}

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -18,7 +19,7 @@ import (
 type ViewQuery struct {
 	config
 	ctx        *QueryContext
-	order      []OrderFunc
+	order      []view.OrderOption
 	inters     []Interceptor
 	predicates []predicate.View
 	modifiers  []func(*sql.Selector)
@@ -54,7 +55,7 @@ func (vq *ViewQuery) Unique(unique bool) *ViewQuery {
 }
 
 // Order specifies how the records should be ordered.
-func (vq *ViewQuery) Order(o ...OrderFunc) *ViewQuery {
+func (vq *ViewQuery) Order(o ...view.OrderOption) *ViewQuery {
 	vq.order = append(vq.order, o...)
 	return vq
 }
@@ -62,7 +63,7 @@ func (vq *ViewQuery) Order(o ...OrderFunc) *ViewQuery {
 // First returns the first View entity from the query.
 // Returns a *NotFoundError when no View was found.
 func (vq *ViewQuery) First(ctx context.Context) (*View, error) {
-	nodes, err := vq.Limit(1).All(setContextOp(ctx, vq.ctx, "First"))
+	nodes, err := vq.Limit(1).All(setContextOp(ctx, vq.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +86,7 @@ func (vq *ViewQuery) FirstX(ctx context.Context) *View {
 // Returns a *NotFoundError when no View ID was found.
 func (vq *ViewQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = vq.Limit(1).IDs(setContextOp(ctx, vq.ctx, "FirstID")); err != nil {
+	if ids, err = vq.Limit(1).IDs(setContextOp(ctx, vq.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -108,7 +109,7 @@ func (vq *ViewQuery) FirstIDX(ctx context.Context) int {
 // Returns a *NotSingularError when more than one View entity is found.
 // Returns a *NotFoundError when no View entities are found.
 func (vq *ViewQuery) Only(ctx context.Context) (*View, error) {
-	nodes, err := vq.Limit(2).All(setContextOp(ctx, vq.ctx, "Only"))
+	nodes, err := vq.Limit(2).All(setContextOp(ctx, vq.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +137,7 @@ func (vq *ViewQuery) OnlyX(ctx context.Context) *View {
 // Returns a *NotFoundError when no entities are found.
 func (vq *ViewQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = vq.Limit(2).IDs(setContextOp(ctx, vq.ctx, "OnlyID")); err != nil {
+	if ids, err = vq.Limit(2).IDs(setContextOp(ctx, vq.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -161,7 +162,7 @@ func (vq *ViewQuery) OnlyIDX(ctx context.Context) int {
 
 // All executes the query and returns a list of Views.
 func (vq *ViewQuery) All(ctx context.Context) ([]*View, error) {
-	ctx = setContextOp(ctx, vq.ctx, "All")
+	ctx = setContextOp(ctx, vq.ctx, ent.OpQueryAll)
 	if err := vq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
@@ -183,7 +184,7 @@ func (vq *ViewQuery) IDs(ctx context.Context) (ids []int, err error) {
 	if vq.ctx.Unique == nil && vq.path != nil {
 		vq.Unique(true)
 	}
-	ctx = setContextOp(ctx, vq.ctx, "IDs")
+	ctx = setContextOp(ctx, vq.ctx, ent.OpQueryIDs)
 	if err = vq.Select(view.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -201,7 +202,7 @@ func (vq *ViewQuery) IDsX(ctx context.Context) []int {
 
 // Count returns the count of the given query.
 func (vq *ViewQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, vq.ctx, "Count")
+	ctx = setContextOp(ctx, vq.ctx, ent.OpQueryCount)
 	if err := vq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
@@ -219,7 +220,7 @@ func (vq *ViewQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (vq *ViewQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, vq.ctx, "Exist")
+	ctx = setContextOp(ctx, vq.ctx, ent.OpQueryExist)
 	switch _, err := vq.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
@@ -248,7 +249,7 @@ func (vq *ViewQuery) Clone() *ViewQuery {
 	return &ViewQuery{
 		config:     vq.config,
 		ctx:        vq.ctx.Clone(),
-		order:      append([]OrderFunc{}, vq.order...),
+		order:      append([]view.OrderOption{}, vq.order...),
 		inters:     append([]Interceptor{}, vq.inters...),
 		predicates: append([]predicate.View{}, vq.predicates...),
 		// clone intermediate query.
@@ -440,7 +441,7 @@ func (vgb *ViewGroupBy) Aggregate(fns ...AggregateFunc) *ViewGroupBy {
 
 // Scan applies the selector query and scans the result into the given value.
 func (vgb *ViewGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, vgb.build.ctx, "GroupBy")
+	ctx = setContextOp(ctx, vgb.build.ctx, ent.OpQueryGroupBy)
 	if err := vgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -488,7 +489,7 @@ func (vs *ViewSelect) Aggregate(fns ...AggregateFunc) *ViewSelect {
 
 // Scan applies the selector query and scans the result into the given value.
 func (vs *ViewSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, vs.ctx, "Select")
+	ctx = setContextOp(ctx, vs.ctx, ent.OpQuerySelect)
 	if err := vs.prepareQuery(ctx); err != nil {
 		return err
 	}

@@ -27,7 +27,7 @@ func (rkd *ResourceKindDelete) Where(ps ...predicate.ResourceKind) *ResourceKind
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (rkd *ResourceKindDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks[int, ResourceKindMutation](ctx, rkd.sqlExec, rkd.mutation, rkd.hooks)
+	return withHooks(ctx, rkd.sqlExec, rkd.mutation, rkd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.

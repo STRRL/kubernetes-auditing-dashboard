@@ -25,14 +25,20 @@ type Noder interface {
 	IsNode()
 }
 
-// IsNode implements the Node interface check for GQLGen.
-func (n *AuditEvent) IsNode() {}
+var auditeventImplementors = []string{"AuditEvent", "Node"}
 
 // IsNode implements the Node interface check for GQLGen.
-func (n *ResourceKind) IsNode() {}
+func (*AuditEvent) IsNode() {}
+
+var resourcekindImplementors = []string{"ResourceKind", "Node"}
 
 // IsNode implements the Node interface check for GQLGen.
-func (n *View) IsNode() {}
+func (*ResourceKind) IsNode() {}
+
+var viewImplementors = []string{"View", "Node"}
+
+// IsNode implements the Node interface check for GQLGen.
+func (*View) IsNode() {}
 
 var errNodeInvalidID = &NotFoundError{"node"}
 
@@ -95,39 +101,30 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 	case auditevent.Table:
 		query := c.AuditEvent.Query().
 			Where(auditevent.ID(id))
-		query, err := query.CollectFields(ctx, "AuditEvent")
-		if err != nil {
-			return nil, err
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, auditeventImplementors...); err != nil {
+				return nil, err
+			}
 		}
-		n, err := query.Only(ctx)
-		if err != nil {
-			return nil, err
-		}
-		return n, nil
+		return query.Only(ctx)
 	case resourcekind.Table:
 		query := c.ResourceKind.Query().
 			Where(resourcekind.ID(id))
-		query, err := query.CollectFields(ctx, "ResourceKind")
-		if err != nil {
-			return nil, err
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, resourcekindImplementors...); err != nil {
+				return nil, err
+			}
 		}
-		n, err := query.Only(ctx)
-		if err != nil {
-			return nil, err
-		}
-		return n, nil
+		return query.Only(ctx)
 	case view.Table:
 		query := c.View.Query().
 			Where(view.ID(id))
-		query, err := query.CollectFields(ctx, "View")
-		if err != nil {
-			return nil, err
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, viewImplementors...); err != nil {
+				return nil, err
+			}
 		}
-		n, err := query.Only(ctx)
-		if err != nil {
-			return nil, err
-		}
-		return n, nil
+		return query.Only(ctx)
 	default:
 		return nil, fmt.Errorf("cannot resolve noder from table %q: %w", table, errNodeInvalidID)
 	}
@@ -204,7 +201,7 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 	case auditevent.Table:
 		query := c.AuditEvent.Query().
 			Where(auditevent.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "AuditEvent")
+		query, err := query.CollectFields(ctx, auditeventImplementors...)
 		if err != nil {
 			return nil, err
 		}
@@ -220,7 +217,7 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 	case resourcekind.Table:
 		query := c.ResourceKind.Query().
 			Where(resourcekind.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "ResourceKind")
+		query, err := query.CollectFields(ctx, resourcekindImplementors...)
 		if err != nil {
 			return nil, err
 		}
@@ -236,7 +233,7 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 	case view.Table:
 		query := c.View.Query().
 			Where(view.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "View")
+		query, err := query.CollectFields(ctx, viewImplementors...)
 		if err != nil {
 			return nil, err
 		}

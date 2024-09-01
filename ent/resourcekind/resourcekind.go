@@ -2,6 +2,10 @@
 
 package resourcekind
 
+import (
+	"entgo.io/ent/dialect/sql"
+)
+
 const (
 	// Label holds the string label denoting the resourcekind type in the database.
 	Label = "resource_kind"
@@ -48,3 +52,31 @@ var (
 	// KindValidator is a validator for the "kind" field. It is called by the builders before save.
 	KindValidator func(string) error
 )
+
+// OrderOption defines the ordering options for the ResourceKind queries.
+type OrderOption func(*sql.Selector)
+
+// ByID orders the results by the id field.
+func ByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByName orders the results by the name field.
+func ByName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// ByApiVersion orders the results by the apiVersion field.
+func ByApiVersion(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldApiVersion, opts...).ToFunc()
+}
+
+// ByNamespaced orders the results by the namespaced field.
+func ByNamespaced(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNamespaced, opts...).ToFunc()
+}
+
+// ByKind orders the results by the kind field.
+func ByKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKind, opts...).ToFunc()
+}

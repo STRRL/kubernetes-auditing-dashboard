@@ -160,7 +160,7 @@ func (aec *AuditEventCreate) Mutation() *AuditEventMutation {
 // Save creates the AuditEvent in the database.
 func (aec *AuditEventCreate) Save(ctx context.Context) (*AuditEvent, error) {
 	aec.defaults()
-	return withHooks[*AuditEvent, AuditEventMutation](ctx, aec.sqlSave, aec.mutation, aec.hooks)
+	return withHooks(ctx, aec.sqlSave, aec.mutation, aec.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -370,11 +370,15 @@ func (aec *AuditEventCreate) createSpec() (*AuditEvent, *sqlgraph.CreateSpec) {
 // AuditEventCreateBulk is the builder for creating many AuditEvent entities in bulk.
 type AuditEventCreateBulk struct {
 	config
+	err      error
 	builders []*AuditEventCreate
 }
 
 // Save creates the AuditEvent entities in the database.
 func (aecb *AuditEventCreateBulk) Save(ctx context.Context) ([]*AuditEvent, error) {
+	if aecb.err != nil {
+		return nil, aecb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(aecb.builders))
 	nodes := make([]*AuditEvent, len(aecb.builders))
 	mutators := make([]Mutator, len(aecb.builders))
@@ -391,8 +395,8 @@ func (aecb *AuditEventCreateBulk) Save(ctx context.Context) ([]*AuditEvent, erro
 					return nil, err
 				}
 				builder.mutation = mutation
-				nodes[i], specs[i] = builder.createSpec()
 				var err error
+				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, aecb.builders[i+1].mutation)
 				} else {

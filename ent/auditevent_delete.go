@@ -27,7 +27,7 @@ func (aed *AuditEventDelete) Where(ps ...predicate.AuditEvent) *AuditEventDelete
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (aed *AuditEventDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks[int, AuditEventMutation](ctx, aed.sqlExec, aed.mutation, aed.hooks)
+	return withHooks(ctx, aed.sqlExec, aed.mutation, aed.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.

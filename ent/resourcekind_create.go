@@ -59,7 +59,7 @@ func (rkc *ResourceKindCreate) Mutation() *ResourceKindMutation {
 // Save creates the ResourceKind in the database.
 func (rkc *ResourceKindCreate) Save(ctx context.Context) (*ResourceKind, error) {
 	rkc.defaults()
-	return withHooks[*ResourceKind, ResourceKindMutation](ctx, rkc.sqlSave, rkc.mutation, rkc.hooks)
+	return withHooks(ctx, rkc.sqlSave, rkc.mutation, rkc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -169,11 +169,15 @@ func (rkc *ResourceKindCreate) createSpec() (*ResourceKind, *sqlgraph.CreateSpec
 // ResourceKindCreateBulk is the builder for creating many ResourceKind entities in bulk.
 type ResourceKindCreateBulk struct {
 	config
+	err      error
 	builders []*ResourceKindCreate
 }
 
 // Save creates the ResourceKind entities in the database.
 func (rkcb *ResourceKindCreateBulk) Save(ctx context.Context) ([]*ResourceKind, error) {
+	if rkcb.err != nil {
+		return nil, rkcb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(rkcb.builders))
 	nodes := make([]*ResourceKind, len(rkcb.builders))
 	mutators := make([]Mutator, len(rkcb.builders))
@@ -190,8 +194,8 @@ func (rkcb *ResourceKindCreateBulk) Save(ctx context.Context) ([]*ResourceKind, 
 					return nil, err
 				}
 				builder.mutation = mutation
-				nodes[i], specs[i] = builder.createSpec()
 				var err error
+				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, rkcb.builders[i+1].mutation)
 				} else {

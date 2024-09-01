@@ -15,6 +15,7 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
 const documents = {
     "\n  query eventsCount{\n    auditEvents{\n      totalCount\n      pageInfo{\n        hasNextPage\n        hasPreviousPage\n        startCursor\n        endCursor\n      }\n    }\n  }\n": types.EventsCountDocument,
     "\n  query completedRequestResponseAuditEvents($page: Int, $pageSize: Int){\n    completedRequestResponseAuditEvents(page: $page, pageSize: $pageSize) {\n    total\n    page\n    pageSize\n    totalPages\n    hasNextPage\n    hasPreviousPage\n    rows {\n      id\n      level\n      stage\n      verb\n      useragent\n      resource\n      namespace\n      name\n      stagetimestamp\n      apigroup\n      apiversion\n    }\n  }\n  }\n": types.CompletedRequestResponseAuditEventsDocument,
+    "\n  query eventsCountNonGet{\n    auditEvents(where: {\n        verb: \"watch\"\n      })\n    {\n      totalCount\n    }\n  }\n": types.EventsCountNonGetDocument,
 };
 
 /**
@@ -39,6 +40,10 @@ export function graphql(source: "\n  query eventsCount{\n    auditEvents{\n     
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query completedRequestResponseAuditEvents($page: Int, $pageSize: Int){\n    completedRequestResponseAuditEvents(page: $page, pageSize: $pageSize) {\n    total\n    page\n    pageSize\n    totalPages\n    hasNextPage\n    hasPreviousPage\n    rows {\n      id\n      level\n      stage\n      verb\n      useragent\n      resource\n      namespace\n      name\n      stagetimestamp\n      apigroup\n      apiversion\n    }\n  }\n  }\n"): (typeof documents)["\n  query completedRequestResponseAuditEvents($page: Int, $pageSize: Int){\n    completedRequestResponseAuditEvents(page: $page, pageSize: $pageSize) {\n    total\n    page\n    pageSize\n    totalPages\n    hasNextPage\n    hasPreviousPage\n    rows {\n      id\n      level\n      stage\n      verb\n      useragent\n      resource\n      namespace\n      name\n      stagetimestamp\n      apigroup\n      apiversion\n    }\n  }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query eventsCountNonGet{\n    auditEvents(where: {\n        verb: \"watch\"\n      })\n    {\n      totalCount\n    }\n  }\n"): (typeof documents)["\n  query eventsCountNonGet{\n    auditEvents(where: {\n        verb: \"watch\"\n      })\n    {\n      totalCount\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

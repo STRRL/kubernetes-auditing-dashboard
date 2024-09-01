@@ -33,9 +33,25 @@ func (rku *ResourceKindUpdate) SetName(s string) *ResourceKindUpdate {
 	return rku
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (rku *ResourceKindUpdate) SetNillableName(s *string) *ResourceKindUpdate {
+	if s != nil {
+		rku.SetName(*s)
+	}
+	return rku
+}
+
 // SetApiVersion sets the "apiVersion" field.
 func (rku *ResourceKindUpdate) SetApiVersion(s string) *ResourceKindUpdate {
 	rku.mutation.SetApiVersion(s)
+	return rku
+}
+
+// SetNillableApiVersion sets the "apiVersion" field if the given value is not nil.
+func (rku *ResourceKindUpdate) SetNillableApiVersion(s *string) *ResourceKindUpdate {
+	if s != nil {
+		rku.SetApiVersion(*s)
+	}
 	return rku
 }
 
@@ -59,6 +75,14 @@ func (rku *ResourceKindUpdate) SetKind(s string) *ResourceKindUpdate {
 	return rku
 }
 
+// SetNillableKind sets the "kind" field if the given value is not nil.
+func (rku *ResourceKindUpdate) SetNillableKind(s *string) *ResourceKindUpdate {
+	if s != nil {
+		rku.SetKind(*s)
+	}
+	return rku
+}
+
 // Mutation returns the ResourceKindMutation object of the builder.
 func (rku *ResourceKindUpdate) Mutation() *ResourceKindMutation {
 	return rku.mutation
@@ -66,7 +90,7 @@ func (rku *ResourceKindUpdate) Mutation() *ResourceKindMutation {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (rku *ResourceKindUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks[int, ResourceKindMutation](ctx, rku.sqlSave, rku.mutation, rku.hooks)
+	return withHooks(ctx, rku.sqlSave, rku.mutation, rku.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -161,9 +185,25 @@ func (rkuo *ResourceKindUpdateOne) SetName(s string) *ResourceKindUpdateOne {
 	return rkuo
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (rkuo *ResourceKindUpdateOne) SetNillableName(s *string) *ResourceKindUpdateOne {
+	if s != nil {
+		rkuo.SetName(*s)
+	}
+	return rkuo
+}
+
 // SetApiVersion sets the "apiVersion" field.
 func (rkuo *ResourceKindUpdateOne) SetApiVersion(s string) *ResourceKindUpdateOne {
 	rkuo.mutation.SetApiVersion(s)
+	return rkuo
+}
+
+// SetNillableApiVersion sets the "apiVersion" field if the given value is not nil.
+func (rkuo *ResourceKindUpdateOne) SetNillableApiVersion(s *string) *ResourceKindUpdateOne {
+	if s != nil {
+		rkuo.SetApiVersion(*s)
+	}
 	return rkuo
 }
 
@@ -187,6 +227,14 @@ func (rkuo *ResourceKindUpdateOne) SetKind(s string) *ResourceKindUpdateOne {
 	return rkuo
 }
 
+// SetNillableKind sets the "kind" field if the given value is not nil.
+func (rkuo *ResourceKindUpdateOne) SetNillableKind(s *string) *ResourceKindUpdateOne {
+	if s != nil {
+		rkuo.SetKind(*s)
+	}
+	return rkuo
+}
+
 // Mutation returns the ResourceKindMutation object of the builder.
 func (rkuo *ResourceKindUpdateOne) Mutation() *ResourceKindMutation {
 	return rkuo.mutation
@@ -207,7 +255,7 @@ func (rkuo *ResourceKindUpdateOne) Select(field string, fields ...string) *Resou
 
 // Save executes the query and returns the updated ResourceKind entity.
 func (rkuo *ResourceKindUpdateOne) Save(ctx context.Context) (*ResourceKind, error) {
-	return withHooks[*ResourceKind, ResourceKindMutation](ctx, rkuo.sqlSave, rkuo.mutation, rkuo.hooks)
+	return withHooks(ctx, rkuo.sqlSave, rkuo.mutation, rkuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

@@ -27,7 +27,7 @@ func (vd *ViewDelete) Where(ps ...predicate.View) *ViewDelete {
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (vd *ViewDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks[int, ViewMutation](ctx, vd.sqlExec, vd.mutation, vd.hooks)
+	return withHooks(ctx, vd.sqlExec, vd.mutation, vd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.

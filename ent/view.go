@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/view"
 )
@@ -14,7 +15,8 @@ import (
 type View struct {
 	config
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID           int `json:"id,omitempty"`
+	selectValues sql.SelectValues
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -25,7 +27,7 @@ func (*View) scanValues(columns []string) ([]any, error) {
 		case view.FieldID:
 			values[i] = new(sql.NullInt64)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type View", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -45,9 +47,17 @@ func (v *View) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			v.ID = int(value.Int64)
+		default:
+			v.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the View.
+// This includes values selected through modifiers, order, etc.
+func (v *View) Value(name string) (ent.Value, error) {
+	return v.selectValues.Get(name)
 }
 
 // Update returns a builder for updating this View.

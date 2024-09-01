@@ -1,5 +1,6 @@
 # schema tells gqlgen when the GraphQL schema is located.
 schema:
+  - time.graphql
   - ent.graphql
   - mutation.graphql
   - auditevents.graphql

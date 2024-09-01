@@ -2,6 +2,10 @@
 
 package auditevent
 
+import (
+	"entgo.io/ent/dialect/sql"
+)
+
 const (
 	// Label holds the string label denoting the auditevent type in the database.
 	Label = "audit_event"
@@ -92,3 +96,81 @@ var (
 	// DefaultSubResource holds the default value on creation for the "subResource" field.
 	DefaultSubResource string
 )
+
+// OrderOption defines the ordering options for the AuditEvent queries.
+type OrderOption func(*sql.Selector)
+
+// ByID orders the results by the id field.
+func ByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByRaw orders the results by the raw field.
+func ByRaw(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRaw, opts...).ToFunc()
+}
+
+// ByLevel orders the results by the level field.
+func ByLevel(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLevel, opts...).ToFunc()
+}
+
+// ByAuditID orders the results by the auditID field.
+func ByAuditID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAuditID, opts...).ToFunc()
+}
+
+// ByVerb orders the results by the verb field.
+func ByVerb(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldVerb, opts...).ToFunc()
+}
+
+// ByUserAgent orders the results by the userAgent field.
+func ByUserAgent(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserAgent, opts...).ToFunc()
+}
+
+// ByRequestTimestamp orders the results by the requestTimestamp field.
+func ByRequestTimestamp(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRequestTimestamp, opts...).ToFunc()
+}
+
+// ByStageTimestamp orders the results by the stageTimestamp field.
+func ByStageTimestamp(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStageTimestamp, opts...).ToFunc()
+}
+
+// ByNamespace orders the results by the namespace field.
+func ByNamespace(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNamespace, opts...).ToFunc()
+}
+
+// ByName orders the results by the name field.
+func ByName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// ByApiVersion orders the results by the apiVersion field.
+func ByApiVersion(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldApiVersion, opts...).ToFunc()
+}
+
+// ByApiGroup orders the results by the apiGroup field.
+func ByApiGroup(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldApiGroup, opts...).ToFunc()
+}
+
+// ByResource orders the results by the resource field.
+func ByResource(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldResource, opts...).ToFunc()
+}
+
+// BySubResource orders the results by the subResource field.
+func BySubResource(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSubResource, opts...).ToFunc()
+}
+
+// ByStage orders the results by the stage field.
+func ByStage(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStage, opts...).ToFunc()
+}

@@ -34,7 +34,7 @@ func (aeu *AuditEventUpdate) Mutation() *AuditEventMutation {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (aeu *AuditEventUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks[int, AuditEventMutation](ctx, aeu.sqlSave, aeu.mutation, aeu.hooks)
+	return withHooks(ctx, aeu.sqlSave, aeu.mutation, aeu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -108,7 +108,7 @@ func (aeuo *AuditEventUpdateOne) Select(field string, fields ...string) *AuditEv
 
 // Save executes the query and returns the updated AuditEvent entity.
 func (aeuo *AuditEventUpdateOne) Save(ctx context.Context) (*AuditEvent, error) {
-	return withHooks[*AuditEvent, AuditEventMutation](ctx, aeuo.sqlSave, aeuo.mutation, aeuo.hooks)
+	return withHooks(ctx, aeuo.sqlSave, aeuo.mutation, aeuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

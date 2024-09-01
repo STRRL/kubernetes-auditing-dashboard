@@ -25,7 +25,7 @@ func (vc *ViewCreate) Mutation() *ViewMutation {
 
 // Save creates the View in the database.
 func (vc *ViewCreate) Save(ctx context.Context) (*View, error) {
-	return withHooks[*View, ViewMutation](ctx, vc.sqlSave, vc.mutation, vc.hooks)
+	return withHooks(ctx, vc.sqlSave, vc.mutation, vc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -84,11 +84,15 @@ func (vc *ViewCreate) createSpec() (*View, *sqlgraph.CreateSpec) {
 // ViewCreateBulk is the builder for creating many View entities in bulk.
 type ViewCreateBulk struct {
 	config
+	err      error
 	builders []*ViewCreate
 }
 
 // Save creates the View entities in the database.
 func (vcb *ViewCreateBulk) Save(ctx context.Context) ([]*View, error) {
+	if vcb.err != nil {
+		return nil, vcb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(vcb.builders))
 	nodes := make([]*View, len(vcb.builders))
 	mutators := make([]Mutator, len(vcb.builders))
@@ -104,8 +108,8 @@ func (vcb *ViewCreateBulk) Save(ctx context.Context) ([]*View, error) {
 					return nil, err
 				}
 				builder.mutation = mutation
-				nodes[i], specs[i] = builder.createSpec()
 				var err error
+				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, vcb.builders[i+1].mutation)
 				} else {

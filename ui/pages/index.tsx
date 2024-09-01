@@ -20,6 +20,17 @@ const eventsCountDocumentations = graphql(/* GraphQL */ `
   }
 `)
 
+const nonGetEventsCountGQLDoc = graphql(/* GraphQL */ `
+  query eventsCountNonGet{
+    auditEvents(where: {
+        verb: "watch"
+      })
+    {
+      totalCount
+    }
+  }
+`)
+
 const completedRequestResponseAuditEventsDocumentations = graphql(/* GraphQL */ `
   query completedRequestResponseAuditEvents($page: Int, $pageSize: Int){
     completedRequestResponseAuditEvents(page: $page, pageSize: $pageSize) {
@@ -69,6 +80,13 @@ export default function Home() {
     refetchInterval: 15000,
   })
 
+  const nonGetEventsCountQuery = useQuery({
+    queryKey: ['eventsCountNonGet'],
+    queryFn: async () => request('/api/query', nonGetEventsCountGQLDoc),
+    // refresh every 15 seconds
+    refetchInterval: 15000,
+  })
+
   const eventsListQuery = useQuery({
     queryKey: ['eventsList', { page: page, pageSize: pageSize }],
     queryFn: async ({ queryKey }) => request('/api/query', completedRequestResponseAuditEventsDocumentations, {
@@ -93,6 +111,13 @@ export default function Home() {
               <div className="stat">
                 <div className="stat-title">Total Events</div>
                 <div className="stat-value">{eventsCountQuery.data?.auditEvents.totalCount.toLocaleString()}</div>
+                <div className="stat-desc"></div>
+              </div>
+            </div>
+            <div className="flex stats shadow mx-4 w-1/4">
+              <div className="stat">
+                <div className="stat-title">Non-Get Events</div>
+                <div className="stat-value">{nonGetEventsCountQuery.data?.auditEvents.totalCount.toLocaleString()}</div>
                 <div className="stat-desc"></div>
               </div>
             </div>

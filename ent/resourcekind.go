@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/resourcekind"
 )
@@ -22,7 +23,8 @@ type ResourceKind struct {
 	// Namespaced holds the value of the "namespaced" field.
 	Namespaced bool `json:"namespaced,omitempty"`
 	// Kind holds the value of the "kind" field.
-	Kind string `json:"kind,omitempty"`
+	Kind         string `json:"kind,omitempty"`
+	selectValues sql.SelectValues
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -37,7 +39,7 @@ func (*ResourceKind) scanValues(columns []string) ([]any, error) {
 		case resourcekind.FieldName, resourcekind.FieldApiVersion, resourcekind.FieldKind:
 			values[i] = new(sql.NullString)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type ResourceKind", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -81,9 +83,17 @@ func (rk *ResourceKind) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				rk.Kind = value.String
 			}
+		default:
+			rk.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the ResourceKind.
+// This includes values selected through modifiers, order, etc.
+func (rk *ResourceKind) Value(name string) (ent.Value, error) {
+	return rk.selectValues.Get(name)
 }
 
 // Update returns a builder for updating this ResourceKind.

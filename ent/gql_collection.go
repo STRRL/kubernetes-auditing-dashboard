@@ -5,8 +5,9 @@ package ent
 import (
 	"context"
 
-	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/strrl/kubernetes-auditing-dashboard/ent/auditevent"
+	"github.com/strrl/kubernetes-auditing-dashboard/ent/resourcekind"
 )
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
@@ -15,14 +16,100 @@ func (ae *AuditEventQuery) CollectFields(ctx context.Context, satisfies ...strin
 	if fc == nil {
 		return ae, nil
 	}
-	if err := ae.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+	if err := ae.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
 		return nil, err
 	}
 	return ae, nil
 }
 
-func (ae *AuditEventQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
+func (ae *AuditEventQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(auditevent.Columns))
+		selectedFields = []string{auditevent.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "raw":
+			if _, ok := fieldSeen[auditevent.FieldRaw]; !ok {
+				selectedFields = append(selectedFields, auditevent.FieldRaw)
+				fieldSeen[auditevent.FieldRaw] = struct{}{}
+			}
+		case "level":
+			if _, ok := fieldSeen[auditevent.FieldLevel]; !ok {
+				selectedFields = append(selectedFields, auditevent.FieldLevel)
+				fieldSeen[auditevent.FieldLevel] = struct{}{}
+			}
+		case "auditid":
+			if _, ok := fieldSeen[auditevent.FieldAuditID]; !ok {
+				selectedFields = append(selectedFields, auditevent.FieldAuditID)
+				fieldSeen[auditevent.FieldAuditID] = struct{}{}
+			}
+		case "verb":
+			if _, ok := fieldSeen[auditevent.FieldVerb]; !ok {
+				selectedFields = append(selectedFields, auditevent.FieldVerb)
+				fieldSeen[auditevent.FieldVerb] = struct{}{}
+			}
+		case "useragent":
+			if _, ok := fieldSeen[auditevent.FieldUserAgent]; !ok {
+				selectedFields = append(selectedFields, auditevent.FieldUserAgent)
+				fieldSeen[auditevent.FieldUserAgent] = struct{}{}
+			}
+		case "requesttimestamp":
+			if _, ok := fieldSeen[auditevent.FieldRequestTimestamp]; !ok {
+				selectedFields = append(selectedFields, auditevent.FieldRequestTimestamp)
+				fieldSeen[auditevent.FieldRequestTimestamp] = struct{}{}
+			}
+		case "stagetimestamp":
+			if _, ok := fieldSeen[auditevent.FieldStageTimestamp]; !ok {
+				selectedFields = append(selectedFields, auditevent.FieldStageTimestamp)
+				fieldSeen[auditevent.FieldStageTimestamp] = struct{}{}
+			}
+		case "namespace":
+			if _, ok := fieldSeen[auditevent.FieldNamespace]; !ok {
+				selectedFields = append(selectedFields, auditevent.FieldNamespace)
+				fieldSeen[auditevent.FieldNamespace] = struct{}{}
+			}
+		case "name":
+			if _, ok := fieldSeen[auditevent.FieldName]; !ok {
+				selectedFields = append(selectedFields, auditevent.FieldName)
+				fieldSeen[auditevent.FieldName] = struct{}{}
+			}
+		case "apiversion":
+			if _, ok := fieldSeen[auditevent.FieldApiVersion]; !ok {
+				selectedFields = append(selectedFields, auditevent.FieldApiVersion)
+				fieldSeen[auditevent.FieldApiVersion] = struct{}{}
+			}
+		case "apigroup":
+			if _, ok := fieldSeen[auditevent.FieldApiGroup]; !ok {
+				selectedFields = append(selectedFields, auditevent.FieldApiGroup)
+				fieldSeen[auditevent.FieldApiGroup] = struct{}{}
+			}
+		case "resource":
+			if _, ok := fieldSeen[auditevent.FieldResource]; !ok {
+				selectedFields = append(selectedFields, auditevent.FieldResource)
+				fieldSeen[auditevent.FieldResource] = struct{}{}
+			}
+		case "subresource":
+			if _, ok := fieldSeen[auditevent.FieldSubResource]; !ok {
+				selectedFields = append(selectedFields, auditevent.FieldSubResource)
+				fieldSeen[auditevent.FieldSubResource] = struct{}{}
+			}
+		case "stage":
+			if _, ok := fieldSeen[auditevent.FieldStage]; !ok {
+				selectedFields = append(selectedFields, auditevent.FieldStage)
+				fieldSeen[auditevent.FieldStage] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		ae.Select(selectedFields...)
+	}
 	return nil
 }
 
@@ -32,7 +119,7 @@ type auditeventPaginateArgs struct {
 	opts          []AuditEventPaginateOption
 }
 
-func newAuditEventPaginateArgs(rv map[string]interface{}) *auditeventPaginateArgs {
+func newAuditEventPaginateArgs(rv map[string]any) *auditeventPaginateArgs {
 	args := &auditeventPaginateArgs{}
 	if rv == nil {
 		return args
@@ -49,6 +136,9 @@ func newAuditEventPaginateArgs(rv map[string]interface{}) *auditeventPaginateArg
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
 	}
+	if v, ok := rv[whereField].(*AuditEventWhereInput); ok {
+		args.opts = append(args.opts, WithAuditEventFilter(v.Filter))
+	}
 	return args
 }
 
@@ -58,14 +148,50 @@ func (rk *ResourceKindQuery) CollectFields(ctx context.Context, satisfies ...str
 	if fc == nil {
 		return rk, nil
 	}
-	if err := rk.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+	if err := rk.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
 		return nil, err
 	}
 	return rk, nil
 }
 
-func (rk *ResourceKindQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
+func (rk *ResourceKindQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(resourcekind.Columns))
+		selectedFields = []string{resourcekind.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "name":
+			if _, ok := fieldSeen[resourcekind.FieldName]; !ok {
+				selectedFields = append(selectedFields, resourcekind.FieldName)
+				fieldSeen[resourcekind.FieldName] = struct{}{}
+			}
+		case "apiversion":
+			if _, ok := fieldSeen[resourcekind.FieldApiVersion]; !ok {
+				selectedFields = append(selectedFields, resourcekind.FieldApiVersion)
+				fieldSeen[resourcekind.FieldApiVersion] = struct{}{}
+			}
+		case "namespaced":
+			if _, ok := fieldSeen[resourcekind.FieldNamespaced]; !ok {
+				selectedFields = append(selectedFields, resourcekind.FieldNamespaced)
+				fieldSeen[resourcekind.FieldNamespaced] = struct{}{}
+			}
+		case "kind":
+			if _, ok := fieldSeen[resourcekind.FieldKind]; !ok {
+				selectedFields = append(selectedFields, resourcekind.FieldKind)
+				fieldSeen[resourcekind.FieldKind] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		rk.Select(selectedFields...)
+	}
 	return nil
 }
 
@@ -75,7 +201,7 @@ type resourcekindPaginateArgs struct {
 	opts          []ResourceKindPaginateOption
 }
 
-func newResourceKindPaginateArgs(rv map[string]interface{}) *resourcekindPaginateArgs {
+func newResourceKindPaginateArgs(rv map[string]any) *resourcekindPaginateArgs {
 	args := &resourcekindPaginateArgs{}
 	if rv == nil {
 		return args
@@ -92,6 +218,9 @@ func newResourceKindPaginateArgs(rv map[string]interface{}) *resourcekindPaginat
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
 	}
+	if v, ok := rv[whereField].(*ResourceKindWhereInput); ok {
+		args.opts = append(args.opts, WithResourceKindFilter(v.Filter))
+	}
 	return args
 }
 
@@ -101,13 +230,13 @@ func (v *ViewQuery) CollectFields(ctx context.Context, satisfies ...string) (*Vi
 	if fc == nil {
 		return v, nil
 	}
-	if err := v.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+	if err := v.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
 		return nil, err
 	}
 	return v, nil
 }
 
-func (v *ViewQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
+func (v *ViewQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	return nil
 }
@@ -118,7 +247,7 @@ type viewPaginateArgs struct {
 	opts          []ViewPaginateOption
 }
 
-func newViewPaginateArgs(rv map[string]interface{}) *viewPaginateArgs {
+func newViewPaginateArgs(rv map[string]any) *viewPaginateArgs {
 	args := &viewPaginateArgs{}
 	if rv == nil {
 		return args
@@ -135,6 +264,9 @@ func newViewPaginateArgs(rv map[string]interface{}) *viewPaginateArgs {
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
 	}
+	if v, ok := rv[whereField].(*ViewWhereInput); ok {
+		args.opts = append(args.opts, WithViewFilter(v.Filter))
+	}
 	return args
 }
 
@@ -149,35 +281,18 @@ const (
 	whereField     = "where"
 )
 
-func fieldArgs(ctx context.Context, whereInput interface{}, path ...string) map[string]interface{} {
-	fc := graphql.GetFieldContext(ctx)
-	if fc == nil {
+func fieldArgs(ctx context.Context, whereInput any, path ...string) map[string]any {
+	field := collectedField(ctx, path...)
+	if field == nil || field.Arguments == nil {
 		return nil
 	}
 	oc := graphql.GetOperationContext(ctx)
-	for _, name := range path {
-		var field *graphql.CollectedField
-		for _, f := range graphql.CollectFields(oc, fc.Field.Selections, nil) {
-			if f.Alias == name {
-				field = &f
-				break
-			}
-		}
-		if field == nil {
-			return nil
-		}
-		cf, err := fc.Child(ctx, *field)
-		if err != nil {
-			args := field.ArgumentMap(oc.Variables)
-			return unmarshalArgs(ctx, whereInput, args)
-		}
-		fc = cf
-	}
-	return fc.Args
+	args := field.ArgumentMap(oc.Variables)
+	return unmarshalArgs(ctx, whereInput, args)
 }
 
 // unmarshalArgs allows extracting the field arguments from their raw representation.
-func unmarshalArgs(ctx context.Context, whereInput interface{}, args map[string]interface{}) map[string]interface{} {
+func unmarshalArgs(ctx context.Context, whereInput any, args map[string]any) map[string]any {
 	for _, k := range []string{firstField, lastField} {
 		v, ok := args[k]
 		if !ok {
@@ -207,25 +322,17 @@ func unmarshalArgs(ctx context.Context, whereInput interface{}, args map[string]
 	return args
 }
 
-func limitRows(partitionBy string, limit int, orderBy ...sql.Querier) func(s *sql.Selector) {
-	return func(s *sql.Selector) {
-		d := sql.Dialect(s.Dialect())
-		s.SetDistinct(false)
-		with := d.With("src_query").
-			As(s.Clone()).
-			With("limited_query").
-			As(
-				d.Select("*").
-					AppendSelectExprAs(
-						sql.RowNumber().PartitionBy(partitionBy).OrderExpr(orderBy...),
-						"row_number",
-					).
-					From(d.Table("src_query")),
-			)
-		t := d.Table("limited_query").As(s.TableName())
-		*s = *d.Select(s.UnqualifiedColumns()...).
-			From(t).
-			Where(sql.LTE(t.C("row_number"), limit)).
-			Prefix(with)
+// mayAddCondition appends another type condition to the satisfies list
+// if it does not exist in the list.
+func mayAddCondition(satisfies []string, typeCond []string) []string {
+Cond:
+	for _, c := range typeCond {
+		for _, s := range satisfies {
+			if c == s {
+				continue Cond
+			}
+		}
+		satisfies = append(satisfies, c)
 	}
+	return satisfies
 }

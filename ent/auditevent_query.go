@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -18,7 +19,7 @@ import (
 type AuditEventQuery struct {
 	config
 	ctx        *QueryContext
-	order      []OrderFunc
+	order      []auditevent.OrderOption
 	inters     []Interceptor
 	predicates []predicate.AuditEvent
 	modifiers  []func(*sql.Selector)
@@ -54,7 +55,7 @@ func (aeq *AuditEventQuery) Unique(unique bool) *AuditEventQuery {
 }
 
 // Order specifies how the records should be ordered.
-func (aeq *AuditEventQuery) Order(o ...OrderFunc) *AuditEventQuery {
+func (aeq *AuditEventQuery) Order(o ...auditevent.OrderOption) *AuditEventQuery {
 	aeq.order = append(aeq.order, o...)
 	return aeq
 }
@@ -62,7 +63,7 @@ func (aeq *AuditEventQuery) Order(o ...OrderFunc) *AuditEventQuery {
 // First returns the first AuditEvent entity from the query.
 // Returns a *NotFoundError when no AuditEvent was found.
 func (aeq *AuditEventQuery) First(ctx context.Context) (*AuditEvent, error) {
-	nodes, err := aeq.Limit(1).All(setContextOp(ctx, aeq.ctx, "First"))
+	nodes, err := aeq.Limit(1).All(setContextOp(ctx, aeq.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +86,7 @@ func (aeq *AuditEventQuery) FirstX(ctx context.Context) *AuditEvent {
 // Returns a *NotFoundError when no AuditEvent ID was found.
 func (aeq *AuditEventQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = aeq.Limit(1).IDs(setContextOp(ctx, aeq.ctx, "FirstID")); err != nil {
+	if ids, err = aeq.Limit(1).IDs(setContextOp(ctx, aeq.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -108,7 +109,7 @@ func (aeq *AuditEventQuery) FirstIDX(ctx context.Context) int {
 // Returns a *NotSingularError when more than one AuditEvent entity is found.
 // Returns a *NotFoundError when no AuditEvent entities are found.
 func (aeq *AuditEventQuery) Only(ctx context.Context) (*AuditEvent, error) {
-	nodes, err := aeq.Limit(2).All(setContextOp(ctx, aeq.ctx, "Only"))
+	nodes, err := aeq.Limit(2).All(setContextOp(ctx, aeq.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +137,7 @@ func (aeq *AuditEventQuery) OnlyX(ctx context.Context) *AuditEvent {
 // Returns a *NotFoundError when no entities are found.
 func (aeq *AuditEventQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = aeq.Limit(2).IDs(setContextOp(ctx, aeq.ctx, "OnlyID")); err != nil {
+	if ids, err = aeq.Limit(2).IDs(setContextOp(ctx, aeq.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -161,7 +162,7 @@ func (aeq *AuditEventQuery) OnlyIDX(ctx context.Context) int {
 
 // All executes the query and returns a list of AuditEvents.
 func (aeq *AuditEventQuery) All(ctx context.Context) ([]*AuditEvent, error) {
-	ctx = setContextOp(ctx, aeq.ctx, "All")
+	ctx = setContextOp(ctx, aeq.ctx, ent.OpQueryAll)
 	if err := aeq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
@@ -183,7 +184,7 @@ func (aeq *AuditEventQuery) IDs(ctx context.Context) (ids []int, err error) {
 	if aeq.ctx.Unique == nil && aeq.path != nil {
 		aeq.Unique(true)
 	}
-	ctx = setContextOp(ctx, aeq.ctx, "IDs")
+	ctx = setContextOp(ctx, aeq.ctx, ent.OpQueryIDs)
 	if err = aeq.Select(auditevent.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -201,7 +202,7 @@ func (aeq *AuditEventQuery) IDsX(ctx context.Context) []int {
 
 // Count returns the count of the given query.
 func (aeq *AuditEventQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, aeq.ctx, "Count")
+	ctx = setContextOp(ctx, aeq.ctx, ent.OpQueryCount)
 	if err := aeq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
@@ -219,7 +220,7 @@ func (aeq *AuditEventQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (aeq *AuditEventQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, aeq.ctx, "Exist")
+	ctx = setContextOp(ctx, aeq.ctx, ent.OpQueryExist)
 	switch _, err := aeq.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
@@ -248,7 +249,7 @@ func (aeq *AuditEventQuery) Clone() *AuditEventQuery {
 	return &AuditEventQuery{
 		config:     aeq.config,
 		ctx:        aeq.ctx.Clone(),
-		order:      append([]OrderFunc{}, aeq.order...),
+		order:      append([]auditevent.OrderOption{}, aeq.order...),
 		inters:     append([]Interceptor{}, aeq.inters...),
 		predicates: append([]predicate.AuditEvent{}, aeq.predicates...),
 		// clone intermediate query.
@@ -462,7 +463,7 @@ func (aegb *AuditEventGroupBy) Aggregate(fns ...AggregateFunc) *AuditEventGroupB
 
 // Scan applies the selector query and scans the result into the given value.
 func (aegb *AuditEventGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, aegb.build.ctx, "GroupBy")
+	ctx = setContextOp(ctx, aegb.build.ctx, ent.OpQueryGroupBy)
 	if err := aegb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -510,7 +511,7 @@ func (aes *AuditEventSelect) Aggregate(fns ...AggregateFunc) *AuditEventSelect {
 
 // Scan applies the selector query and scans the result into the given value.
 func (aes *AuditEventSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, aes.ctx, "Select")
+	ctx = setContextOp(ctx, aes.ctx, ent.OpQuerySelect)
 	if err := aes.prepareQuery(ctx); err != nil {
 		return err
 	}

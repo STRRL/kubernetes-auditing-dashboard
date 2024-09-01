@@ -34,7 +34,7 @@ func (vu *ViewUpdate) Mutation() *ViewMutation {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (vu *ViewUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks[int, ViewMutation](ctx, vu.sqlSave, vu.mutation, vu.hooks)
+	return withHooks(ctx, vu.sqlSave, vu.mutation, vu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -108,7 +108,7 @@ func (vuo *ViewUpdateOne) Select(field string, fields ...string) *ViewUpdateOne 
 
 // Save executes the query and returns the updated View entity.
 func (vuo *ViewUpdateOne) Save(ctx context.Context) (*View, error) {
-	return withHooks[*View, ViewMutation](ctx, vuo.sqlSave, vuo.mutation, vuo.hooks)
+	return withHooks(ctx, vuo.sqlSave, vuo.mutation, vuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
