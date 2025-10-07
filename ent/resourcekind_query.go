@@ -30,40 +30,40 @@ type ResourceKindQuery struct {
 }
 
 // Where adds a new predicate for the ResourceKindQuery builder.
-func (rkq *ResourceKindQuery) Where(ps ...predicate.ResourceKind) *ResourceKindQuery {
-	rkq.predicates = append(rkq.predicates, ps...)
-	return rkq
+func (_q *ResourceKindQuery) Where(ps ...predicate.ResourceKind) *ResourceKindQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (rkq *ResourceKindQuery) Limit(limit int) *ResourceKindQuery {
-	rkq.ctx.Limit = &limit
-	return rkq
+func (_q *ResourceKindQuery) Limit(limit int) *ResourceKindQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (rkq *ResourceKindQuery) Offset(offset int) *ResourceKindQuery {
-	rkq.ctx.Offset = &offset
-	return rkq
+func (_q *ResourceKindQuery) Offset(offset int) *ResourceKindQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (rkq *ResourceKindQuery) Unique(unique bool) *ResourceKindQuery {
-	rkq.ctx.Unique = &unique
-	return rkq
+func (_q *ResourceKindQuery) Unique(unique bool) *ResourceKindQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (rkq *ResourceKindQuery) Order(o ...resourcekind.OrderOption) *ResourceKindQuery {
-	rkq.order = append(rkq.order, o...)
-	return rkq
+func (_q *ResourceKindQuery) Order(o ...resourcekind.OrderOption) *ResourceKindQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // First returns the first ResourceKind entity from the query.
 // Returns a *NotFoundError when no ResourceKind was found.
-func (rkq *ResourceKindQuery) First(ctx context.Context) (*ResourceKind, error) {
-	nodes, err := rkq.Limit(1).All(setContextOp(ctx, rkq.ctx, ent.OpQueryFirst))
+func (_q *ResourceKindQuery) First(ctx context.Context) (*ResourceKind, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +74,8 @@ func (rkq *ResourceKindQuery) First(ctx context.Context) (*ResourceKind, error) 
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (rkq *ResourceKindQuery) FirstX(ctx context.Context) *ResourceKind {
-	node, err := rkq.First(ctx)
+func (_q *ResourceKindQuery) FirstX(ctx context.Context) *ResourceKind {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -84,9 +84,9 @@ func (rkq *ResourceKindQuery) FirstX(ctx context.Context) *ResourceKind {
 
 // FirstID returns the first ResourceKind ID from the query.
 // Returns a *NotFoundError when no ResourceKind ID was found.
-func (rkq *ResourceKindQuery) FirstID(ctx context.Context) (id int, err error) {
+func (_q *ResourceKindQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = rkq.Limit(1).IDs(setContextOp(ctx, rkq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -97,8 +97,8 @@ func (rkq *ResourceKindQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (rkq *ResourceKindQuery) FirstIDX(ctx context.Context) int {
-	id, err := rkq.FirstID(ctx)
+func (_q *ResourceKindQuery) FirstIDX(ctx context.Context) int {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -108,8 +108,8 @@ func (rkq *ResourceKindQuery) FirstIDX(ctx context.Context) int {
 // Only returns a single ResourceKind entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one ResourceKind entity is found.
 // Returns a *NotFoundError when no ResourceKind entities are found.
-func (rkq *ResourceKindQuery) Only(ctx context.Context) (*ResourceKind, error) {
-	nodes, err := rkq.Limit(2).All(setContextOp(ctx, rkq.ctx, ent.OpQueryOnly))
+func (_q *ResourceKindQuery) Only(ctx context.Context) (*ResourceKind, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -124,8 +124,8 @@ func (rkq *ResourceKindQuery) Only(ctx context.Context) (*ResourceKind, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (rkq *ResourceKindQuery) OnlyX(ctx context.Context) *ResourceKind {
-	node, err := rkq.Only(ctx)
+func (_q *ResourceKindQuery) OnlyX(ctx context.Context) *ResourceKind {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -135,9 +135,9 @@ func (rkq *ResourceKindQuery) OnlyX(ctx context.Context) *ResourceKind {
 // OnlyID is like Only, but returns the only ResourceKind ID in the query.
 // Returns a *NotSingularError when more than one ResourceKind ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (rkq *ResourceKindQuery) OnlyID(ctx context.Context) (id int, err error) {
+func (_q *ResourceKindQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = rkq.Limit(2).IDs(setContextOp(ctx, rkq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -152,8 +152,8 @@ func (rkq *ResourceKindQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (rkq *ResourceKindQuery) OnlyIDX(ctx context.Context) int {
-	id, err := rkq.OnlyID(ctx)
+func (_q *ResourceKindQuery) OnlyIDX(ctx context.Context) int {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -161,18 +161,18 @@ func (rkq *ResourceKindQuery) OnlyIDX(ctx context.Context) int {
 }
 
 // All executes the query and returns a list of ResourceKinds.
-func (rkq *ResourceKindQuery) All(ctx context.Context) ([]*ResourceKind, error) {
-	ctx = setContextOp(ctx, rkq.ctx, ent.OpQueryAll)
-	if err := rkq.prepareQuery(ctx); err != nil {
+func (_q *ResourceKindQuery) All(ctx context.Context) ([]*ResourceKind, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*ResourceKind, *ResourceKindQuery]()
-	return withInterceptors[[]*ResourceKind](ctx, rkq, qr, rkq.inters)
+	return withInterceptors[[]*ResourceKind](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (rkq *ResourceKindQuery) AllX(ctx context.Context) []*ResourceKind {
-	nodes, err := rkq.All(ctx)
+func (_q *ResourceKindQuery) AllX(ctx context.Context) []*ResourceKind {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -180,20 +180,20 @@ func (rkq *ResourceKindQuery) AllX(ctx context.Context) []*ResourceKind {
 }
 
 // IDs executes the query and returns a list of ResourceKind IDs.
-func (rkq *ResourceKindQuery) IDs(ctx context.Context) (ids []int, err error) {
-	if rkq.ctx.Unique == nil && rkq.path != nil {
-		rkq.Unique(true)
+func (_q *ResourceKindQuery) IDs(ctx context.Context) (ids []int, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, rkq.ctx, ent.OpQueryIDs)
-	if err = rkq.Select(resourcekind.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(resourcekind.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (rkq *ResourceKindQuery) IDsX(ctx context.Context) []int {
-	ids, err := rkq.IDs(ctx)
+func (_q *ResourceKindQuery) IDsX(ctx context.Context) []int {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -201,17 +201,17 @@ func (rkq *ResourceKindQuery) IDsX(ctx context.Context) []int {
 }
 
 // Count returns the count of the given query.
-func (rkq *ResourceKindQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, rkq.ctx, ent.OpQueryCount)
-	if err := rkq.prepareQuery(ctx); err != nil {
+func (_q *ResourceKindQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, rkq, querierCount[*ResourceKindQuery](), rkq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*ResourceKindQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (rkq *ResourceKindQuery) CountX(ctx context.Context) int {
-	count, err := rkq.Count(ctx)
+func (_q *ResourceKindQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -219,9 +219,9 @@ func (rkq *ResourceKindQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (rkq *ResourceKindQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, rkq.ctx, ent.OpQueryExist)
-	switch _, err := rkq.FirstID(ctx); {
+func (_q *ResourceKindQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -232,8 +232,8 @@ func (rkq *ResourceKindQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (rkq *ResourceKindQuery) ExistX(ctx context.Context) bool {
-	exist, err := rkq.Exist(ctx)
+func (_q *ResourceKindQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -242,19 +242,19 @@ func (rkq *ResourceKindQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the ResourceKindQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (rkq *ResourceKindQuery) Clone() *ResourceKindQuery {
-	if rkq == nil {
+func (_q *ResourceKindQuery) Clone() *ResourceKindQuery {
+	if _q == nil {
 		return nil
 	}
 	return &ResourceKindQuery{
-		config:     rkq.config,
-		ctx:        rkq.ctx.Clone(),
-		order:      append([]resourcekind.OrderOption{}, rkq.order...),
-		inters:     append([]Interceptor{}, rkq.inters...),
-		predicates: append([]predicate.ResourceKind{}, rkq.predicates...),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]resourcekind.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.ResourceKind{}, _q.predicates...),
 		// clone intermediate query.
-		sql:  rkq.sql.Clone(),
-		path: rkq.path,
+		sql:  _q.sql.Clone(),
+		path: _q.path,
 	}
 }
 
@@ -272,10 +272,10 @@ func (rkq *ResourceKindQuery) Clone() *ResourceKindQuery {
 //		GroupBy(resourcekind.FieldName).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (rkq *ResourceKindQuery) GroupBy(field string, fields ...string) *ResourceKindGroupBy {
-	rkq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &ResourceKindGroupBy{build: rkq}
-	grbuild.flds = &rkq.ctx.Fields
+func (_q *ResourceKindQuery) GroupBy(field string, fields ...string) *ResourceKindGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &ResourceKindGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = resourcekind.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -293,99 +293,99 @@ func (rkq *ResourceKindQuery) GroupBy(field string, fields ...string) *ResourceK
 //	client.ResourceKind.Query().
 //		Select(resourcekind.FieldName).
 //		Scan(ctx, &v)
-func (rkq *ResourceKindQuery) Select(fields ...string) *ResourceKindSelect {
-	rkq.ctx.Fields = append(rkq.ctx.Fields, fields...)
-	sbuild := &ResourceKindSelect{ResourceKindQuery: rkq}
+func (_q *ResourceKindQuery) Select(fields ...string) *ResourceKindSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &ResourceKindSelect{ResourceKindQuery: _q}
 	sbuild.label = resourcekind.Label
-	sbuild.flds, sbuild.scan = &rkq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a ResourceKindSelect configured with the given aggregations.
-func (rkq *ResourceKindQuery) Aggregate(fns ...AggregateFunc) *ResourceKindSelect {
-	return rkq.Select().Aggregate(fns...)
+func (_q *ResourceKindQuery) Aggregate(fns ...AggregateFunc) *ResourceKindSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (rkq *ResourceKindQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range rkq.inters {
+func (_q *ResourceKindQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, rkq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range rkq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !resourcekind.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if rkq.path != nil {
-		prev, err := rkq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		rkq.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (rkq *ResourceKindQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ResourceKind, error) {
+func (_q *ResourceKindQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ResourceKind, error) {
 	var (
 		nodes = []*ResourceKind{}
-		_spec = rkq.querySpec()
+		_spec = _q.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*ResourceKind).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &ResourceKind{config: rkq.config}
+		node := &ResourceKind{config: _q.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
-	if len(rkq.modifiers) > 0 {
-		_spec.Modifiers = rkq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, rkq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	for i := range rkq.loadTotal {
-		if err := rkq.loadTotal[i](ctx, nodes); err != nil {
+	for i := range _q.loadTotal {
+		if err := _q.loadTotal[i](ctx, nodes); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (rkq *ResourceKindQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := rkq.querySpec()
-	if len(rkq.modifiers) > 0 {
-		_spec.Modifiers = rkq.modifiers
+func (_q *ResourceKindQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = rkq.ctx.Fields
-	if len(rkq.ctx.Fields) > 0 {
-		_spec.Unique = rkq.ctx.Unique != nil && *rkq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, rkq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (rkq *ResourceKindQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *ResourceKindQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(resourcekind.Table, resourcekind.Columns, sqlgraph.NewFieldSpec(resourcekind.FieldID, field.TypeInt))
-	_spec.From = rkq.sql
-	if unique := rkq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if rkq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := rkq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, resourcekind.FieldID)
 		for i := range fields {
@@ -394,20 +394,20 @@ func (rkq *ResourceKindQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if ps := rkq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := rkq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := rkq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := rkq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -417,33 +417,33 @@ func (rkq *ResourceKindQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (rkq *ResourceKindQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(rkq.driver.Dialect())
+func (_q *ResourceKindQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(resourcekind.Table)
-	columns := rkq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = resourcekind.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if rkq.sql != nil {
-		selector = rkq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if rkq.ctx.Unique != nil && *rkq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, p := range rkq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range rkq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := rkq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := rkq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -456,41 +456,41 @@ type ResourceKindGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (rkgb *ResourceKindGroupBy) Aggregate(fns ...AggregateFunc) *ResourceKindGroupBy {
-	rkgb.fns = append(rkgb.fns, fns...)
-	return rkgb
+func (_g *ResourceKindGroupBy) Aggregate(fns ...AggregateFunc) *ResourceKindGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (rkgb *ResourceKindGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, rkgb.build.ctx, ent.OpQueryGroupBy)
-	if err := rkgb.build.prepareQuery(ctx); err != nil {
+func (_g *ResourceKindGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ResourceKindQuery, *ResourceKindGroupBy](ctx, rkgb.build, rkgb, rkgb.build.inters, v)
+	return scanWithInterceptors[*ResourceKindQuery, *ResourceKindGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (rkgb *ResourceKindGroupBy) sqlScan(ctx context.Context, root *ResourceKindQuery, v any) error {
+func (_g *ResourceKindGroupBy) sqlScan(ctx context.Context, root *ResourceKindQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(rkgb.fns))
-	for _, fn := range rkgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*rkgb.flds)+len(rkgb.fns))
-		for _, f := range *rkgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*rkgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := rkgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -504,27 +504,27 @@ type ResourceKindSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (rks *ResourceKindSelect) Aggregate(fns ...AggregateFunc) *ResourceKindSelect {
-	rks.fns = append(rks.fns, fns...)
-	return rks
+func (_s *ResourceKindSelect) Aggregate(fns ...AggregateFunc) *ResourceKindSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (rks *ResourceKindSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, rks.ctx, ent.OpQuerySelect)
-	if err := rks.prepareQuery(ctx); err != nil {
+func (_s *ResourceKindSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ResourceKindQuery, *ResourceKindSelect](ctx, rks.ResourceKindQuery, rks, rks.inters, v)
+	return scanWithInterceptors[*ResourceKindQuery, *ResourceKindSelect](ctx, _s.ResourceKindQuery, _s, _s.inters, v)
 }
 
-func (rks *ResourceKindSelect) sqlScan(ctx context.Context, root *ResourceKindQuery, v any) error {
+func (_s *ResourceKindSelect) sqlScan(ctx context.Context, root *ResourceKindQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(rks.fns))
-	for _, fn := range rks.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*rks.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -532,7 +532,7 @@ func (rks *ResourceKindSelect) sqlScan(ctx context.Context, root *ResourceKindQu
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := rks.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()

@@ -20,51 +20,51 @@ type ResourceKindCreate struct {
 }
 
 // SetName sets the "name" field.
-func (rkc *ResourceKindCreate) SetName(s string) *ResourceKindCreate {
-	rkc.mutation.SetName(s)
-	return rkc
+func (_c *ResourceKindCreate) SetName(v string) *ResourceKindCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetApiVersion sets the "apiVersion" field.
-func (rkc *ResourceKindCreate) SetApiVersion(s string) *ResourceKindCreate {
-	rkc.mutation.SetApiVersion(s)
-	return rkc
+func (_c *ResourceKindCreate) SetApiVersion(v string) *ResourceKindCreate {
+	_c.mutation.SetApiVersion(v)
+	return _c
 }
 
 // SetNamespaced sets the "namespaced" field.
-func (rkc *ResourceKindCreate) SetNamespaced(b bool) *ResourceKindCreate {
-	rkc.mutation.SetNamespaced(b)
-	return rkc
+func (_c *ResourceKindCreate) SetNamespaced(v bool) *ResourceKindCreate {
+	_c.mutation.SetNamespaced(v)
+	return _c
 }
 
 // SetNillableNamespaced sets the "namespaced" field if the given value is not nil.
-func (rkc *ResourceKindCreate) SetNillableNamespaced(b *bool) *ResourceKindCreate {
-	if b != nil {
-		rkc.SetNamespaced(*b)
+func (_c *ResourceKindCreate) SetNillableNamespaced(v *bool) *ResourceKindCreate {
+	if v != nil {
+		_c.SetNamespaced(*v)
 	}
-	return rkc
+	return _c
 }
 
 // SetKind sets the "kind" field.
-func (rkc *ResourceKindCreate) SetKind(s string) *ResourceKindCreate {
-	rkc.mutation.SetKind(s)
-	return rkc
+func (_c *ResourceKindCreate) SetKind(v string) *ResourceKindCreate {
+	_c.mutation.SetKind(v)
+	return _c
 }
 
 // Mutation returns the ResourceKindMutation object of the builder.
-func (rkc *ResourceKindCreate) Mutation() *ResourceKindMutation {
-	return rkc.mutation
+func (_c *ResourceKindCreate) Mutation() *ResourceKindMutation {
+	return _c.mutation
 }
 
 // Save creates the ResourceKind in the database.
-func (rkc *ResourceKindCreate) Save(ctx context.Context) (*ResourceKind, error) {
-	rkc.defaults()
-	return withHooks(ctx, rkc.sqlSave, rkc.mutation, rkc.hooks)
+func (_c *ResourceKindCreate) Save(ctx context.Context) (*ResourceKind, error) {
+	_c.defaults()
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (rkc *ResourceKindCreate) SaveX(ctx context.Context) *ResourceKind {
-	v, err := rkc.Save(ctx)
+func (_c *ResourceKindCreate) SaveX(ctx context.Context) *ResourceKind {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -72,51 +72,51 @@ func (rkc *ResourceKindCreate) SaveX(ctx context.Context) *ResourceKind {
 }
 
 // Exec executes the query.
-func (rkc *ResourceKindCreate) Exec(ctx context.Context) error {
-	_, err := rkc.Save(ctx)
+func (_c *ResourceKindCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rkc *ResourceKindCreate) ExecX(ctx context.Context) {
-	if err := rkc.Exec(ctx); err != nil {
+func (_c *ResourceKindCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (rkc *ResourceKindCreate) defaults() {
-	if _, ok := rkc.mutation.Namespaced(); !ok {
+func (_c *ResourceKindCreate) defaults() {
+	if _, ok := _c.mutation.Namespaced(); !ok {
 		v := resourcekind.DefaultNamespaced
-		rkc.mutation.SetNamespaced(v)
+		_c.mutation.SetNamespaced(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (rkc *ResourceKindCreate) check() error {
-	if _, ok := rkc.mutation.Name(); !ok {
+func (_c *ResourceKindCreate) check() error {
+	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "ResourceKind.name"`)}
 	}
-	if v, ok := rkc.mutation.Name(); ok {
+	if v, ok := _c.mutation.Name(); ok {
 		if err := resourcekind.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "ResourceKind.name": %w`, err)}
 		}
 	}
-	if _, ok := rkc.mutation.ApiVersion(); !ok {
+	if _, ok := _c.mutation.ApiVersion(); !ok {
 		return &ValidationError{Name: "apiVersion", err: errors.New(`ent: missing required field "ResourceKind.apiVersion"`)}
 	}
-	if v, ok := rkc.mutation.ApiVersion(); ok {
+	if v, ok := _c.mutation.ApiVersion(); ok {
 		if err := resourcekind.ApiVersionValidator(v); err != nil {
 			return &ValidationError{Name: "apiVersion", err: fmt.Errorf(`ent: validator failed for field "ResourceKind.apiVersion": %w`, err)}
 		}
 	}
-	if _, ok := rkc.mutation.Namespaced(); !ok {
+	if _, ok := _c.mutation.Namespaced(); !ok {
 		return &ValidationError{Name: "namespaced", err: errors.New(`ent: missing required field "ResourceKind.namespaced"`)}
 	}
-	if _, ok := rkc.mutation.Kind(); !ok {
+	if _, ok := _c.mutation.Kind(); !ok {
 		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "ResourceKind.kind"`)}
 	}
-	if v, ok := rkc.mutation.Kind(); ok {
+	if v, ok := _c.mutation.Kind(); ok {
 		if err := resourcekind.KindValidator(v); err != nil {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "ResourceKind.kind": %w`, err)}
 		}
@@ -124,12 +124,12 @@ func (rkc *ResourceKindCreate) check() error {
 	return nil
 }
 
-func (rkc *ResourceKindCreate) sqlSave(ctx context.Context) (*ResourceKind, error) {
-	if err := rkc.check(); err != nil {
+func (_c *ResourceKindCreate) sqlSave(ctx context.Context) (*ResourceKind, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := rkc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, rkc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -137,29 +137,29 @@ func (rkc *ResourceKindCreate) sqlSave(ctx context.Context) (*ResourceKind, erro
 	}
 	id := _spec.ID.Value.(int64)
 	_node.ID = int(id)
-	rkc.mutation.id = &_node.ID
-	rkc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (rkc *ResourceKindCreate) createSpec() (*ResourceKind, *sqlgraph.CreateSpec) {
+func (_c *ResourceKindCreate) createSpec() (*ResourceKind, *sqlgraph.CreateSpec) {
 	var (
-		_node = &ResourceKind{config: rkc.config}
+		_node = &ResourceKind{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(resourcekind.Table, sqlgraph.NewFieldSpec(resourcekind.FieldID, field.TypeInt))
 	)
-	if value, ok := rkc.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(resourcekind.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := rkc.mutation.ApiVersion(); ok {
+	if value, ok := _c.mutation.ApiVersion(); ok {
 		_spec.SetField(resourcekind.FieldApiVersion, field.TypeString, value)
 		_node.ApiVersion = value
 	}
-	if value, ok := rkc.mutation.Namespaced(); ok {
+	if value, ok := _c.mutation.Namespaced(); ok {
 		_spec.SetField(resourcekind.FieldNamespaced, field.TypeBool, value)
 		_node.Namespaced = value
 	}
-	if value, ok := rkc.mutation.Kind(); ok {
+	if value, ok := _c.mutation.Kind(); ok {
 		_spec.SetField(resourcekind.FieldKind, field.TypeString, value)
 		_node.Kind = value
 	}
@@ -174,16 +174,16 @@ type ResourceKindCreateBulk struct {
 }
 
 // Save creates the ResourceKind entities in the database.
-func (rkcb *ResourceKindCreateBulk) Save(ctx context.Context) ([]*ResourceKind, error) {
-	if rkcb.err != nil {
-		return nil, rkcb.err
+func (_c *ResourceKindCreateBulk) Save(ctx context.Context) ([]*ResourceKind, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(rkcb.builders))
-	nodes := make([]*ResourceKind, len(rkcb.builders))
-	mutators := make([]Mutator, len(rkcb.builders))
-	for i := range rkcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*ResourceKind, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := rkcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ResourceKindMutation)
@@ -197,11 +197,11 @@ func (rkcb *ResourceKindCreateBulk) Save(ctx context.Context) ([]*ResourceKind, 
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, rkcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, rkcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -225,7 +225,7 @@ func (rkcb *ResourceKindCreateBulk) Save(ctx context.Context) ([]*ResourceKind, 
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, rkcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -233,8 +233,8 @@ func (rkcb *ResourceKindCreateBulk) Save(ctx context.Context) ([]*ResourceKind, 
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (rkcb *ResourceKindCreateBulk) SaveX(ctx context.Context) []*ResourceKind {
-	v, err := rkcb.Save(ctx)
+func (_c *ResourceKindCreateBulk) SaveX(ctx context.Context) []*ResourceKind {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -242,14 +242,14 @@ func (rkcb *ResourceKindCreateBulk) SaveX(ctx context.Context) []*ResourceKind {
 }
 
 // Exec executes the query.
-func (rkcb *ResourceKindCreateBulk) Exec(ctx context.Context) error {
-	_, err := rkcb.Save(ctx)
+func (_c *ResourceKindCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rkcb *ResourceKindCreateBulk) ExecX(ctx context.Context) {
-	if err := rkcb.Exec(ctx); err != nil {
+func (_c *ResourceKindCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

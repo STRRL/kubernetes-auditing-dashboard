@@ -19,18 +19,18 @@ type ViewCreate struct {
 }
 
 // Mutation returns the ViewMutation object of the builder.
-func (vc *ViewCreate) Mutation() *ViewMutation {
-	return vc.mutation
+func (_c *ViewCreate) Mutation() *ViewMutation {
+	return _c.mutation
 }
 
 // Save creates the View in the database.
-func (vc *ViewCreate) Save(ctx context.Context) (*View, error) {
-	return withHooks(ctx, vc.sqlSave, vc.mutation, vc.hooks)
+func (_c *ViewCreate) Save(ctx context.Context) (*View, error) {
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (vc *ViewCreate) SaveX(ctx context.Context) *View {
-	v, err := vc.Save(ctx)
+func (_c *ViewCreate) SaveX(ctx context.Context) *View {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -38,29 +38,29 @@ func (vc *ViewCreate) SaveX(ctx context.Context) *View {
 }
 
 // Exec executes the query.
-func (vc *ViewCreate) Exec(ctx context.Context) error {
-	_, err := vc.Save(ctx)
+func (_c *ViewCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (vc *ViewCreate) ExecX(ctx context.Context) {
-	if err := vc.Exec(ctx); err != nil {
+func (_c *ViewCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (vc *ViewCreate) check() error {
+func (_c *ViewCreate) check() error {
 	return nil
 }
 
-func (vc *ViewCreate) sqlSave(ctx context.Context) (*View, error) {
-	if err := vc.check(); err != nil {
+func (_c *ViewCreate) sqlSave(ctx context.Context) (*View, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := vc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, vc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -68,14 +68,14 @@ func (vc *ViewCreate) sqlSave(ctx context.Context) (*View, error) {
 	}
 	id := _spec.ID.Value.(int64)
 	_node.ID = int(id)
-	vc.mutation.id = &_node.ID
-	vc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (vc *ViewCreate) createSpec() (*View, *sqlgraph.CreateSpec) {
+func (_c *ViewCreate) createSpec() (*View, *sqlgraph.CreateSpec) {
 	var (
-		_node = &View{config: vc.config}
+		_node = &View{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(view.Table, sqlgraph.NewFieldSpec(view.FieldID, field.TypeInt))
 	)
 	return _node, _spec
@@ -89,16 +89,16 @@ type ViewCreateBulk struct {
 }
 
 // Save creates the View entities in the database.
-func (vcb *ViewCreateBulk) Save(ctx context.Context) ([]*View, error) {
-	if vcb.err != nil {
-		return nil, vcb.err
+func (_c *ViewCreateBulk) Save(ctx context.Context) ([]*View, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(vcb.builders))
-	nodes := make([]*View, len(vcb.builders))
-	mutators := make([]Mutator, len(vcb.builders))
-	for i := range vcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*View, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := vcb.builders[i]
+			builder := _c.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ViewMutation)
 				if !ok {
@@ -111,11 +111,11 @@ func (vcb *ViewCreateBulk) Save(ctx context.Context) ([]*View, error) {
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, vcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, vcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -139,7 +139,7 @@ func (vcb *ViewCreateBulk) Save(ctx context.Context) ([]*View, error) {
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, vcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -147,8 +147,8 @@ func (vcb *ViewCreateBulk) Save(ctx context.Context) ([]*View, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (vcb *ViewCreateBulk) SaveX(ctx context.Context) []*View {
-	v, err := vcb.Save(ctx)
+func (_c *ViewCreateBulk) SaveX(ctx context.Context) []*View {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -156,14 +156,14 @@ func (vcb *ViewCreateBulk) SaveX(ctx context.Context) []*View {
 }
 
 // Exec executes the query.
-func (vcb *ViewCreateBulk) Exec(ctx context.Context) error {
-	_, err := vcb.Save(ctx)
+func (_c *ViewCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (vcb *ViewCreateBulk) ExecX(ctx context.Context) {
-	if err := vcb.Exec(ctx); err != nil {
+func (_c *ViewCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

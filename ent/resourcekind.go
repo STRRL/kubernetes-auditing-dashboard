@@ -47,7 +47,7 @@ func (*ResourceKind) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the ResourceKind fields.
-func (rk *ResourceKind) assignValues(columns []string, values []any) error {
+func (_m *ResourceKind) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -58,33 +58,33 @@ func (rk *ResourceKind) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			rk.ID = int(value.Int64)
+			_m.ID = int(value.Int64)
 		case resourcekind.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				rk.Name = value.String
+				_m.Name = value.String
 			}
 		case resourcekind.FieldApiVersion:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field apiVersion", values[i])
 			} else if value.Valid {
-				rk.ApiVersion = value.String
+				_m.ApiVersion = value.String
 			}
 		case resourcekind.FieldNamespaced:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field namespaced", values[i])
 			} else if value.Valid {
-				rk.Namespaced = value.Bool
+				_m.Namespaced = value.Bool
 			}
 		case resourcekind.FieldKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kind", values[i])
 			} else if value.Valid {
-				rk.Kind = value.String
+				_m.Kind = value.String
 			}
 		default:
-			rk.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -92,44 +92,44 @@ func (rk *ResourceKind) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the ResourceKind.
 // This includes values selected through modifiers, order, etc.
-func (rk *ResourceKind) Value(name string) (ent.Value, error) {
-	return rk.selectValues.Get(name)
+func (_m *ResourceKind) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // Update returns a builder for updating this ResourceKind.
 // Note that you need to call ResourceKind.Unwrap() before calling this method if this ResourceKind
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (rk *ResourceKind) Update() *ResourceKindUpdateOne {
-	return NewResourceKindClient(rk.config).UpdateOne(rk)
+func (_m *ResourceKind) Update() *ResourceKindUpdateOne {
+	return NewResourceKindClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the ResourceKind entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (rk *ResourceKind) Unwrap() *ResourceKind {
-	_tx, ok := rk.config.driver.(*txDriver)
+func (_m *ResourceKind) Unwrap() *ResourceKind {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: ResourceKind is not a transactional entity")
 	}
-	rk.config.driver = _tx.drv
-	return rk
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (rk *ResourceKind) String() string {
+func (_m *ResourceKind) String() string {
 	var builder strings.Builder
 	builder.WriteString("ResourceKind(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", rk.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("name=")
-	builder.WriteString(rk.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("apiVersion=")
-	builder.WriteString(rk.ApiVersion)
+	builder.WriteString(_m.ApiVersion)
 	builder.WriteString(", ")
 	builder.WriteString("namespaced=")
-	builder.WriteString(fmt.Sprintf("%v", rk.Namespaced))
+	builder.WriteString(fmt.Sprintf("%v", _m.Namespaced))
 	builder.WriteString(", ")
 	builder.WriteString("kind=")
-	builder.WriteString(rk.Kind)
+	builder.WriteString(_m.Kind)
 	builder.WriteByte(')')
 	return builder.String()
 }

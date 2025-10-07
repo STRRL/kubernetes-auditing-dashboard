@@ -68,7 +68,7 @@ func (*AuditEvent) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the AuditEvent fields.
-func (ae *AuditEvent) assignValues(columns []string, values []any) error {
+func (_m *AuditEvent) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -79,93 +79,93 @@ func (ae *AuditEvent) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			ae.ID = int(value.Int64)
+			_m.ID = int(value.Int64)
 		case auditevent.FieldRaw:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field raw", values[i])
 			} else if value.Valid {
-				ae.Raw = value.String
+				_m.Raw = value.String
 			}
 		case auditevent.FieldLevel:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field level", values[i])
 			} else if value.Valid {
-				ae.Level = value.String
+				_m.Level = value.String
 			}
 		case auditevent.FieldAuditID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field auditID", values[i])
 			} else if value.Valid {
-				ae.AuditID = value.String
+				_m.AuditID = value.String
 			}
 		case auditevent.FieldVerb:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field verb", values[i])
 			} else if value.Valid {
-				ae.Verb = value.String
+				_m.Verb = value.String
 			}
 		case auditevent.FieldUserAgent:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field userAgent", values[i])
 			} else if value.Valid {
-				ae.UserAgent = value.String
+				_m.UserAgent = value.String
 			}
 		case auditevent.FieldRequestTimestamp:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field requestTimestamp", values[i])
 			} else if value.Valid {
-				ae.RequestTimestamp = value.Time
+				_m.RequestTimestamp = value.Time
 			}
 		case auditevent.FieldStageTimestamp:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field stageTimestamp", values[i])
 			} else if value.Valid {
-				ae.StageTimestamp = value.Time
+				_m.StageTimestamp = value.Time
 			}
 		case auditevent.FieldNamespace:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field namespace", values[i])
 			} else if value.Valid {
-				ae.Namespace = value.String
+				_m.Namespace = value.String
 			}
 		case auditevent.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				ae.Name = value.String
+				_m.Name = value.String
 			}
 		case auditevent.FieldApiVersion:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field apiVersion", values[i])
 			} else if value.Valid {
-				ae.ApiVersion = value.String
+				_m.ApiVersion = value.String
 			}
 		case auditevent.FieldApiGroup:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field apiGroup", values[i])
 			} else if value.Valid {
-				ae.ApiGroup = value.String
+				_m.ApiGroup = value.String
 			}
 		case auditevent.FieldResource:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field resource", values[i])
 			} else if value.Valid {
-				ae.Resource = value.String
+				_m.Resource = value.String
 			}
 		case auditevent.FieldSubResource:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field subResource", values[i])
 			} else if value.Valid {
-				ae.SubResource = value.String
+				_m.SubResource = value.String
 			}
 		case auditevent.FieldStage:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field stage", values[i])
 			} else if value.Valid {
-				ae.Stage = value.String
+				_m.Stage = value.String
 			}
 		default:
-			ae.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -173,74 +173,74 @@ func (ae *AuditEvent) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the AuditEvent.
 // This includes values selected through modifiers, order, etc.
-func (ae *AuditEvent) Value(name string) (ent.Value, error) {
-	return ae.selectValues.Get(name)
+func (_m *AuditEvent) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // Update returns a builder for updating this AuditEvent.
 // Note that you need to call AuditEvent.Unwrap() before calling this method if this AuditEvent
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (ae *AuditEvent) Update() *AuditEventUpdateOne {
-	return NewAuditEventClient(ae.config).UpdateOne(ae)
+func (_m *AuditEvent) Update() *AuditEventUpdateOne {
+	return NewAuditEventClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the AuditEvent entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (ae *AuditEvent) Unwrap() *AuditEvent {
-	_tx, ok := ae.config.driver.(*txDriver)
+func (_m *AuditEvent) Unwrap() *AuditEvent {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: AuditEvent is not a transactional entity")
 	}
-	ae.config.driver = _tx.drv
-	return ae
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (ae *AuditEvent) String() string {
+func (_m *AuditEvent) String() string {
 	var builder strings.Builder
 	builder.WriteString("AuditEvent(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", ae.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("raw=")
-	builder.WriteString(ae.Raw)
+	builder.WriteString(_m.Raw)
 	builder.WriteString(", ")
 	builder.WriteString("level=")
-	builder.WriteString(ae.Level)
+	builder.WriteString(_m.Level)
 	builder.WriteString(", ")
 	builder.WriteString("auditID=")
-	builder.WriteString(ae.AuditID)
+	builder.WriteString(_m.AuditID)
 	builder.WriteString(", ")
 	builder.WriteString("verb=")
-	builder.WriteString(ae.Verb)
+	builder.WriteString(_m.Verb)
 	builder.WriteString(", ")
 	builder.WriteString("userAgent=")
-	builder.WriteString(ae.UserAgent)
+	builder.WriteString(_m.UserAgent)
 	builder.WriteString(", ")
 	builder.WriteString("requestTimestamp=")
-	builder.WriteString(ae.RequestTimestamp.Format(time.ANSIC))
+	builder.WriteString(_m.RequestTimestamp.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("stageTimestamp=")
-	builder.WriteString(ae.StageTimestamp.Format(time.ANSIC))
+	builder.WriteString(_m.StageTimestamp.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("namespace=")
-	builder.WriteString(ae.Namespace)
+	builder.WriteString(_m.Namespace)
 	builder.WriteString(", ")
 	builder.WriteString("name=")
-	builder.WriteString(ae.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("apiVersion=")
-	builder.WriteString(ae.ApiVersion)
+	builder.WriteString(_m.ApiVersion)
 	builder.WriteString(", ")
 	builder.WriteString("apiGroup=")
-	builder.WriteString(ae.ApiGroup)
+	builder.WriteString(_m.ApiGroup)
 	builder.WriteString(", ")
 	builder.WriteString("resource=")
-	builder.WriteString(ae.Resource)
+	builder.WriteString(_m.Resource)
 	builder.WriteString(", ")
 	builder.WriteString("subResource=")
-	builder.WriteString(ae.SubResource)
+	builder.WriteString(_m.SubResource)
 	builder.WriteString(", ")
 	builder.WriteString("stage=")
-	builder.WriteString(ae.Stage)
+	builder.WriteString(_m.Stage)
 	builder.WriteByte(')')
 	return builder.String()
 }

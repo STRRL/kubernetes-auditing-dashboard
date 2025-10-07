@@ -30,40 +30,40 @@ type ViewQuery struct {
 }
 
 // Where adds a new predicate for the ViewQuery builder.
-func (vq *ViewQuery) Where(ps ...predicate.View) *ViewQuery {
-	vq.predicates = append(vq.predicates, ps...)
-	return vq
+func (_q *ViewQuery) Where(ps ...predicate.View) *ViewQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (vq *ViewQuery) Limit(limit int) *ViewQuery {
-	vq.ctx.Limit = &limit
-	return vq
+func (_q *ViewQuery) Limit(limit int) *ViewQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (vq *ViewQuery) Offset(offset int) *ViewQuery {
-	vq.ctx.Offset = &offset
-	return vq
+func (_q *ViewQuery) Offset(offset int) *ViewQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (vq *ViewQuery) Unique(unique bool) *ViewQuery {
-	vq.ctx.Unique = &unique
-	return vq
+func (_q *ViewQuery) Unique(unique bool) *ViewQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (vq *ViewQuery) Order(o ...view.OrderOption) *ViewQuery {
-	vq.order = append(vq.order, o...)
-	return vq
+func (_q *ViewQuery) Order(o ...view.OrderOption) *ViewQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // First returns the first View entity from the query.
 // Returns a *NotFoundError when no View was found.
-func (vq *ViewQuery) First(ctx context.Context) (*View, error) {
-	nodes, err := vq.Limit(1).All(setContextOp(ctx, vq.ctx, ent.OpQueryFirst))
+func (_q *ViewQuery) First(ctx context.Context) (*View, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +74,8 @@ func (vq *ViewQuery) First(ctx context.Context) (*View, error) {
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (vq *ViewQuery) FirstX(ctx context.Context) *View {
-	node, err := vq.First(ctx)
+func (_q *ViewQuery) FirstX(ctx context.Context) *View {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -84,9 +84,9 @@ func (vq *ViewQuery) FirstX(ctx context.Context) *View {
 
 // FirstID returns the first View ID from the query.
 // Returns a *NotFoundError when no View ID was found.
-func (vq *ViewQuery) FirstID(ctx context.Context) (id int, err error) {
+func (_q *ViewQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = vq.Limit(1).IDs(setContextOp(ctx, vq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -97,8 +97,8 @@ func (vq *ViewQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (vq *ViewQuery) FirstIDX(ctx context.Context) int {
-	id, err := vq.FirstID(ctx)
+func (_q *ViewQuery) FirstIDX(ctx context.Context) int {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -108,8 +108,8 @@ func (vq *ViewQuery) FirstIDX(ctx context.Context) int {
 // Only returns a single View entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one View entity is found.
 // Returns a *NotFoundError when no View entities are found.
-func (vq *ViewQuery) Only(ctx context.Context) (*View, error) {
-	nodes, err := vq.Limit(2).All(setContextOp(ctx, vq.ctx, ent.OpQueryOnly))
+func (_q *ViewQuery) Only(ctx context.Context) (*View, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -124,8 +124,8 @@ func (vq *ViewQuery) Only(ctx context.Context) (*View, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (vq *ViewQuery) OnlyX(ctx context.Context) *View {
-	node, err := vq.Only(ctx)
+func (_q *ViewQuery) OnlyX(ctx context.Context) *View {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -135,9 +135,9 @@ func (vq *ViewQuery) OnlyX(ctx context.Context) *View {
 // OnlyID is like Only, but returns the only View ID in the query.
 // Returns a *NotSingularError when more than one View ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (vq *ViewQuery) OnlyID(ctx context.Context) (id int, err error) {
+func (_q *ViewQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = vq.Limit(2).IDs(setContextOp(ctx, vq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -152,8 +152,8 @@ func (vq *ViewQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (vq *ViewQuery) OnlyIDX(ctx context.Context) int {
-	id, err := vq.OnlyID(ctx)
+func (_q *ViewQuery) OnlyIDX(ctx context.Context) int {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -161,18 +161,18 @@ func (vq *ViewQuery) OnlyIDX(ctx context.Context) int {
 }
 
 // All executes the query and returns a list of Views.
-func (vq *ViewQuery) All(ctx context.Context) ([]*View, error) {
-	ctx = setContextOp(ctx, vq.ctx, ent.OpQueryAll)
-	if err := vq.prepareQuery(ctx); err != nil {
+func (_q *ViewQuery) All(ctx context.Context) ([]*View, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*View, *ViewQuery]()
-	return withInterceptors[[]*View](ctx, vq, qr, vq.inters)
+	return withInterceptors[[]*View](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (vq *ViewQuery) AllX(ctx context.Context) []*View {
-	nodes, err := vq.All(ctx)
+func (_q *ViewQuery) AllX(ctx context.Context) []*View {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -180,20 +180,20 @@ func (vq *ViewQuery) AllX(ctx context.Context) []*View {
 }
 
 // IDs executes the query and returns a list of View IDs.
-func (vq *ViewQuery) IDs(ctx context.Context) (ids []int, err error) {
-	if vq.ctx.Unique == nil && vq.path != nil {
-		vq.Unique(true)
+func (_q *ViewQuery) IDs(ctx context.Context) (ids []int, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, vq.ctx, ent.OpQueryIDs)
-	if err = vq.Select(view.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(view.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (vq *ViewQuery) IDsX(ctx context.Context) []int {
-	ids, err := vq.IDs(ctx)
+func (_q *ViewQuery) IDsX(ctx context.Context) []int {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -201,17 +201,17 @@ func (vq *ViewQuery) IDsX(ctx context.Context) []int {
 }
 
 // Count returns the count of the given query.
-func (vq *ViewQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, vq.ctx, ent.OpQueryCount)
-	if err := vq.prepareQuery(ctx); err != nil {
+func (_q *ViewQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, vq, querierCount[*ViewQuery](), vq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*ViewQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (vq *ViewQuery) CountX(ctx context.Context) int {
-	count, err := vq.Count(ctx)
+func (_q *ViewQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -219,9 +219,9 @@ func (vq *ViewQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (vq *ViewQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, vq.ctx, ent.OpQueryExist)
-	switch _, err := vq.FirstID(ctx); {
+func (_q *ViewQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -232,8 +232,8 @@ func (vq *ViewQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (vq *ViewQuery) ExistX(ctx context.Context) bool {
-	exist, err := vq.Exist(ctx)
+func (_q *ViewQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -242,28 +242,28 @@ func (vq *ViewQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the ViewQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (vq *ViewQuery) Clone() *ViewQuery {
-	if vq == nil {
+func (_q *ViewQuery) Clone() *ViewQuery {
+	if _q == nil {
 		return nil
 	}
 	return &ViewQuery{
-		config:     vq.config,
-		ctx:        vq.ctx.Clone(),
-		order:      append([]view.OrderOption{}, vq.order...),
-		inters:     append([]Interceptor{}, vq.inters...),
-		predicates: append([]predicate.View{}, vq.predicates...),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]view.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.View{}, _q.predicates...),
 		// clone intermediate query.
-		sql:  vq.sql.Clone(),
-		path: vq.path,
+		sql:  _q.sql.Clone(),
+		path: _q.path,
 	}
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
-func (vq *ViewQuery) GroupBy(field string, fields ...string) *ViewGroupBy {
-	vq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &ViewGroupBy{build: vq}
-	grbuild.flds = &vq.ctx.Fields
+func (_q *ViewQuery) GroupBy(field string, fields ...string) *ViewGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &ViewGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = view.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -271,99 +271,99 @@ func (vq *ViewQuery) GroupBy(field string, fields ...string) *ViewGroupBy {
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
-func (vq *ViewQuery) Select(fields ...string) *ViewSelect {
-	vq.ctx.Fields = append(vq.ctx.Fields, fields...)
-	sbuild := &ViewSelect{ViewQuery: vq}
+func (_q *ViewQuery) Select(fields ...string) *ViewSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &ViewSelect{ViewQuery: _q}
 	sbuild.label = view.Label
-	sbuild.flds, sbuild.scan = &vq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a ViewSelect configured with the given aggregations.
-func (vq *ViewQuery) Aggregate(fns ...AggregateFunc) *ViewSelect {
-	return vq.Select().Aggregate(fns...)
+func (_q *ViewQuery) Aggregate(fns ...AggregateFunc) *ViewSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (vq *ViewQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range vq.inters {
+func (_q *ViewQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, vq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range vq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !view.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if vq.path != nil {
-		prev, err := vq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		vq.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (vq *ViewQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*View, error) {
+func (_q *ViewQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*View, error) {
 	var (
 		nodes = []*View{}
-		_spec = vq.querySpec()
+		_spec = _q.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*View).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &View{config: vq.config}
+		node := &View{config: _q.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
-	if len(vq.modifiers) > 0 {
-		_spec.Modifiers = vq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, vq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	for i := range vq.loadTotal {
-		if err := vq.loadTotal[i](ctx, nodes); err != nil {
+	for i := range _q.loadTotal {
+		if err := _q.loadTotal[i](ctx, nodes); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (vq *ViewQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := vq.querySpec()
-	if len(vq.modifiers) > 0 {
-		_spec.Modifiers = vq.modifiers
+func (_q *ViewQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = vq.ctx.Fields
-	if len(vq.ctx.Fields) > 0 {
-		_spec.Unique = vq.ctx.Unique != nil && *vq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, vq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (vq *ViewQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *ViewQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(view.Table, view.Columns, sqlgraph.NewFieldSpec(view.FieldID, field.TypeInt))
-	_spec.From = vq.sql
-	if unique := vq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if vq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := vq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, view.FieldID)
 		for i := range fields {
@@ -372,20 +372,20 @@ func (vq *ViewQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if ps := vq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := vq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := vq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := vq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -395,33 +395,33 @@ func (vq *ViewQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (vq *ViewQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(vq.driver.Dialect())
+func (_q *ViewQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(view.Table)
-	columns := vq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = view.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if vq.sql != nil {
-		selector = vq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if vq.ctx.Unique != nil && *vq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, p := range vq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range vq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := vq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := vq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -434,41 +434,41 @@ type ViewGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (vgb *ViewGroupBy) Aggregate(fns ...AggregateFunc) *ViewGroupBy {
-	vgb.fns = append(vgb.fns, fns...)
-	return vgb
+func (_g *ViewGroupBy) Aggregate(fns ...AggregateFunc) *ViewGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (vgb *ViewGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, vgb.build.ctx, ent.OpQueryGroupBy)
-	if err := vgb.build.prepareQuery(ctx); err != nil {
+func (_g *ViewGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ViewQuery, *ViewGroupBy](ctx, vgb.build, vgb, vgb.build.inters, v)
+	return scanWithInterceptors[*ViewQuery, *ViewGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (vgb *ViewGroupBy) sqlScan(ctx context.Context, root *ViewQuery, v any) error {
+func (_g *ViewGroupBy) sqlScan(ctx context.Context, root *ViewQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(vgb.fns))
-	for _, fn := range vgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*vgb.flds)+len(vgb.fns))
-		for _, f := range *vgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*vgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := vgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -482,27 +482,27 @@ type ViewSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (vs *ViewSelect) Aggregate(fns ...AggregateFunc) *ViewSelect {
-	vs.fns = append(vs.fns, fns...)
-	return vs
+func (_s *ViewSelect) Aggregate(fns ...AggregateFunc) *ViewSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (vs *ViewSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, vs.ctx, ent.OpQuerySelect)
-	if err := vs.prepareQuery(ctx); err != nil {
+func (_s *ViewSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ViewQuery, *ViewSelect](ctx, vs.ViewQuery, vs, vs.inters, v)
+	return scanWithInterceptors[*ViewQuery, *ViewSelect](ctx, _s.ViewQuery, _s, _s.inters, v)
 }
 
-func (vs *ViewSelect) sqlScan(ctx context.Context, root *ViewQuery, v any) error {
+func (_s *ViewSelect) sqlScan(ctx context.Context, root *ViewQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(vs.fns))
-	for _, fn := range vs.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*vs.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -510,7 +510,7 @@ func (vs *ViewSelect) sqlScan(ctx context.Context, root *ViewQuery, v any) error
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := vs.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()

@@ -20,56 +20,56 @@ type AuditEventDelete struct {
 }
 
 // Where appends a list predicates to the AuditEventDelete builder.
-func (aed *AuditEventDelete) Where(ps ...predicate.AuditEvent) *AuditEventDelete {
-	aed.mutation.Where(ps...)
-	return aed
+func (_d *AuditEventDelete) Where(ps ...predicate.AuditEvent) *AuditEventDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (aed *AuditEventDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, aed.sqlExec, aed.mutation, aed.hooks)
+func (_d *AuditEventDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (aed *AuditEventDelete) ExecX(ctx context.Context) int {
-	n, err := aed.Exec(ctx)
+func (_d *AuditEventDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (aed *AuditEventDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *AuditEventDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(auditevent.Table, sqlgraph.NewFieldSpec(auditevent.FieldID, field.TypeInt))
-	if ps := aed.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, aed.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	aed.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // AuditEventDeleteOne is the builder for deleting a single AuditEvent entity.
 type AuditEventDeleteOne struct {
-	aed *AuditEventDelete
+	_d *AuditEventDelete
 }
 
 // Where appends a list predicates to the AuditEventDelete builder.
-func (aedo *AuditEventDeleteOne) Where(ps ...predicate.AuditEvent) *AuditEventDeleteOne {
-	aedo.aed.mutation.Where(ps...)
-	return aedo
+func (_d *AuditEventDeleteOne) Where(ps ...predicate.AuditEvent) *AuditEventDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (aedo *AuditEventDeleteOne) Exec(ctx context.Context) error {
-	n, err := aedo.aed.Exec(ctx)
+func (_d *AuditEventDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (aedo *AuditEventDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (aedo *AuditEventDeleteOne) ExecX(ctx context.Context) {
-	if err := aedo.Exec(ctx); err != nil {
+func (_d *AuditEventDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

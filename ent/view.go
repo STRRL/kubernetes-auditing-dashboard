@@ -35,7 +35,7 @@ func (*View) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the View fields.
-func (v *View) assignValues(columns []string, values []any) error {
+func (_m *View) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -46,9 +46,9 @@ func (v *View) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			v.ID = int(value.Int64)
+			_m.ID = int(value.Int64)
 		default:
-			v.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -56,33 +56,33 @@ func (v *View) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the View.
 // This includes values selected through modifiers, order, etc.
-func (v *View) Value(name string) (ent.Value, error) {
-	return v.selectValues.Get(name)
+func (_m *View) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // Update returns a builder for updating this View.
 // Note that you need to call View.Unwrap() before calling this method if this View
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (v *View) Update() *ViewUpdateOne {
-	return NewViewClient(v.config).UpdateOne(v)
+func (_m *View) Update() *ViewUpdateOne {
+	return NewViewClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the View entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (v *View) Unwrap() *View {
-	_tx, ok := v.config.driver.(*txDriver)
+func (_m *View) Unwrap() *View {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: View is not a transactional entity")
 	}
-	v.config.driver = _tx.drv
-	return v
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (v *View) String() string {
+func (_m *View) String() string {
 	var builder strings.Builder
 	builder.WriteString("View(")
-	builder.WriteString(fmt.Sprintf("id=%v", v.ID))
+	builder.WriteString(fmt.Sprintf("id=%v", _m.ID))
 	builder.WriteByte(')')
 	return builder.String()
 }

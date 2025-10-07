@@ -12,18 +12,18 @@ import (
 )
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (ae *AuditEventQuery) CollectFields(ctx context.Context, satisfies ...string) (*AuditEventQuery, error) {
+func (_q *AuditEventQuery) CollectFields(ctx context.Context, satisfies ...string) (*AuditEventQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
-		return ae, nil
+		return _q, nil
 	}
-	if err := ae.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+	if err := _q.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
 		return nil, err
 	}
-	return ae, nil
+	return _q, nil
 }
 
-func (ae *AuditEventQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+func (_q *AuditEventQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	var (
 		unknownSeen    bool
@@ -109,7 +109,7 @@ func (ae *AuditEventQuery) collectField(ctx context.Context, oneNode bool, opCtx
 		}
 	}
 	if !unknownSeen {
-		ae.Select(selectedFields...)
+		_q.Select(selectedFields...)
 	}
 	return nil
 }
@@ -166,18 +166,18 @@ func newAuditEventPaginateArgs(rv map[string]any) *auditeventPaginateArgs {
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (rk *ResourceKindQuery) CollectFields(ctx context.Context, satisfies ...string) (*ResourceKindQuery, error) {
+func (_q *ResourceKindQuery) CollectFields(ctx context.Context, satisfies ...string) (*ResourceKindQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
-		return rk, nil
+		return _q, nil
 	}
-	if err := rk.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+	if err := _q.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
 		return nil, err
 	}
-	return rk, nil
+	return _q, nil
 }
 
-func (rk *ResourceKindQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+func (_q *ResourceKindQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	var (
 		unknownSeen    bool
@@ -213,7 +213,7 @@ func (rk *ResourceKindQuery) collectField(ctx context.Context, oneNode bool, opC
 		}
 	}
 	if !unknownSeen {
-		rk.Select(selectedFields...)
+		_q.Select(selectedFields...)
 	}
 	return nil
 }
@@ -248,18 +248,18 @@ func newResourceKindPaginateArgs(rv map[string]any) *resourcekindPaginateArgs {
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (v *ViewQuery) CollectFields(ctx context.Context, satisfies ...string) (*ViewQuery, error) {
+func (_q *ViewQuery) CollectFields(ctx context.Context, satisfies ...string) (*ViewQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
-		return v, nil
+		return _q, nil
 	}
-	if err := v.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+	if err := _q.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
 		return nil, err
 	}
-	return v, nil
+	return _q, nil
 }
 
-func (v *ViewQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+func (_q *ViewQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	return nil
 }
@@ -318,7 +318,7 @@ func fieldArgs(ctx context.Context, whereInput any, path ...string) map[string]a
 func unmarshalArgs(ctx context.Context, whereInput any, args map[string]any) map[string]any {
 	for _, k := range []string{firstField, lastField} {
 		v, ok := args[k]
-		if !ok {
+		if !ok || v == nil {
 			continue
 		}
 		i, err := graphql.UnmarshalInt(v)

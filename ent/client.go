@@ -273,8 +273,8 @@ func (c *AuditEventClient) Update() *AuditEventUpdate {
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *AuditEventClient) UpdateOne(ae *AuditEvent) *AuditEventUpdateOne {
-	mutation := newAuditEventMutation(c.config, OpUpdateOne, withAuditEvent(ae))
+func (c *AuditEventClient) UpdateOne(_m *AuditEvent) *AuditEventUpdateOne {
+	mutation := newAuditEventMutation(c.config, OpUpdateOne, withAuditEvent(_m))
 	return &AuditEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -291,8 +291,8 @@ func (c *AuditEventClient) Delete() *AuditEventDelete {
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *AuditEventClient) DeleteOne(ae *AuditEvent) *AuditEventDeleteOne {
-	return c.DeleteOneID(ae.ID)
+func (c *AuditEventClient) DeleteOne(_m *AuditEvent) *AuditEventDeleteOne {
+	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
@@ -406,8 +406,8 @@ func (c *ResourceKindClient) Update() *ResourceKindUpdate {
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *ResourceKindClient) UpdateOne(rk *ResourceKind) *ResourceKindUpdateOne {
-	mutation := newResourceKindMutation(c.config, OpUpdateOne, withResourceKind(rk))
+func (c *ResourceKindClient) UpdateOne(_m *ResourceKind) *ResourceKindUpdateOne {
+	mutation := newResourceKindMutation(c.config, OpUpdateOne, withResourceKind(_m))
 	return &ResourceKindUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -424,8 +424,8 @@ func (c *ResourceKindClient) Delete() *ResourceKindDelete {
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *ResourceKindClient) DeleteOne(rk *ResourceKind) *ResourceKindDeleteOne {
-	return c.DeleteOneID(rk.ID)
+func (c *ResourceKindClient) DeleteOne(_m *ResourceKind) *ResourceKindDeleteOne {
+	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
@@ -539,8 +539,8 @@ func (c *ViewClient) Update() *ViewUpdate {
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *ViewClient) UpdateOne(v *View) *ViewUpdateOne {
-	mutation := newViewMutation(c.config, OpUpdateOne, withView(v))
+func (c *ViewClient) UpdateOne(_m *View) *ViewUpdateOne {
+	mutation := newViewMutation(c.config, OpUpdateOne, withView(_m))
 	return &ViewUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -557,8 +557,8 @@ func (c *ViewClient) Delete() *ViewDelete {
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *ViewClient) DeleteOne(v *View) *ViewDeleteOne {
-	return c.DeleteOneID(v.ID)
+func (c *ViewClient) DeleteOne(_m *View) *ViewDeleteOne {
+	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.

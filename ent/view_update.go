@@ -22,24 +22,24 @@ type ViewUpdate struct {
 }
 
 // Where appends a list predicates to the ViewUpdate builder.
-func (vu *ViewUpdate) Where(ps ...predicate.View) *ViewUpdate {
-	vu.mutation.Where(ps...)
-	return vu
+func (_u *ViewUpdate) Where(ps ...predicate.View) *ViewUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Mutation returns the ViewMutation object of the builder.
-func (vu *ViewUpdate) Mutation() *ViewMutation {
-	return vu.mutation
+func (_u *ViewUpdate) Mutation() *ViewMutation {
+	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (vu *ViewUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, vu.sqlSave, vu.mutation, vu.hooks)
+func (_u *ViewUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (vu *ViewUpdate) SaveX(ctx context.Context) int {
-	affected, err := vu.Save(ctx)
+func (_u *ViewUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -47,28 +47,28 @@ func (vu *ViewUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (vu *ViewUpdate) Exec(ctx context.Context) error {
-	_, err := vu.Save(ctx)
+func (_u *ViewUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (vu *ViewUpdate) ExecX(ctx context.Context) {
-	if err := vu.Exec(ctx); err != nil {
+func (_u *ViewUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (vu *ViewUpdate) sqlSave(ctx context.Context) (n int, err error) {
+func (_u *ViewUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(view.Table, view.Columns, sqlgraph.NewFieldSpec(view.FieldID, field.TypeInt))
-	if ps := vu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if n, err = sqlgraph.UpdateNodes(ctx, vu.driver, _spec); err != nil {
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{view.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -76,8 +76,8 @@ func (vu *ViewUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	vu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // ViewUpdateOne is the builder for updating a single View entity.
@@ -89,31 +89,31 @@ type ViewUpdateOne struct {
 }
 
 // Mutation returns the ViewMutation object of the builder.
-func (vuo *ViewUpdateOne) Mutation() *ViewMutation {
-	return vuo.mutation
+func (_u *ViewUpdateOne) Mutation() *ViewMutation {
+	return _u.mutation
 }
 
 // Where appends a list predicates to the ViewUpdate builder.
-func (vuo *ViewUpdateOne) Where(ps ...predicate.View) *ViewUpdateOne {
-	vuo.mutation.Where(ps...)
-	return vuo
+func (_u *ViewUpdateOne) Where(ps ...predicate.View) *ViewUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (vuo *ViewUpdateOne) Select(field string, fields ...string) *ViewUpdateOne {
-	vuo.fields = append([]string{field}, fields...)
-	return vuo
+func (_u *ViewUpdateOne) Select(field string, fields ...string) *ViewUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated View entity.
-func (vuo *ViewUpdateOne) Save(ctx context.Context) (*View, error) {
-	return withHooks(ctx, vuo.sqlSave, vuo.mutation, vuo.hooks)
+func (_u *ViewUpdateOne) Save(ctx context.Context) (*View, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (vuo *ViewUpdateOne) SaveX(ctx context.Context) *View {
-	node, err := vuo.Save(ctx)
+func (_u *ViewUpdateOne) SaveX(ctx context.Context) *View {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -121,26 +121,26 @@ func (vuo *ViewUpdateOne) SaveX(ctx context.Context) *View {
 }
 
 // Exec executes the query on the entity.
-func (vuo *ViewUpdateOne) Exec(ctx context.Context) error {
-	_, err := vuo.Save(ctx)
+func (_u *ViewUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (vuo *ViewUpdateOne) ExecX(ctx context.Context) {
-	if err := vuo.Exec(ctx); err != nil {
+func (_u *ViewUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (vuo *ViewUpdateOne) sqlSave(ctx context.Context) (_node *View, err error) {
+func (_u *ViewUpdateOne) sqlSave(ctx context.Context) (_node *View, err error) {
 	_spec := sqlgraph.NewUpdateSpec(view.Table, view.Columns, sqlgraph.NewFieldSpec(view.FieldID, field.TypeInt))
-	id, ok := vuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "View.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := vuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, view.FieldID)
 		for _, f := range fields {
@@ -152,17 +152,17 @@ func (vuo *ViewUpdateOne) sqlSave(ctx context.Context) (_node *View, err error) 
 			}
 		}
 	}
-	if ps := vuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	_node = &View{config: vuo.config}
+	_node = &View{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, vuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{view.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -170,6 +170,6 @@ func (vuo *ViewUpdateOne) sqlSave(ctx context.Context) (_node *View, err error) 
 		}
 		return nil, err
 	}
-	vuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

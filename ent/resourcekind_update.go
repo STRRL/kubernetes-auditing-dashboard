@@ -22,80 +22,80 @@ type ResourceKindUpdate struct {
 }
 
 // Where appends a list predicates to the ResourceKindUpdate builder.
-func (rku *ResourceKindUpdate) Where(ps ...predicate.ResourceKind) *ResourceKindUpdate {
-	rku.mutation.Where(ps...)
-	return rku
+func (_u *ResourceKindUpdate) Where(ps ...predicate.ResourceKind) *ResourceKindUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetName sets the "name" field.
-func (rku *ResourceKindUpdate) SetName(s string) *ResourceKindUpdate {
-	rku.mutation.SetName(s)
-	return rku
+func (_u *ResourceKindUpdate) SetName(v string) *ResourceKindUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (rku *ResourceKindUpdate) SetNillableName(s *string) *ResourceKindUpdate {
-	if s != nil {
-		rku.SetName(*s)
+func (_u *ResourceKindUpdate) SetNillableName(v *string) *ResourceKindUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return rku
+	return _u
 }
 
 // SetApiVersion sets the "apiVersion" field.
-func (rku *ResourceKindUpdate) SetApiVersion(s string) *ResourceKindUpdate {
-	rku.mutation.SetApiVersion(s)
-	return rku
+func (_u *ResourceKindUpdate) SetApiVersion(v string) *ResourceKindUpdate {
+	_u.mutation.SetApiVersion(v)
+	return _u
 }
 
 // SetNillableApiVersion sets the "apiVersion" field if the given value is not nil.
-func (rku *ResourceKindUpdate) SetNillableApiVersion(s *string) *ResourceKindUpdate {
-	if s != nil {
-		rku.SetApiVersion(*s)
+func (_u *ResourceKindUpdate) SetNillableApiVersion(v *string) *ResourceKindUpdate {
+	if v != nil {
+		_u.SetApiVersion(*v)
 	}
-	return rku
+	return _u
 }
 
 // SetNamespaced sets the "namespaced" field.
-func (rku *ResourceKindUpdate) SetNamespaced(b bool) *ResourceKindUpdate {
-	rku.mutation.SetNamespaced(b)
-	return rku
+func (_u *ResourceKindUpdate) SetNamespaced(v bool) *ResourceKindUpdate {
+	_u.mutation.SetNamespaced(v)
+	return _u
 }
 
 // SetNillableNamespaced sets the "namespaced" field if the given value is not nil.
-func (rku *ResourceKindUpdate) SetNillableNamespaced(b *bool) *ResourceKindUpdate {
-	if b != nil {
-		rku.SetNamespaced(*b)
+func (_u *ResourceKindUpdate) SetNillableNamespaced(v *bool) *ResourceKindUpdate {
+	if v != nil {
+		_u.SetNamespaced(*v)
 	}
-	return rku
+	return _u
 }
 
 // SetKind sets the "kind" field.
-func (rku *ResourceKindUpdate) SetKind(s string) *ResourceKindUpdate {
-	rku.mutation.SetKind(s)
-	return rku
+func (_u *ResourceKindUpdate) SetKind(v string) *ResourceKindUpdate {
+	_u.mutation.SetKind(v)
+	return _u
 }
 
 // SetNillableKind sets the "kind" field if the given value is not nil.
-func (rku *ResourceKindUpdate) SetNillableKind(s *string) *ResourceKindUpdate {
-	if s != nil {
-		rku.SetKind(*s)
+func (_u *ResourceKindUpdate) SetNillableKind(v *string) *ResourceKindUpdate {
+	if v != nil {
+		_u.SetKind(*v)
 	}
-	return rku
+	return _u
 }
 
 // Mutation returns the ResourceKindMutation object of the builder.
-func (rku *ResourceKindUpdate) Mutation() *ResourceKindMutation {
-	return rku.mutation
+func (_u *ResourceKindUpdate) Mutation() *ResourceKindMutation {
+	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (rku *ResourceKindUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, rku.sqlSave, rku.mutation, rku.hooks)
+func (_u *ResourceKindUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (rku *ResourceKindUpdate) SaveX(ctx context.Context) int {
-	affected, err := rku.Save(ctx)
+func (_u *ResourceKindUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -103,31 +103,31 @@ func (rku *ResourceKindUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (rku *ResourceKindUpdate) Exec(ctx context.Context) error {
-	_, err := rku.Save(ctx)
+func (_u *ResourceKindUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rku *ResourceKindUpdate) ExecX(ctx context.Context) {
-	if err := rku.Exec(ctx); err != nil {
+func (_u *ResourceKindUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (rku *ResourceKindUpdate) check() error {
-	if v, ok := rku.mutation.Name(); ok {
+func (_u *ResourceKindUpdate) check() error {
+	if v, ok := _u.mutation.Name(); ok {
 		if err := resourcekind.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "ResourceKind.name": %w`, err)}
 		}
 	}
-	if v, ok := rku.mutation.ApiVersion(); ok {
+	if v, ok := _u.mutation.ApiVersion(); ok {
 		if err := resourcekind.ApiVersionValidator(v); err != nil {
 			return &ValidationError{Name: "apiVersion", err: fmt.Errorf(`ent: validator failed for field "ResourceKind.apiVersion": %w`, err)}
 		}
 	}
-	if v, ok := rku.mutation.Kind(); ok {
+	if v, ok := _u.mutation.Kind(); ok {
 		if err := resourcekind.KindValidator(v); err != nil {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "ResourceKind.kind": %w`, err)}
 		}
@@ -135,31 +135,31 @@ func (rku *ResourceKindUpdate) check() error {
 	return nil
 }
 
-func (rku *ResourceKindUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := rku.check(); err != nil {
-		return n, err
+func (_u *ResourceKindUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(resourcekind.Table, resourcekind.Columns, sqlgraph.NewFieldSpec(resourcekind.FieldID, field.TypeInt))
-	if ps := rku.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := rku.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(resourcekind.FieldName, field.TypeString, value)
 	}
-	if value, ok := rku.mutation.ApiVersion(); ok {
+	if value, ok := _u.mutation.ApiVersion(); ok {
 		_spec.SetField(resourcekind.FieldApiVersion, field.TypeString, value)
 	}
-	if value, ok := rku.mutation.Namespaced(); ok {
+	if value, ok := _u.mutation.Namespaced(); ok {
 		_spec.SetField(resourcekind.FieldNamespaced, field.TypeBool, value)
 	}
-	if value, ok := rku.mutation.Kind(); ok {
+	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(resourcekind.FieldKind, field.TypeString, value)
 	}
-	if n, err = sqlgraph.UpdateNodes(ctx, rku.driver, _spec); err != nil {
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{resourcekind.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -167,8 +167,8 @@ func (rku *ResourceKindUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	rku.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // ResourceKindUpdateOne is the builder for updating a single ResourceKind entity.
@@ -180,87 +180,87 @@ type ResourceKindUpdateOne struct {
 }
 
 // SetName sets the "name" field.
-func (rkuo *ResourceKindUpdateOne) SetName(s string) *ResourceKindUpdateOne {
-	rkuo.mutation.SetName(s)
-	return rkuo
+func (_u *ResourceKindUpdateOne) SetName(v string) *ResourceKindUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (rkuo *ResourceKindUpdateOne) SetNillableName(s *string) *ResourceKindUpdateOne {
-	if s != nil {
-		rkuo.SetName(*s)
+func (_u *ResourceKindUpdateOne) SetNillableName(v *string) *ResourceKindUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return rkuo
+	return _u
 }
 
 // SetApiVersion sets the "apiVersion" field.
-func (rkuo *ResourceKindUpdateOne) SetApiVersion(s string) *ResourceKindUpdateOne {
-	rkuo.mutation.SetApiVersion(s)
-	return rkuo
+func (_u *ResourceKindUpdateOne) SetApiVersion(v string) *ResourceKindUpdateOne {
+	_u.mutation.SetApiVersion(v)
+	return _u
 }
 
 // SetNillableApiVersion sets the "apiVersion" field if the given value is not nil.
-func (rkuo *ResourceKindUpdateOne) SetNillableApiVersion(s *string) *ResourceKindUpdateOne {
-	if s != nil {
-		rkuo.SetApiVersion(*s)
+func (_u *ResourceKindUpdateOne) SetNillableApiVersion(v *string) *ResourceKindUpdateOne {
+	if v != nil {
+		_u.SetApiVersion(*v)
 	}
-	return rkuo
+	return _u
 }
 
 // SetNamespaced sets the "namespaced" field.
-func (rkuo *ResourceKindUpdateOne) SetNamespaced(b bool) *ResourceKindUpdateOne {
-	rkuo.mutation.SetNamespaced(b)
-	return rkuo
+func (_u *ResourceKindUpdateOne) SetNamespaced(v bool) *ResourceKindUpdateOne {
+	_u.mutation.SetNamespaced(v)
+	return _u
 }
 
 // SetNillableNamespaced sets the "namespaced" field if the given value is not nil.
-func (rkuo *ResourceKindUpdateOne) SetNillableNamespaced(b *bool) *ResourceKindUpdateOne {
-	if b != nil {
-		rkuo.SetNamespaced(*b)
+func (_u *ResourceKindUpdateOne) SetNillableNamespaced(v *bool) *ResourceKindUpdateOne {
+	if v != nil {
+		_u.SetNamespaced(*v)
 	}
-	return rkuo
+	return _u
 }
 
 // SetKind sets the "kind" field.
-func (rkuo *ResourceKindUpdateOne) SetKind(s string) *ResourceKindUpdateOne {
-	rkuo.mutation.SetKind(s)
-	return rkuo
+func (_u *ResourceKindUpdateOne) SetKind(v string) *ResourceKindUpdateOne {
+	_u.mutation.SetKind(v)
+	return _u
 }
 
 // SetNillableKind sets the "kind" field if the given value is not nil.
-func (rkuo *ResourceKindUpdateOne) SetNillableKind(s *string) *ResourceKindUpdateOne {
-	if s != nil {
-		rkuo.SetKind(*s)
+func (_u *ResourceKindUpdateOne) SetNillableKind(v *string) *ResourceKindUpdateOne {
+	if v != nil {
+		_u.SetKind(*v)
 	}
-	return rkuo
+	return _u
 }
 
 // Mutation returns the ResourceKindMutation object of the builder.
-func (rkuo *ResourceKindUpdateOne) Mutation() *ResourceKindMutation {
-	return rkuo.mutation
+func (_u *ResourceKindUpdateOne) Mutation() *ResourceKindMutation {
+	return _u.mutation
 }
 
 // Where appends a list predicates to the ResourceKindUpdate builder.
-func (rkuo *ResourceKindUpdateOne) Where(ps ...predicate.ResourceKind) *ResourceKindUpdateOne {
-	rkuo.mutation.Where(ps...)
-	return rkuo
+func (_u *ResourceKindUpdateOne) Where(ps ...predicate.ResourceKind) *ResourceKindUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (rkuo *ResourceKindUpdateOne) Select(field string, fields ...string) *ResourceKindUpdateOne {
-	rkuo.fields = append([]string{field}, fields...)
-	return rkuo
+func (_u *ResourceKindUpdateOne) Select(field string, fields ...string) *ResourceKindUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated ResourceKind entity.
-func (rkuo *ResourceKindUpdateOne) Save(ctx context.Context) (*ResourceKind, error) {
-	return withHooks(ctx, rkuo.sqlSave, rkuo.mutation, rkuo.hooks)
+func (_u *ResourceKindUpdateOne) Save(ctx context.Context) (*ResourceKind, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (rkuo *ResourceKindUpdateOne) SaveX(ctx context.Context) *ResourceKind {
-	node, err := rkuo.Save(ctx)
+func (_u *ResourceKindUpdateOne) SaveX(ctx context.Context) *ResourceKind {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -268,31 +268,31 @@ func (rkuo *ResourceKindUpdateOne) SaveX(ctx context.Context) *ResourceKind {
 }
 
 // Exec executes the query on the entity.
-func (rkuo *ResourceKindUpdateOne) Exec(ctx context.Context) error {
-	_, err := rkuo.Save(ctx)
+func (_u *ResourceKindUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rkuo *ResourceKindUpdateOne) ExecX(ctx context.Context) {
-	if err := rkuo.Exec(ctx); err != nil {
+func (_u *ResourceKindUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (rkuo *ResourceKindUpdateOne) check() error {
-	if v, ok := rkuo.mutation.Name(); ok {
+func (_u *ResourceKindUpdateOne) check() error {
+	if v, ok := _u.mutation.Name(); ok {
 		if err := resourcekind.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "ResourceKind.name": %w`, err)}
 		}
 	}
-	if v, ok := rkuo.mutation.ApiVersion(); ok {
+	if v, ok := _u.mutation.ApiVersion(); ok {
 		if err := resourcekind.ApiVersionValidator(v); err != nil {
 			return &ValidationError{Name: "apiVersion", err: fmt.Errorf(`ent: validator failed for field "ResourceKind.apiVersion": %w`, err)}
 		}
 	}
-	if v, ok := rkuo.mutation.Kind(); ok {
+	if v, ok := _u.mutation.Kind(); ok {
 		if err := resourcekind.KindValidator(v); err != nil {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "ResourceKind.kind": %w`, err)}
 		}
@@ -300,17 +300,17 @@ func (rkuo *ResourceKindUpdateOne) check() error {
 	return nil
 }
 
-func (rkuo *ResourceKindUpdateOne) sqlSave(ctx context.Context) (_node *ResourceKind, err error) {
-	if err := rkuo.check(); err != nil {
+func (_u *ResourceKindUpdateOne) sqlSave(ctx context.Context) (_node *ResourceKind, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(resourcekind.Table, resourcekind.Columns, sqlgraph.NewFieldSpec(resourcekind.FieldID, field.TypeInt))
-	id, ok := rkuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "ResourceKind.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := rkuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, resourcekind.FieldID)
 		for _, f := range fields {
@@ -322,29 +322,29 @@ func (rkuo *ResourceKindUpdateOne) sqlSave(ctx context.Context) (_node *Resource
 			}
 		}
 	}
-	if ps := rkuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := rkuo.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(resourcekind.FieldName, field.TypeString, value)
 	}
-	if value, ok := rkuo.mutation.ApiVersion(); ok {
+	if value, ok := _u.mutation.ApiVersion(); ok {
 		_spec.SetField(resourcekind.FieldApiVersion, field.TypeString, value)
 	}
-	if value, ok := rkuo.mutation.Namespaced(); ok {
+	if value, ok := _u.mutation.Namespaced(); ok {
 		_spec.SetField(resourcekind.FieldNamespaced, field.TypeBool, value)
 	}
-	if value, ok := rkuo.mutation.Kind(); ok {
+	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(resourcekind.FieldKind, field.TypeString, value)
 	}
-	_node = &ResourceKind{config: rkuo.config}
+	_node = &ResourceKind{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, rkuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{resourcekind.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -352,6 +352,6 @@ func (rkuo *ResourceKindUpdateOne) sqlSave(ctx context.Context) (_node *Resource
 		}
 		return nil, err
 	}
-	rkuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }
