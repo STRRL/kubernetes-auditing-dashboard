@@ -41,85 +41,35 @@ const getResourceLifecycleQuery = graphql(/* GraphQL */ `
   }
 `);
 
-interface ParsedParams {
-  apiGroup: string;
-  version: string;
-  kind: string;
-  namespace: string | null;
-  name: string;
-  gvk: string;
-  displayName: string;
-}
-
-function parseUrlParams(params: string[] | string | undefined): ParsedParams | null {
-  if (!params || !Array.isArray(params) || params.length < 3) {
-    return null;
-  }
-
-  const [gvk, namespaceSegment, name] = params;
-
-  const gvkParts = gvk.split('-');
-  let apiGroup: string;
-  let version: string;
-  let kind: string;
-
-  if (gvkParts.length === 2) {
-    apiGroup = '';
-    version = gvkParts[0];
-    kind = gvkParts[1];
-  } else if (gvkParts.length === 3) {
-    apiGroup = gvkParts[0];
-    version = gvkParts[1];
-    kind = gvkParts[2];
-  } else {
-    apiGroup = gvkParts.slice(0, -2).join('.');
-    version = gvkParts[gvkParts.length - 2];
-    kind = gvkParts[gvkParts.length - 1];
-  }
-
-  const namespace = namespaceSegment === '_cluster' ? null : namespaceSegment;
-
-  const decodedName = decodeURIComponent(name);
-  const decodedNamespace = namespace ? decodeURIComponent(namespace) : null;
-
-  const displayNamespace = namespace ? `${decodedNamespace}/` : '';
-  const scopeLabel = namespace ? '' : ' (cluster-scoped)';
-  const displayName = `${displayNamespace}${decodedName}${scopeLabel}`;
-
-  return {
-    apiGroup,
-    version,
-    kind,
-    namespace: decodedNamespace,
-    name: decodedName,
-    gvk,
-    displayName,
-  };
-}
-
 export default function LifecyclePage() {
   const router = useRouter();
-  const { params } = router.query;
+  const { group, version, kind, namespace, name } = router.query;
 
-  const parsed = parseUrlParams(params);
+  const apiGroup = (group as string) || '';
+  const apiVersion = version as string;
+  const resourceKind = kind as string;
+  const resourceNamespace = namespace as string | undefined;
+  const resourceName = name as string;
+
+  const isValid = apiVersion && resourceKind && resourceName;
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['resourceLifecycle', parsed],
+    queryKey: ['resourceLifecycle', { apiGroup, apiVersion, resourceKind, resourceNamespace, resourceName }],
     queryFn: async () => {
-      if (!parsed) throw new Error('Invalid URL parameters');
+      if (!isValid) throw new Error('Invalid URL parameters');
 
       return request('/api/query', getResourceLifecycleQuery, {
-        apiGroup: parsed.apiGroup,
-        version: parsed.version,
-        kind: parsed.kind,
-        namespace: parsed.namespace,
-        name: parsed.name,
+        apiGroup,
+        version: apiVersion,
+        kind: resourceKind,
+        namespace: resourceNamespace || null,
+        name: resourceName,
       });
     },
-    enabled: !!parsed,
+    enabled: !!isValid,
   });
 
-  if (!parsed) {
+  if (!isValid) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -132,12 +82,16 @@ export default function LifecyclePage() {
     );
   }
 
-  const resourceTitle = `${parsed.apiGroup ? parsed.apiGroup + '/' : ''}${parsed.version} ${parsed.kind}`;
+  const displayNamespace = resourceNamespace ? `${resourceNamespace}/` : '';
+  const scopeLabel = resourceNamespace ? '' : ' (cluster-scoped)';
+  const displayName = `${displayNamespace}${resourceName}${scopeLabel}`;
+
+  const resourceTitle = `${apiGroup ? apiGroup + '/' : ''}${apiVersion} ${resourceKind}`;
 
   return (
     <>
       <Head>
-        <title>Lifecycle: {parsed.displayName} | Kubernetes Auditing Dashboard</title>
+        <title>Lifecycle: {displayName} | Kubernetes Auditing Dashboard</title>
       </Head>
       <div className="drawer drawer-mobile">
         <input id="drawer-indicator" type="checkbox" className="drawer-toggle" />
@@ -149,7 +103,7 @@ export default function LifecyclePage() {
                 {resourceTitle}
               </span>
               <span className="mx-2">/</span>
-              <span className="font-semibold">{parsed.displayName}</span>
+              <span className="font-semibold">{displayName}</span>
             </div>
           </div>
 

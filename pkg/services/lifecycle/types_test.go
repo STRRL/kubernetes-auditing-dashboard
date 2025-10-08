@@ -113,7 +113,7 @@ func TestResourceIdentifierToEntQuery(t *testing.T) {
 		apiGroup, apiVersion, resource, namespace, name := ri.ToEntQuery()
 
 		assert.Equal(t, "apps", apiGroup)
-		assert.Equal(t, "apps/v1", apiVersion)
+		assert.Equal(t, "v1", apiVersion)
 		assert.Equal(t, "deployments", resource)
 		assert.Equal(t, "default", namespace)
 		assert.Equal(t, "webapp", name)
@@ -163,16 +163,17 @@ func TestResourceIdentifierToEntQuery(t *testing.T) {
 		}
 	})
 
-	t.Run("should construct proper apiVersion", func(t *testing.T) {
-		// Test with API group
+	t.Run("should return only version in apiVersion field", func(t *testing.T) {
+		// Test with API group - should return only version, not apiGroup/version
 		ri1 := &lifecycle.ResourceIdentifier{
 			APIGroup: "apps",
 			Version:  "v1",
 			Kind:     "Deployment",
 			Name:     "test",
 		}
-		_, apiVersion1, _, _, _ := ri1.ToEntQuery()
-		assert.Equal(t, "apps/v1", apiVersion1)
+		apiGroup1, apiVersion1, _, _, _ := ri1.ToEntQuery()
+		assert.Equal(t, "apps", apiGroup1)
+		assert.Equal(t, "v1", apiVersion1)
 
 		// Test without API group (core)
 		ri2 := &lifecycle.ResourceIdentifier{
@@ -181,18 +182,20 @@ func TestResourceIdentifierToEntQuery(t *testing.T) {
 			Kind:     "ConfigMap",
 			Name:     "test",
 		}
-		_, apiVersion2, _, _, _ := ri2.ToEntQuery()
+		apiGroup2, apiVersion2, _, _, _ := ri2.ToEntQuery()
+		assert.Equal(t, "", apiGroup2)
 		assert.Equal(t, "v1", apiVersion2)
 
-		// Test beta version
+		// Test beta version - should return only version
 		ri3 := &lifecycle.ResourceIdentifier{
 			APIGroup: "batch",
 			Version:  "v1beta1",
 			Kind:     "CronJob",
 			Name:     "test",
 		}
-		_, apiVersion3, _, _, _ := ri3.ToEntQuery()
-		assert.Equal(t, "batch/v1beta1", apiVersion3)
+		apiGroup3, apiVersion3, _, _, _ := ri3.ToEntQuery()
+		assert.Equal(t, "batch", apiGroup3)
+		assert.Equal(t, "v1beta1", apiVersion3)
 	})
 }
 

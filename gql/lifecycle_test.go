@@ -51,19 +51,15 @@ func createTestAuditEvent(client *ent.Client, ctx context.Context, verb, namespa
 		},
 		"objectRef": map[string]interface{}{
 			"apiGroup":   "apps",
-			"apiVersion": "apps/v1",
+			"apiVersion": "v1",
 			"resource":   "deployments",
 			"namespace":  namespace,
 			"name":       name,
 		},
 		"requestReceivedTimestamp": timestamp.Format(time.RFC3339Nano),
 		"stageTimestamp":          timestamp.Format(time.RFC3339Nano),
-		"requestObject": map[string]interface{}{
-			"raw": resourceJSON,
-		},
-		"responseObject": map[string]interface{}{
-			"raw": resourceJSON,
-		},
+		"requestObject":           json.RawMessage(resourceJSON),
+		"responseObject":          json.RawMessage(resourceJSON),
 	}
 
 	raw, err := json.Marshal(auditEvent)
@@ -82,7 +78,7 @@ func createTestAuditEvent(client *ent.Client, ctx context.Context, verb, namespa
 		SetStageTimestamp(timestamp).
 		SetNamespace(namespace).
 		SetName(name).
-		SetApiVersion("apps/v1").
+		SetApiVersion("v1").
 		SetApiGroup("apps").
 		SetResource("deployments").
 		SetSubResource("").
@@ -152,9 +148,8 @@ func TestResourceLifecycleQuery(t *testing.T) {
 			},
 			"requestReceivedTimestamp": time.Now().Format(time.RFC3339Nano),
 			"stageTimestamp":          time.Now().Format(time.RFC3339Nano),
-			"responseObject": map[string]interface{}{
-				"raw": []byte(`{"apiVersion":"v1","kind":"Namespace","metadata":{"name":"production"}}`),
-			},
+			"requestObject":  json.RawMessage(`{"apiVersion":"v1","kind":"Namespace","metadata":{"name":"production"}}`),
+			"responseObject": json.RawMessage(`{"apiVersion":"v1","kind":"Namespace","metadata":{"name":"production"}}`),
 		}
 
 		raw, err := json.Marshal(auditEvent)
@@ -339,14 +334,13 @@ func TestResourceLifecycle_DiffComputation(t *testing.T) {
 			"verb":    "create",
 			"user":    map[string]interface{}{"username": "admin"},
 			"objectRef": map[string]interface{}{
-				"apiGroup": "apps", "apiVersion": "apps/v1",
+				"apiGroup": "apps", "apiVersion": "v1",
 				"resource": "deployments", "namespace": "default", "name": "test-diff",
 			},
 			"requestReceivedTimestamp": now.Add(-1 * time.Hour).Format(time.RFC3339Nano),
 			"stageTimestamp":          now.Add(-1 * time.Hour).Format(time.RFC3339Nano),
-			"responseObject": map[string]interface{}{
-				"raw": []byte(`{"apiVersion":"apps/v1","kind":"Deployment","metadata":{"name":"test-diff"},"spec":{"replicas":1}}`),
-			},
+			"requestObject":           json.RawMessage(`{"apiVersion":"apps/v1","kind":"Deployment","metadata":{"name":"test-diff"},"spec":{"replicas":1}}`),
+			"responseObject":          json.RawMessage(`{"apiVersion":"apps/v1","kind":"Deployment","metadata":{"name":"test-diff"},"spec":{"replicas":1}}`),
 		}
 
 		raw1, _ := json.Marshal(createEvent)
@@ -360,7 +354,7 @@ func TestResourceLifecycle_DiffComputation(t *testing.T) {
 			SetStageTimestamp(now.Add(-1 * time.Hour)).
 			SetNamespace("default").
 			SetName("test-diff").
-			SetApiVersion("apps/v1").
+			SetApiVersion("v1").
 			SetApiGroup("apps").
 			SetResource("deployments").
 			SetSubResource("").
@@ -375,14 +369,13 @@ func TestResourceLifecycle_DiffComputation(t *testing.T) {
 			"verb":    "update",
 			"user":    map[string]interface{}{"username": "admin"},
 			"objectRef": map[string]interface{}{
-				"apiGroup": "apps", "apiVersion": "apps/v1",
+				"apiGroup": "apps", "apiVersion": "v1",
 				"resource": "deployments", "namespace": "default", "name": "test-diff",
 			},
 			"requestReceivedTimestamp": now.Format(time.RFC3339Nano),
 			"stageTimestamp":          now.Format(time.RFC3339Nano),
-			"responseObject": map[string]interface{}{
-				"raw": []byte(`{"apiVersion":"apps/v1","kind":"Deployment","metadata":{"name":"test-diff"},"spec":{"replicas":3}}`),
-			},
+			"requestObject":           json.RawMessage(`{"apiVersion":"apps/v1","kind":"Deployment","metadata":{"name":"test-diff"},"spec":{"replicas":3}}`),
+			"responseObject":          json.RawMessage(`{"apiVersion":"apps/v1","kind":"Deployment","metadata":{"name":"test-diff"},"spec":{"replicas":3}}`),
 		}
 
 		raw2, _ := json.Marshal(updateEvent)
@@ -396,7 +389,7 @@ func TestResourceLifecycle_DiffComputation(t *testing.T) {
 			SetStageTimestamp(now).
 			SetNamespace("default").
 			SetName("test-diff").
-			SetApiVersion("apps/v1").
+			SetApiVersion("v1").
 			SetApiGroup("apps").
 			SetResource("deployments").
 			SetSubResource("").
@@ -533,7 +526,7 @@ func TestResourceLifecycle_UserExtraction(t *testing.T) {
 			SetStageTimestamp(time.Now()).
 			SetNamespace("default").
 			SetName("user-test").
-			SetApiVersion("apps/v1").
+			SetApiVersion("v1").
 			SetApiGroup("apps").
 			SetResource("deployments").
 			SetSubResource("").
@@ -569,7 +562,7 @@ func TestResourceLifecycle_ErrorHandling(t *testing.T) {
 			SetStageTimestamp(time.Now()).
 			SetNamespace("default").
 			SetName("malformed-test").
-			SetApiVersion("apps/v1").
+			SetApiVersion("v1").
 			SetApiGroup("apps").
 			SetResource("deployments").
 			SetSubResource("").

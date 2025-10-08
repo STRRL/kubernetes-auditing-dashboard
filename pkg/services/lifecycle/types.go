@@ -95,14 +95,8 @@ func ParseFromURL(gvk, namespace, name string) (*ResourceIdentifier, error) {
 func (ri *ResourceIdentifier) ToEntQuery() (apiGroup, apiVersion, resource, namespace, name string) {
 	apiGroup = ri.APIGroup
 
-	// Construct full apiVersion (e.g., "apps/v1" or "v1" for core resources)
-	if ri.APIGroup != "" {
-		apiVersion = ri.APIGroup + "/" + ri.Version
-	} else {
-		apiVersion = ri.Version
-	}
+	apiVersion = ri.Version
 
-	// Convert Kind to resource (lowercase plural)
 	resource = kindToResource(ri.Kind)
 
 	namespace = ri.Namespace

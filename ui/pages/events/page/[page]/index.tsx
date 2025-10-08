@@ -122,16 +122,18 @@ const formatTime = (timestamp: string) => {
 const buildLifecycleUrl = (apiGroup: string | undefined, apiVersion: string, resource: string, namespace: string | undefined, name: string) => {
     const kind = resource.charAt(0).toUpperCase() + resource.slice(1, -1);
 
-    let gvk = '';
+    const params = new URLSearchParams();
     if (apiGroup && apiGroup !== '') {
-        gvk = `${apiGroup}-${apiVersion}-${kind}`;
-    } else {
-        gvk = `${apiVersion}-${kind}`;
+        params.set('group', apiGroup);
     }
+    params.set('version', apiVersion);
+    params.set('kind', kind);
+    if (namespace && namespace !== '') {
+        params.set('namespace', namespace);
+    }
+    params.set('name', name);
 
-    const namespaceSegment = (namespace === undefined || namespace === '') ? '_cluster' : namespace;
-
-    return `/lifecycle/${gvk}/${namespaceSegment}/${name}`;
+    return `/lifecycle?${params.toString()}`;
 }
 
 export default function Events() {
