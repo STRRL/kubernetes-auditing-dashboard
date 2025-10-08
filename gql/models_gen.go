@@ -3,6 +3,12 @@
 package gql
 
 import (
+	"bytes"
+	"fmt"
+	"io"
+	"strconv"
+	"time"
+
 	"github.com/strrl/kubernetes-auditing-dashboard/ent"
 )
 
@@ -14,4 +20,101 @@ type AuditEventPagination struct {
 	HasNextPage     bool              `json:"hasNextPage"`
 	HasPreviousPage bool              `json:"hasPreviousPage"`
 	Rows            []*ent.AuditEvent `json:"rows"`
+}
+
+// Represents a single field change in a diff
+type DiffEntry struct {
+	// JSON path to the changed field (e.g., "spec.replicas")
+	Path string `json:"path"`
+	// Previous value before the change
+	OldValue string `json:"oldValue"`
+	// New value after the change
+	NewValue string `json:"newValue"`
+}
+
+// Represents a single lifecycle event for a Kubernetes resource
+type LifecycleEvent struct {
+	// Unique identifier for the audit event
+	ID int `json:"id"`
+	// Type of lifecycle event
+	Type EventType `json:"type"`
+	// ISO 8601 timestamp when the event occurred
+	Timestamp time.Time `json:"timestamp"`
+	// User or service account that triggered the event
+	User string `json:"user"`
+	// Complete resource state at the time of this event (YAML as JSON)
+	ResourceState string `json:"resourceState"`
+	// Diff showing changes from previous version (null for CREATE and DELETE events)
+	Diff *ResourceDiff `json:"diff,omitempty"`
+}
+
+// Represents the diff between two consecutive resource versions
+type ResourceDiff struct {
+	// Fields that were added in this update
+	Added *string `json:"added,omitempty"`
+	// Fields that were removed in this update
+	Removed *string `json:"removed,omitempty"`
+	// Fields that were modified, with old and new values
+	Modified []*DiffEntry `json:"modified"`
+}
+
+// Type of lifecycle event
+type EventType string
+
+const (
+	// Resource was created
+	EventTypeCreate EventType = "CREATE"
+	// Resource was updated or patched
+	EventTypeUpdate EventType = "UPDATE"
+	// Resource was deleted
+	EventTypeDelete EventType = "DELETE"
+)
+
+var AllEventType = []EventType{
+	EventTypeCreate,
+	EventTypeUpdate,
+	EventTypeDelete,
+}
+
+func (e EventType) IsValid() bool {
+	switch e {
+	case EventTypeCreate, EventTypeUpdate, EventTypeDelete:
+		return true
+	}
+	return false
+}
+
+func (e EventType) String() string {
+	return string(e)
+}
+
+func (e *EventType) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = EventType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid EventType", str)
+	}
+	return nil
+}
+
+func (e EventType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *EventType) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e EventType) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
 }

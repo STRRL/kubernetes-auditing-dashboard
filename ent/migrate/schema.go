@@ -62,6 +62,11 @@ var (
 				Unique:  false,
 				Columns: []*schema.Column{AuditEventsColumns[7]},
 			},
+			{
+				Name:    "auditevent_api_group_api_version_resource_namespace_name_request_timestamp",
+				Unique:  false,
+				Columns: []*schema.Column{AuditEventsColumns[11], AuditEventsColumns[10], AuditEventsColumns[12], AuditEventsColumns[8], AuditEventsColumns[9], AuditEventsColumns[6]},
+			},
 		},
 	}
 	// ResourceKindsColumns holds the columns for the "resource_kinds" table.

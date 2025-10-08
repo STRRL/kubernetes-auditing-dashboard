@@ -1,0 +1,30 @@
+query GetResourceLifecycle(
+  $apiGroup: String!
+  $version: String!
+  $kind: String!
+  $namespace: String
+  $name: String!
+) {
+  resourceLifecycle(
+    apiGroup: $apiGroup
+    version: $version
+    kind: $kind
+    namespace: $namespace
+    name: $name
+  ) {
+    id
+    type
+    timestamp
+    user
+    resourceState
+    diff {
+      added
+      removed
+      modified {
+        path
+        oldValue
+        newValue
+      }
+    }
+  }
+}

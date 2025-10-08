@@ -5,6 +5,7 @@ import Head from 'next/head'
 import { use, useEffect, useState } from 'react'
 import { useParams } from 'next/navigation';
 import { useRouter } from 'next/router'
+import Link from 'next/link'
 
 const moment = require('moment');
 
@@ -118,6 +119,21 @@ const formatTime = (timestamp: string) => {
     };
 }
 
+const buildLifecycleUrl = (apiGroup: string | undefined, apiVersion: string, resource: string, namespace: string | undefined, name: string) => {
+    const kind = resource.charAt(0).toUpperCase() + resource.slice(1, -1);
+
+    let gvk = '';
+    if (apiGroup && apiGroup !== '') {
+        gvk = `${apiGroup}-${apiVersion}-${kind}`;
+    } else {
+        gvk = `${apiVersion}-${kind}`;
+    }
+
+    const namespaceSegment = (namespace === undefined || namespace === '') ? '_cluster' : namespace;
+
+    return `/lifecycle/${gvk}/${namespaceSegment}/${name}`;
+}
+
 export default function Events() {
     const router = useRouter()
 
@@ -168,6 +184,7 @@ export default function Events() {
                                             const verbInfo = formatVerb(item?.verb || '');
                                             const resourceInfo = formatResource(item?.apigroup, item?.apiversion!, item?.resource!, item?.namespace, item?.name!);
                                             const timeInfo = formatTime(item?.stagetimestamp);
+                                            const lifecycleUrl = buildLifecycleUrl(item?.apigroup, item?.apiversion!, item?.resource!, item?.namespace, item?.name!);
                                             return (<tr key={item?.id}>
                                                 <td>
                                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold text-white ${verbInfo.color}`}>
@@ -175,10 +192,12 @@ export default function Events() {
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-medium text-gray-700">{resourceInfo.resource}</span>
-                                                        <span className="text-xs text-gray-500">{resourceInfo.name}</span>
-                                                    </div>
+                                                    <Link href={lifecycleUrl} className="hover:opacity-80 transition-opacity">
+                                                        <div className="flex flex-col cursor-pointer">
+                                                            <span className="text-sm font-medium text-gray-700">{resourceInfo.resource}</span>
+                                                            <span className="text-xs text-blue-600 hover:text-blue-800 underline">{resourceInfo.name}</span>
+                                                        </div>
+                                                    </Link>
                                                 </td>
                                                 <td>
                                                     {userAgent.isKnown ? (

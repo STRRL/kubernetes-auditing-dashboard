@@ -17,6 +17,8 @@ export type Scalars = {
    * https://relay.dev/graphql/connections.htm#sec-Cursor
    */
   Cursor: any;
+  /** Represents arbitrary JSON data */
+  JSON: any;
   Time: any;
 };
 
@@ -289,6 +291,44 @@ export type AuditEventWhereInput = {
   verbNotIn?: InputMaybe<Array<Scalars['String']>>;
 };
 
+/** Represents a single field change in a diff */
+export type DiffEntry = {
+  __typename?: 'DiffEntry';
+  /** New value after the change */
+  newValue: Scalars['JSON'];
+  /** Previous value before the change */
+  oldValue: Scalars['JSON'];
+  /** JSON path to the changed field (e.g., "spec.replicas") */
+  path: Scalars['String'];
+};
+
+/** Type of lifecycle event */
+export enum EventType {
+  /** Resource was created */
+  Create = 'CREATE',
+  /** Resource was deleted */
+  Delete = 'DELETE',
+  /** Resource was updated or patched */
+  Update = 'UPDATE'
+}
+
+/** Represents a single lifecycle event for a Kubernetes resource */
+export type LifecycleEvent = {
+  __typename?: 'LifecycleEvent';
+  /** Diff showing changes from previous version (null for CREATE and DELETE events) */
+  diff?: Maybe<ResourceDiff>;
+  /** Unique identifier for the audit event */
+  id: Scalars['ID'];
+  /** Complete resource state at the time of this event (YAML as JSON) */
+  resourceState: Scalars['JSON'];
+  /** ISO 8601 timestamp when the event occurred */
+  timestamp: Scalars['Time'];
+  /** Type of lifecycle event */
+  type: EventType;
+  /** User or service account that triggered the event */
+  user: Scalars['String'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   importResourceKindTSV: Scalars['Int'];
@@ -341,6 +381,11 @@ export type Query = {
   /** Lookup nodes by a list of IDs. */
   nodes: Array<Maybe<Node>>;
   resourceKinds: ResourceKindConnection;
+  /**
+   * Retrieve the complete lifecycle history of a Kubernetes resource.
+   * Returns events in reverse chronological order (newest first).
+   */
+  resourceLifecycle: Array<LifecycleEvent>;
 };
 
 
@@ -376,6 +421,26 @@ export type QueryResourceKindsArgs = {
   first?: InputMaybe<Scalars['Int']>;
   last?: InputMaybe<Scalars['Int']>;
   where?: InputMaybe<ResourceKindWhereInput>;
+};
+
+
+export type QueryResourceLifecycleArgs = {
+  apiGroup: Scalars['String'];
+  kind: Scalars['String'];
+  name: Scalars['String'];
+  namespace?: InputMaybe<Scalars['String']>;
+  version: Scalars['String'];
+};
+
+/** Represents the diff between two consecutive resource versions */
+export type ResourceDiff = {
+  __typename?: 'ResourceDiff';
+  /** Fields that were added in this update */
+  added?: Maybe<Scalars['JSON']>;
+  /** Fields that were modified, with old and new values */
+  modified: Array<DiffEntry>;
+  /** Fields that were removed in this update */
+  removed?: Maybe<Scalars['JSON']>;
 };
 
 export type ResourceKind = Node & {
@@ -513,7 +578,19 @@ export type EventsCountNonGetQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type EventsCountNonGetQuery = { __typename?: 'Query', auditEvents: { __typename?: 'AuditEventConnection', totalCount: number } };
 
+export type GetResourceLifecycleQueryVariables = Exact<{
+  apiGroup: Scalars['String'];
+  version: Scalars['String'];
+  kind: Scalars['String'];
+  namespace?: InputMaybe<Scalars['String']>;
+  name: Scalars['String'];
+}>;
+
+
+export type GetResourceLifecycleQuery = { __typename?: 'Query', resourceLifecycle: Array<{ __typename?: 'LifecycleEvent', id: string, type: EventType, timestamp: any, user: string, resourceState: any, diff?: { __typename?: 'ResourceDiff', added?: any | null, removed?: any | null, modified: Array<{ __typename?: 'DiffEntry', path: string, oldValue: any, newValue: any }> } | null }> };
+
 
 export const EventsCountDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"eventsCount"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"auditEvents"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}},{"kind":"Field","name":{"kind":"Name","value":"hasPreviousPage"}},{"kind":"Field","name":{"kind":"Name","value":"startCursor"}},{"kind":"Field","name":{"kind":"Name","value":"endCursor"}}]}}]}}]}}]} as unknown as DocumentNode<EventsCountQuery, EventsCountQueryVariables>;
 export const CompletedRequestResponseAuditEventsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"completedRequestResponseAuditEvents"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"page"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pageSize"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"completedRequestResponseAuditEvents"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"page"},"value":{"kind":"Variable","name":{"kind":"Name","value":"page"}}},{"kind":"Argument","name":{"kind":"Name","value":"pageSize"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pageSize"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"page"}},{"kind":"Field","name":{"kind":"Name","value":"pageSize"}},{"kind":"Field","name":{"kind":"Name","value":"totalPages"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}},{"kind":"Field","name":{"kind":"Name","value":"hasPreviousPage"}},{"kind":"Field","name":{"kind":"Name","value":"rows"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"level"}},{"kind":"Field","name":{"kind":"Name","value":"stage"}},{"kind":"Field","name":{"kind":"Name","value":"verb"}},{"kind":"Field","name":{"kind":"Name","value":"useragent"}},{"kind":"Field","name":{"kind":"Name","value":"resource"}},{"kind":"Field","name":{"kind":"Name","value":"namespace"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"stagetimestamp"}},{"kind":"Field","name":{"kind":"Name","value":"apigroup"}},{"kind":"Field","name":{"kind":"Name","value":"apiversion"}}]}}]}}]}}]} as unknown as DocumentNode<CompletedRequestResponseAuditEventsQuery, CompletedRequestResponseAuditEventsQueryVariables>;
 export const EventsCountNonGetDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"eventsCountNonGet"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"auditEvents"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"verb"},"value":{"kind":"StringValue","value":"watch","block":false}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}}]}}]}}]} as unknown as DocumentNode<EventsCountNonGetQuery, EventsCountNonGetQueryVariables>;
+export const GetResourceLifecycleDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetResourceLifecycle"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"apiGroup"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"version"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"kind"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"namespace"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resourceLifecycle"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"apiGroup"},"value":{"kind":"Variable","name":{"kind":"Name","value":"apiGroup"}}},{"kind":"Argument","name":{"kind":"Name","value":"version"},"value":{"kind":"Variable","name":{"kind":"Name","value":"version"}}},{"kind":"Argument","name":{"kind":"Name","value":"kind"},"value":{"kind":"Variable","name":{"kind":"Name","value":"kind"}}},{"kind":"Argument","name":{"kind":"Name","value":"namespace"},"value":{"kind":"Variable","name":{"kind":"Name","value":"namespace"}}},{"kind":"Argument","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"timestamp"}},{"kind":"Field","name":{"kind":"Name","value":"user"}},{"kind":"Field","name":{"kind":"Name","value":"resourceState"}},{"kind":"Field","name":{"kind":"Name","value":"diff"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"added"}},{"kind":"Field","name":{"kind":"Name","value":"removed"}},{"kind":"Field","name":{"kind":"Name","value":"modified"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"path"}},{"kind":"Field","name":{"kind":"Name","value":"oldValue"}},{"kind":"Field","name":{"kind":"Name","value":"newValue"}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetResourceLifecycleQuery, GetResourceLifecycleQueryVariables>;

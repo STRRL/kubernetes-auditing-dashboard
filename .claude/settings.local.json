@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.specify/scripts/bash/check-prerequisites.sh:*)",
+      "Bash(go test:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run codegen:*)",
+      "Bash(make generate:*)",
+      "Bash(go generate:*)",
+      "Bash(sqlite3:*)",
+      "Bash(resource=\"leases\")",
+      "Bash(kind=\"$resource:0:1\")",
+      "Bash(echo \"Resource: $resource -> Kind: $kind\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
