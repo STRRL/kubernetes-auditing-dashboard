@@ -308,6 +308,8 @@ export enum EventType {
   Create = 'CREATE',
   /** Resource was deleted */
   Delete = 'DELETE',
+  /** Resource was read/accessed */
+  Get = 'GET',
   /** Resource was updated or patched */
   Update = 'UPDATE'
 }

@@ -39,7 +39,7 @@ func (r *queryResolver) ResourceLifecycle(ctx context.Context, apiGroup string, 
 	apiGroupQuery, apiVersionQuery, resourceQuery, namespaceQuery, nameQuery := ri.ToEntQuery()
 
 	// Query audit events from the database
-	// Only include mutation verbs (create, update, patch, delete) - exclude read operations (get, list, watch)
+	// Include all verbs: get, create, update, patch, delete
 	// Only include ResponseComplete stage to ensure we have full resource state for diff calculation
 	query := r.entClient.AuditEvent.Query().
 		Where(
@@ -48,7 +48,7 @@ func (r *queryResolver) ResourceLifecycle(ctx context.Context, apiGroup string, 
 			auditevent.ResourceEQ(resourceQuery),
 			auditevent.NamespaceEQ(namespaceQuery),
 			auditevent.NameEQ(nameQuery),
-			auditevent.VerbIn("create", "update", "patch", "delete"),
+			auditevent.VerbIn("get", "create", "update", "patch", "delete"),
 			auditevent.StageEQ("ResponseComplete"),
 		)
 
@@ -84,10 +84,22 @@ func (r *queryResolver) ResourceLifecycle(ctx context.Context, apiGroup string, 
 		var resourceState map[string]interface{}
 		if auditEvent.ResponseObject != nil && auditEvent.ResponseObject.Raw != nil {
 			if err := json.Unmarshal(auditEvent.ResponseObject.Raw, &resourceState); err == nil {
+				// Filter out error responses (Status objects) and mismatched kinds
+				if responseKind, ok := resourceState["kind"].(string); ok {
+					if responseKind != kind {
+						continue
+					}
+				}
 				resourceStates[event.ID] = resourceState
 			}
 		} else if auditEvent.RequestObject != nil && auditEvent.RequestObject.Raw != nil {
 			if err := json.Unmarshal(auditEvent.RequestObject.Raw, &resourceState); err == nil {
+				// Filter out error responses (Status objects) and mismatched kinds
+				if requestKind, ok := resourceState["kind"].(string); ok {
+					if requestKind != kind {
+						continue
+					}
+				}
 				resourceStates[event.ID] = resourceState
 			}
 		}
@@ -113,8 +125,19 @@ func (r *queryResolver) ResourceLifecycle(ctx context.Context, apiGroup string, 
 			gqlEventType = EventTypeUpdate
 		case lifecycle.EventTypeDelete:
 			gqlEventType = EventTypeDelete
+		case lifecycle.EventTypeGet:
+			gqlEventType = EventTypeGet
 		default:
 			gqlEventType = EventTypeUpdate
+		}
+
+		// For UPDATE/PATCH events, require both requestObject and responseObject for meaningful diff
+		if gqlEventType == EventTypeUpdate {
+			hasRequest := auditEvent.RequestObject != nil && auditEvent.RequestObject.Raw != nil
+			hasResponse := auditEvent.ResponseObject != nil && auditEvent.ResponseObject.Raw != nil
+			if !hasRequest && !hasResponse {
+				continue
+			}
 		}
 
 		// Get user from audit event
@@ -125,6 +148,11 @@ func (r *queryResolver) ResourceLifecycle(ctx context.Context, apiGroup string, 
 
 		// Get current resource state
 		currentState, hasCurrentState := resourceStates[event.ID]
+
+		// Skip events without valid resource state (error responses, filtered kinds)
+		if !hasCurrentState {
+			continue
+		}
 
 		// Convert resource state to YAML then to JSON string
 		var resourceStateJSON string

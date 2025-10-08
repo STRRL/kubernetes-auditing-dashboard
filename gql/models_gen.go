@@ -68,17 +68,20 @@ const (
 	EventTypeUpdate EventType = "UPDATE"
 	// Resource was deleted
 	EventTypeDelete EventType = "DELETE"
+	// Resource was read/accessed
+	EventTypeGet EventType = "GET"
 )
 
 var AllEventType = []EventType{
 	EventTypeCreate,
 	EventTypeUpdate,
 	EventTypeDelete,
+	EventTypeGet,
 }
 
 func (e EventType) IsValid() bool {
 	switch e {
-	case EventTypeCreate, EventTypeUpdate, EventTypeDelete:
+	case EventTypeCreate, EventTypeUpdate, EventTypeDelete, EventTypeGet:
 		return true
 	}
 	return false

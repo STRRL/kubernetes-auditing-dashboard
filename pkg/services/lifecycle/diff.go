@@ -88,8 +88,8 @@ func filterMetadata(obj map[string]interface{}) {
 		}
 	}
 
-	// Remove status for most resources as it's server-managed
-	delete(obj, "status")
+	// Keep status field to show status changes from /status subresource updates
+	// Note: We used to delete status, but users want to see Pod status transitions
 }
 
 // computeMapDiff recursively computes differences between two maps

@@ -63,6 +63,9 @@ enum EventType {
 
   """Resource was deleted"""
   DELETE
+
+  """Resource was read/accessed"""
+  GET
 }
 
 """

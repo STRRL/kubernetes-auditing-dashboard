@@ -2,7 +2,7 @@ import React from 'react';
 import { TimestampDisplay } from '../common/TimestampDisplay';
 import { DiffViewer } from './DiffViewer';
 
-type EventType = 'CREATE' | 'UPDATE' | 'DELETE';
+type EventType = 'CREATE' | 'UPDATE' | 'DELETE' | 'GET';
 
 interface LifecycleEvent {
   id: string;
@@ -25,10 +25,11 @@ interface TimelineViewProps {
   events: LifecycleEvent[];
 }
 
-const eventTypeConfig: Record<EventType, { color: string; icon: string; label: string }> = {
-  CREATE: { color: 'bg-green-500', icon: '➕', label: 'Created' },
-  UPDATE: { color: 'bg-blue-500', icon: '✏️', label: 'Updated' },
-  DELETE: { color: 'bg-red-500', icon: '🗑️', label: 'Deleted' },
+const eventTypeConfig: Record<EventType, { color: string; label: string }> = {
+  CREATE: { color: 'bg-green-500', label: 'CREATE' },
+  UPDATE: { color: 'bg-blue-500', label: 'UPDATE' },
+  DELETE: { color: 'bg-red-500', label: 'DELETE' },
+  GET: { color: 'bg-gray-500', label: 'GET' },
 };
 
 export const TimelineView: React.FC<TimelineViewProps> = ({ events }) => {
@@ -42,9 +43,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events }) => {
           <div key={event.id} className="flex gap-4">
             <div className="flex flex-col items-center">
               <div
-                className={`w-10 h-10 rounded-full ${config.color} flex items-center justify-center text-white text-lg`}
+                className={`w-10 h-10 rounded-full ${config.color} flex items-center justify-center`}
               >
-                {config.icon}
               </div>
               {!isLast && <div className="w-0.5 flex-1 bg-gray-300 mt-2"></div>}
             </div>
@@ -62,10 +62,14 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events }) => {
                 </div>
 
                 {event.type === 'UPDATE' && event.diff && (
-                  <DiffViewer diff={event.diff} />
+                  <DiffViewer
+                    diff={event.diff}
+                    currentState={event.resourceState}
+                    previousState={index < events.length - 1 ? events[index + 1].resourceState : undefined}
+                  />
                 )}
 
-                {(event.type === 'CREATE' || event.type === 'DELETE') && event.resourceState && (
+                {event.type === 'CREATE' && event.resourceState && (
                   <details className="mt-2">
                     <summary className="cursor-pointer text-sm text-blue-600 hover:text-blue-800">
                       View resource state
