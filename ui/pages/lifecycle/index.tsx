@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { graphql } from '@/modules/gql';
 import { TimelineView } from '@/modules/lifecycle/TimelineView';
 import { EmptyState } from '@/modules/lifecycle/EmptyState';
+import { Sidebar } from '@/components/Sidebar';
 
 const getResourceLifecycleQuery = graphql(/* GraphQL */ `
   query GetResourceLifecycle(
@@ -93,9 +94,8 @@ export default function LifecyclePage() {
       <Head>
         <title>Lifecycle: {displayName} | Kubernetes Auditing Dashboard</title>
       </Head>
-      <div className="drawer drawer-mobile">
-        <input id="drawer-indicator" type="checkbox" className="drawer-toggle" />
-        <div className="drawer-content flex flex-col p-4">
+      <Sidebar>
+        <div className="p-4">
           <div className="m-4">
             <h2 className="text-4xl font-bold text-gray-800">Resource Lifecycle</h2>
             <div className="mt-2 text-lg text-gray-600">
@@ -137,22 +137,7 @@ export default function LifecyclePage() {
             )}
           </div>
         </div>
-
-        <div className="drawer-side">
-          <label htmlFor="drawer-indicator" className="drawer-overlay"></label>
-          <ul className="menu p-4 w-80 bg-base-100 text-base-content">
-            <li>
-              <Link href="/">Home</Link>
-            </li>
-            <li>
-              <Link href="/events">Recent Changes</Link>
-            </li>
-            <li className="font-bold">
-              <Link href="/lifecycle">Resource Lifecycle</Link>
-            </li>
-          </ul>
-        </div>
-      </div>
+      </Sidebar>
     </>
   );
 }
