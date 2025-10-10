@@ -274,28 +274,15 @@
   - **Dependencies**: T014 (can run parallel)
   - **Parallel**: Can run with T015
 
-- [ ] **T017** Verify all tests pass and commit
+- [x] **T017** Verify all tests pass and commit
   - **Description**: Final validation before commit
   - **Actions**:
     - Verify build clean: `npm run build` ✅ PASSED
     - Verify lint clean: `npm run lint` ✅ PASSED
     - Verify no regressions in existing lifecycle page features (per quickstart.md:225-232)
     - Create commit with message: `feat: add read-only event filtering to lifecycle page`
-  - **Commit Message**:
-    ```
-    feat: add read-only event filtering to lifecycle page
-
-    - Add FilterToggle component with localStorage persistence
-    - Implement client-side filtering for GET/LIST/WATCH events
-    - Hide read-only events by default, user can toggle to show all
-    - Add filtered empty state with guidance message
-    - Position toggle in page header near resource metadata
-
-    🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-    Co-Authored-By: Claude <noreply@anthropic.com>
-    ```
-  - **Success Criteria**: All tests pass, commit created
+  - **Commit**: 15a7a8a (implementation), 18ed599 (planning docs)
+  - **Success Criteria**: All tests pass, commit created ✅ COMPLETED
   - **Dependencies**: T015, T016 (sequential)
   - **Parallel**: No
 
