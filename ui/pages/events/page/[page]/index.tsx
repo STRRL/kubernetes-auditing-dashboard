@@ -2,8 +2,7 @@ import { graphql } from '@/modules/gql'
 import { useQuery } from '@tanstack/react-query'
 import request from 'graphql-request'
 import Head from 'next/head'
-import { use, useEffect, useState } from 'react'
-import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { Sidebar } from '@/components/Sidebar'
@@ -11,20 +10,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button'
 
 const moment = require('moment');
-
-const eventsCountDocumentations = graphql(/* GraphQL */ `
-  query eventsCount{
-    auditEvents{
-      totalCount
-      pageInfo{
-        hasNextPage
-        hasPreviousPage
-        startCursor
-        endCursor
-      }
-    }
-  }
-`)
 
 const completedRequestResponseAuditEventsDocumentations = graphql(/* GraphQL */ `
   query completedRequestResponseAuditEvents($page: Int, $pageSize: Int){
@@ -65,7 +50,6 @@ const namespacedName = (namespace: string | undefined, name: string) => {
     return `${namespace}/${name}`
 }
 
-// 更新 formatUserAgent 函数
 const formatUserAgent = (userAgent: string) => {
     const wellKnownComponents = {
         'kubelet': { name: 'Kubelet', color: 'bg-blue-500' },
@@ -83,11 +67,9 @@ const formatUserAgent = (userAgent: string) => {
         }
     }
 
-    // 如果不是已知组件，返回原始字符串
     return { name: userAgent, color: '', isKnown: false };
 }
 
-// 添加这个新函数来处理 verb
 const formatVerb = (verb: string) => {
     const verbColors: { [key: string]: string } = {
         'get': 'bg-blue-500',
@@ -143,7 +125,7 @@ export default function Events() {
     const router = useRouter()
 
     const [page, setPage] = useState(0)
-    const [pageSize, setPageSize] = useState(12)  // 将这里的值从 15 改为 12
+    const [pageSize, setPageSize] = useState(12)
 
     useEffect(() => {
         setPage(parseInt(router.query.page as string || '0'))
