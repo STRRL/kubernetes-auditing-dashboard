@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { useQuery } from '@tanstack/react-query';
 import request from 'graphql-request';
@@ -7,6 +7,9 @@ import Link from 'next/link';
 import { graphql } from '@/modules/gql';
 import { TimelineView } from '@/modules/lifecycle/TimelineView';
 import { EmptyState } from '@/modules/lifecycle/EmptyState';
+import { FilterToggle } from '@/modules/lifecycle/FilterToggle';
+import { filterEvents } from '@/modules/lifecycle/filterEvents';
+import { useLocalStorage } from '@/modules/hooks/useLocalStorage';
 import { Sidebar } from '@/components/Sidebar';
 
 const getResourceLifecycleQuery = graphql(/* GraphQL */ `
@@ -54,6 +57,9 @@ export default function LifecyclePage() {
 
   const isValid = apiVersion && resourceKind && resourceName;
 
+  // Filter state with localStorage persistence (default: hide read-only events)
+  const [hideReadOnly, setHideReadOnly] = useLocalStorage('lifecycle-hide-readonly', true);
+
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['resourceLifecycle', { apiGroup, apiVersion, resourceKind, resourceNamespace, resourceName }],
     queryFn: async () => {
@@ -69,6 +75,12 @@ export default function LifecyclePage() {
     },
     enabled: !!isValid,
   });
+
+  // Filter events client-side based on user preference
+  const filteredEvents = useMemo(() => {
+    if (!data?.resourceLifecycle) return [];
+    return filterEvents(data.resourceLifecycle as any, hideReadOnly);
+  }, [data, hideReadOnly]);
 
   if (!isValid) {
     return (
@@ -97,13 +109,23 @@ export default function LifecyclePage() {
       <Sidebar>
         <div className="p-4">
           <div className="m-4">
-            <h2 className="text-4xl font-bold text-gray-800">Resource Lifecycle</h2>
-            <div className="mt-2 text-lg text-gray-600">
-              <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
-                {resourceTitle}
-              </span>
-              <span className="mx-2">/</span>
-              <span className="font-semibold">{displayName}</span>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <h2 className="text-4xl font-bold text-gray-800">Resource Lifecycle</h2>
+                <div className="mt-2 text-lg text-gray-600">
+                  <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                    {resourceTitle}
+                  </span>
+                  <span className="mx-2">/</span>
+                  <span className="font-semibold">{displayName}</span>
+                </div>
+              </div>
+              <div className="pt-2">
+                <FilterToggle
+                  checked={hideReadOnly}
+                  onChange={setHideReadOnly}
+                />
+              </div>
             </div>
           </div>
 
@@ -130,8 +152,10 @@ export default function LifecyclePage() {
               <>
                 {data.resourceLifecycle.length === 0 ? (
                   <EmptyState />
+                ) : filteredEvents.length === 0 ? (
+                  <EmptyState variant="filtered-empty" />
                 ) : (
-                  <TimelineView events={data.resourceLifecycle} />
+                  <TimelineView events={filteredEvents as any} />
                 )}
               </>
             )}
