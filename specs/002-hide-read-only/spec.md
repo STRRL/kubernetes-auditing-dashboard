@@ -38,6 +38,9 @@
 ### Session 2025-10-09
 - Q: How should Kubernetes audit event verbs beyond the examples (get/list/watch, create/update/delete/patch) be classified for filtering? → A: Blacklist read-only; show rest
 - Q: How long should the toggle preference persist when navigating between resource lifecycle pages? → A: Persist indefinitely across browser sessions using localStorage
+- Q: What should the toggle control label text be? → A: "Hide read-only events" (inverse phrasing)
+- Q: Where on the lifecycle page should the toggle be positioned? → A: In the page header, near the resource title and metadata
+- Q: What message should be displayed when no non-read-only events exist but read-only events are available? → A: "No events found. Toggle 'Hide read-only events' to see read-only operations."
 
 ---
 
@@ -47,13 +50,13 @@
 A user viewing the lifecycle of a Kubernetes resource wants to focus on meaningful change events (create, update, delete, patch) without visual clutter from read-only operations (get, list, watch). By default, the lifecycle page should hide these read-only events to provide a cleaner view of actual resource modifications. The user can toggle a switch to reveal all events when they need comprehensive audit visibility.
 
 ### Acceptance Scenarios
-1. **Given** a user navigates to a resource lifecycle page, **When** the page loads, **Then** all events except read-only operations (get, list, watch) are displayed, and read-only events are hidden by default
-2. **Given** the lifecycle page is displaying filtered events (read-only hidden), **When** the user activates the "Show read-only events" toggle, **Then** all events including get/list/watch operations become visible
-3. **Given** the lifecycle page is showing all events (read-only visible), **When** the user deactivates the toggle, **Then** the page returns to showing only non-read-only events
+1. **Given** a user navigates to a resource lifecycle page, **When** the page loads, **Then** all events except read-only operations (get, list, watch) are displayed, and the "Hide read-only events" toggle is enabled by default
+2. **Given** the lifecycle page is displaying filtered events (read-only hidden), **When** the user disables the "Hide read-only events" toggle, **Then** all events including get/list/watch operations become visible
+3. **Given** the lifecycle page is showing all events (read-only visible), **When** the user enables the "Hide read-only events" toggle, **Then** the page returns to showing only non-read-only events
 4. **Given** a user has set their preference for showing/hiding read-only events, **When** they navigate to a different resource lifecycle page or return later in a new browser session, **Then** the preference is retained and applied automatically
 
 ### Edge Cases
-- What happens when a resource has only read-only events (no other operations)? The page should display an appropriate message indicating no non-read-only events exist, with guidance to enable the toggle to see read-only operations.
+- What happens when a resource has only read-only events (no other operations)? The page should display the message "No events found. Toggle 'Hide read-only events' to see read-only operations."
 - How does the system handle mixed event sequences? Events should be filtered client-side while maintaining chronological order of visible events.
 - What happens if there are no events at all? The existing empty state should be displayed.
 
@@ -65,14 +68,14 @@ A user viewing the lifecycle of a Kubernetes resource wants to focus on meaningf
 - **FR-003**: Toggle control MUST clearly indicate its current state (whether read-only events are shown or hidden)
 - **FR-004**: System MUST display all events except those explicitly blacklisted as read-only (get, list, watch) when read-only events are hidden
 - **FR-005**: System MUST display all events (including read-only) when the toggle is activated
-- **FR-006**: System MUST preserve the user's toggle preference when navigating between different resource lifecycle pages within the same session
+- **FR-006**: System MUST persist the user's toggle preference indefinitely across browser sessions, navigation between different resource lifecycle pages, and page refreshes
 - **FR-007**: System MUST maintain chronological ordering of events regardless of filter state
-- **FR-008**: System MUST provide visual feedback when no non-read-only events exist but read-only events are available
-- **FR-009**: Toggle control MUST be easily accessible and clearly labeled for user understanding
+- **FR-008**: System MUST display the message "No events found. Toggle 'Hide read-only events' to see read-only operations." when no non-read-only events exist but read-only events are available
+- **FR-009**: Toggle control MUST be positioned in the page header near the resource title and metadata, labeled "Hide read-only events" with clear visual indication of its current state
 
 ### Key Entities
 - **Event Type Classification**: Events are filtered using a blacklist approach—only get, list, and watch verbs are classified as "read-only" and hidden by default; all other event verbs are shown
-- **Filter State**: User preference for showing or hiding read-only events, maintained during the session
+- **Filter State**: User preference for showing or hiding read-only events, persisted indefinitely across browser sessions
 
 ---
 
