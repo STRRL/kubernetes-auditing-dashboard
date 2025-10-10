@@ -88,6 +88,21 @@ type ComplexityRoot struct {
 		TotalPages      func(childComplexity int) int
 	}
 
+	DiffEntry struct {
+		NewValue func(childComplexity int) int
+		OldValue func(childComplexity int) int
+		Path     func(childComplexity int) int
+	}
+
+	LifecycleEvent struct {
+		Diff          func(childComplexity int) int
+		ID            func(childComplexity int) int
+		ResourceState func(childComplexity int) int
+		Timestamp     func(childComplexity int) int
+		Type          func(childComplexity int) int
+		User          func(childComplexity int) int
+	}
+
 	Mutation struct {
 		ImportResourceKindTsv func(childComplexity int, tsv string) int
 	}
@@ -105,6 +120,13 @@ type ComplexityRoot struct {
 		Node                                func(childComplexity int, id int) int
 		Nodes                               func(childComplexity int, ids []int) int
 		ResourceKinds                       func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.ResourceKindWhereInput) int
+		ResourceLifecycle                   func(childComplexity int, apiGroup string, version string, kind string, namespace *string, name string) int
+	}
+
+	ResourceDiff struct {
+		Added    func(childComplexity int) int
+		Modified func(childComplexity int) int
+		Removed  func(childComplexity int) int
 	}
 
 	ResourceKind struct {
@@ -140,6 +162,7 @@ type QueryResolver interface {
 	AuditEvents(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.AuditEventOrder, where *ent.AuditEventWhereInput) (*ent.AuditEventConnection, error)
 	ResourceKinds(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.ResourceKindWhereInput) (*ent.ResourceKindConnection, error)
 	CompletedRequestResponseAuditEvents(ctx context.Context, page *int, pageSize *int) (*AuditEventPagination, error)
+	ResourceLifecycle(ctx context.Context, apiGroup string, version string, kind string, namespace *string, name string) ([]*LifecycleEvent, error)
 }
 
 type executableSchema struct {
@@ -327,6 +350,62 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.AuditEventPagination.TotalPages(childComplexity), true
 
+	case "DiffEntry.newValue":
+		if e.complexity.DiffEntry.NewValue == nil {
+			break
+		}
+
+		return e.complexity.DiffEntry.NewValue(childComplexity), true
+	case "DiffEntry.oldValue":
+		if e.complexity.DiffEntry.OldValue == nil {
+			break
+		}
+
+		return e.complexity.DiffEntry.OldValue(childComplexity), true
+	case "DiffEntry.path":
+		if e.complexity.DiffEntry.Path == nil {
+			break
+		}
+
+		return e.complexity.DiffEntry.Path(childComplexity), true
+
+	case "LifecycleEvent.diff":
+		if e.complexity.LifecycleEvent.Diff == nil {
+			break
+		}
+
+		return e.complexity.LifecycleEvent.Diff(childComplexity), true
+	case "LifecycleEvent.id":
+		if e.complexity.LifecycleEvent.ID == nil {
+			break
+		}
+
+		return e.complexity.LifecycleEvent.ID(childComplexity), true
+	case "LifecycleEvent.resourceState":
+		if e.complexity.LifecycleEvent.ResourceState == nil {
+			break
+		}
+
+		return e.complexity.LifecycleEvent.ResourceState(childComplexity), true
+	case "LifecycleEvent.timestamp":
+		if e.complexity.LifecycleEvent.Timestamp == nil {
+			break
+		}
+
+		return e.complexity.LifecycleEvent.Timestamp(childComplexity), true
+	case "LifecycleEvent.type":
+		if e.complexity.LifecycleEvent.Type == nil {
+			break
+		}
+
+		return e.complexity.LifecycleEvent.Type(childComplexity), true
+	case "LifecycleEvent.user":
+		if e.complexity.LifecycleEvent.User == nil {
+			break
+		}
+
+		return e.complexity.LifecycleEvent.User(childComplexity), true
+
 	case "Mutation.importResourceKindTSV":
 		if e.complexity.Mutation.ImportResourceKindTsv == nil {
 			break
@@ -419,6 +498,36 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Query.ResourceKinds(childComplexity, args["after"].(*entgql.Cursor[int]), args["first"].(*int), args["before"].(*entgql.Cursor[int]), args["last"].(*int), args["where"].(*ent.ResourceKindWhereInput)), true
+	case "Query.resourceLifecycle":
+		if e.complexity.Query.ResourceLifecycle == nil {
+			break
+		}
+
+		args, err := ec.field_Query_resourceLifecycle_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ResourceLifecycle(childComplexity, args["apiGroup"].(string), args["version"].(string), args["kind"].(string), args["namespace"].(*string), args["name"].(string)), true
+
+	case "ResourceDiff.added":
+		if e.complexity.ResourceDiff.Added == nil {
+			break
+		}
+
+		return e.complexity.ResourceDiff.Added(childComplexity), true
+	case "ResourceDiff.modified":
+		if e.complexity.ResourceDiff.Modified == nil {
+			break
+		}
+
+		return e.complexity.ResourceDiff.Modified(childComplexity), true
+	case "ResourceDiff.removed":
+		if e.complexity.ResourceDiff.Removed == nil {
+			break
+		}
+
+		return e.complexity.ResourceDiff.Removed(childComplexity), true
 
 	case "ResourceKind.apiversion":
 		if e.complexity.ResourceKind.ApiVersion == nil {
@@ -598,7 +707,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "time.graphql" "ent.graphql" "mutation.graphql" "auditevents.graphql" "resourcekind.graphql"
+//go:embed "time.graphql" "ent.graphql" "mutation.graphql" "auditevents.graphql" "resourcekind.graphql" "lifecycle.graphql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -615,6 +724,7 @@ var sources = []*ast.Source{
 	{Name: "mutation.graphql", Input: sourceData("mutation.graphql"), BuiltIn: false},
 	{Name: "auditevents.graphql", Input: sourceData("auditevents.graphql"), BuiltIn: false},
 	{Name: "resourcekind.graphql", Input: sourceData("resourcekind.graphql"), BuiltIn: false},
+	{Name: "lifecycle.graphql", Input: sourceData("lifecycle.graphql"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -746,6 +856,37 @@ func (ec *executionContext) field_Query_resourceKinds_args(ctx context.Context, 
 		return nil, err
 	}
 	args["where"] = arg4
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_resourceLifecycle_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "apiGroup", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["apiGroup"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "version", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["version"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "kind", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["kind"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "namespace", ec.unmarshalOString2ᚖstring)
+	if err != nil {
+		return nil, err
+	}
+	args["namespace"] = arg3
+	arg4, err := graphql.ProcessArgField(ctx, rawArgs, "name", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["name"] = arg4
 	return args, nil
 }
 
@@ -1664,6 +1805,275 @@ func (ec *executionContext) fieldContext_AuditEventPagination_rows(_ context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _DiffEntry_path(ctx context.Context, field graphql.CollectedField, obj *DiffEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DiffEntry_path,
+		func(ctx context.Context) (any, error) {
+			return obj.Path, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DiffEntry_path(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DiffEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DiffEntry_oldValue(ctx context.Context, field graphql.CollectedField, obj *DiffEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DiffEntry_oldValue,
+		func(ctx context.Context) (any, error) {
+			return obj.OldValue, nil
+		},
+		nil,
+		ec.marshalNJSON2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DiffEntry_oldValue(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DiffEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type JSON does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DiffEntry_newValue(ctx context.Context, field graphql.CollectedField, obj *DiffEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DiffEntry_newValue,
+		func(ctx context.Context) (any, error) {
+			return obj.NewValue, nil
+		},
+		nil,
+		ec.marshalNJSON2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DiffEntry_newValue(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DiffEntry",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type JSON does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LifecycleEvent_id(ctx context.Context, field graphql.CollectedField, obj *LifecycleEvent) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_LifecycleEvent_id,
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		ec.marshalNID2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_LifecycleEvent_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LifecycleEvent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LifecycleEvent_type(ctx context.Context, field graphql.CollectedField, obj *LifecycleEvent) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_LifecycleEvent_type,
+		func(ctx context.Context) (any, error) {
+			return obj.Type, nil
+		},
+		nil,
+		ec.marshalNEventType2githubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐEventType,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_LifecycleEvent_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LifecycleEvent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type EventType does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LifecycleEvent_timestamp(ctx context.Context, field graphql.CollectedField, obj *LifecycleEvent) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_LifecycleEvent_timestamp,
+		func(ctx context.Context) (any, error) {
+			return obj.Timestamp, nil
+		},
+		nil,
+		ec.marshalNTime2timeᚐTime,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_LifecycleEvent_timestamp(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LifecycleEvent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LifecycleEvent_user(ctx context.Context, field graphql.CollectedField, obj *LifecycleEvent) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_LifecycleEvent_user,
+		func(ctx context.Context) (any, error) {
+			return obj.User, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_LifecycleEvent_user(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LifecycleEvent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LifecycleEvent_resourceState(ctx context.Context, field graphql.CollectedField, obj *LifecycleEvent) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_LifecycleEvent_resourceState,
+		func(ctx context.Context) (any, error) {
+			return obj.ResourceState, nil
+		},
+		nil,
+		ec.marshalNJSON2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_LifecycleEvent_resourceState(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LifecycleEvent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type JSON does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LifecycleEvent_diff(ctx context.Context, field graphql.CollectedField, obj *LifecycleEvent) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_LifecycleEvent_diff,
+		func(ctx context.Context) (any, error) {
+			return obj.Diff, nil
+		},
+		nil,
+		ec.marshalOResourceDiff2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐResourceDiff,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_LifecycleEvent_diff(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LifecycleEvent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "added":
+				return ec.fieldContext_ResourceDiff_added(ctx, field)
+			case "removed":
+				return ec.fieldContext_ResourceDiff_removed(ctx, field)
+			case "modified":
+				return ec.fieldContext_ResourceDiff_modified(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ResourceDiff", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_importResourceKindTSV(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2058,6 +2468,61 @@ func (ec *executionContext) fieldContext_Query_completedRequestResponseAuditEven
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_resourceLifecycle(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_resourceLifecycle,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Query().ResourceLifecycle(ctx, fc.Args["apiGroup"].(string), fc.Args["version"].(string), fc.Args["kind"].(string), fc.Args["namespace"].(*string), fc.Args["name"].(string))
+		},
+		nil,
+		ec.marshalNLifecycleEvent2ᚕᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐLifecycleEventᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_resourceLifecycle(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_LifecycleEvent_id(ctx, field)
+			case "type":
+				return ec.fieldContext_LifecycleEvent_type(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_LifecycleEvent_timestamp(ctx, field)
+			case "user":
+				return ec.fieldContext_LifecycleEvent_user(ctx, field)
+			case "resourceState":
+				return ec.fieldContext_LifecycleEvent_resourceState(ctx, field)
+			case "diff":
+				return ec.fieldContext_LifecycleEvent_diff(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type LifecycleEvent", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_resourceLifecycle_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2161,6 +2626,101 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ResourceDiff_added(ctx context.Context, field graphql.CollectedField, obj *ResourceDiff) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ResourceDiff_added,
+		func(ctx context.Context) (any, error) {
+			return obj.Added, nil
+		},
+		nil,
+		ec.marshalOJSON2ᚖstring,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_ResourceDiff_added(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ResourceDiff",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type JSON does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ResourceDiff_removed(ctx context.Context, field graphql.CollectedField, obj *ResourceDiff) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ResourceDiff_removed,
+		func(ctx context.Context) (any, error) {
+			return obj.Removed, nil
+		},
+		nil,
+		ec.marshalOJSON2ᚖstring,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_ResourceDiff_removed(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ResourceDiff",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type JSON does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ResourceDiff_modified(ctx context.Context, field graphql.CollectedField, obj *ResourceDiff) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_ResourceDiff_modified,
+		func(ctx context.Context) (any, error) {
+			return obj.Modified, nil
+		},
+		nil,
+		ec.marshalNDiffEntry2ᚕᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐDiffEntryᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_ResourceDiff_modified(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ResourceDiff",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "path":
+				return ec.fieldContext_DiffEntry_path(ctx, field)
+			case "oldValue":
+				return ec.fieldContext_DiffEntry_oldValue(ctx, field)
+			case "newValue":
+				return ec.fieldContext_DiffEntry_newValue(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DiffEntry", field.Name)
 		},
 	}
 	return fc, nil
@@ -6076,6 +6636,116 @@ func (ec *executionContext) _AuditEventPagination(ctx context.Context, sel ast.S
 	return out
 }
 
+var diffEntryImplementors = []string{"DiffEntry"}
+
+func (ec *executionContext) _DiffEntry(ctx context.Context, sel ast.SelectionSet, obj *DiffEntry) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, diffEntryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DiffEntry")
+		case "path":
+			out.Values[i] = ec._DiffEntry_path(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "oldValue":
+			out.Values[i] = ec._DiffEntry_oldValue(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "newValue":
+			out.Values[i] = ec._DiffEntry_newValue(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var lifecycleEventImplementors = []string{"LifecycleEvent"}
+
+func (ec *executionContext) _LifecycleEvent(ctx context.Context, sel ast.SelectionSet, obj *LifecycleEvent) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, lifecycleEventImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("LifecycleEvent")
+		case "id":
+			out.Values[i] = ec._LifecycleEvent_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "type":
+			out.Values[i] = ec._LifecycleEvent_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "timestamp":
+			out.Values[i] = ec._LifecycleEvent_timestamp(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "user":
+			out.Values[i] = ec._LifecycleEvent_user(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "resourceState":
+			out.Values[i] = ec._LifecycleEvent_resourceState(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "diff":
+			out.Values[i] = ec._LifecycleEvent_diff(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -6299,6 +6969,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "resourceLifecycle":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_resourceLifecycle(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -6307,6 +6999,49 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var resourceDiffImplementors = []string{"ResourceDiff"}
+
+func (ec *executionContext) _ResourceDiff(ctx context.Context, sel ast.SelectionSet, obj *ResourceDiff) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, resourceDiffImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ResourceDiff")
+		case "added":
+			out.Values[i] = ec._ResourceDiff_added(ctx, field, obj)
+		case "removed":
+			out.Values[i] = ec._ResourceDiff_removed(ctx, field, obj)
+		case "modified":
+			out.Values[i] = ec._ResourceDiff_modified(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6963,6 +7698,70 @@ func (ec *executionContext) marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCurso
 	return v
 }
 
+func (ec *executionContext) marshalNDiffEntry2ᚕᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐDiffEntryᚄ(ctx context.Context, sel ast.SelectionSet, v []*DiffEntry) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNDiffEntry2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐDiffEntry(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNDiffEntry2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐDiffEntry(ctx context.Context, sel ast.SelectionSet, v *DiffEntry) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._DiffEntry(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNEventType2githubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐEventType(ctx context.Context, v any) (EventType, error) {
+	var res EventType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNEventType2githubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐEventType(ctx context.Context, sel ast.SelectionSet, v EventType) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) unmarshalNID2int(ctx context.Context, v any) (int, error) {
 	res, err := graphql.UnmarshalIntID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -7023,6 +7822,76 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNJSON2string(ctx context.Context, v any) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNJSON2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	_ = sel
+	res := graphql.MarshalString(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) marshalNLifecycleEvent2ᚕᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐLifecycleEventᚄ(ctx context.Context, sel ast.SelectionSet, v []*LifecycleEvent) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNLifecycleEvent2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐLifecycleEvent(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNLifecycleEvent2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐLifecycleEvent(ctx context.Context, sel ast.SelectionSet, v *LifecycleEvent) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._LifecycleEvent(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNNode2ᚕgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐNoder(ctx context.Context, sel ast.SelectionSet, v []ent.Noder) graphql.Marshaler {
@@ -7593,11 +8462,36 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
+func (ec *executionContext) unmarshalOJSON2ᚖstring(ctx context.Context, v any) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalString(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOJSON2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	_ = sel
+	_ = ctx
+	res := graphql.MarshalString(*v)
+	return res
+}
+
 func (ec *executionContext) marshalONode2githubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐNoder(ctx context.Context, sel ast.SelectionSet, v ent.Noder) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Node(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOResourceDiff2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐResourceDiff(ctx context.Context, sel ast.SelectionSet, v *ResourceDiff) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ResourceDiff(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOResourceKind2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋentᚐResourceKind(ctx context.Context, sel ast.SelectionSet, v *ent.ResourceKind) graphql.Marshaler {

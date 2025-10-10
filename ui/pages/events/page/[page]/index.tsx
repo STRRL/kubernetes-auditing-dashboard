@@ -5,6 +5,10 @@ import Head from 'next/head'
 import { use, useEffect, useState } from 'react'
 import { useParams } from 'next/navigation';
 import { useRouter } from 'next/router'
+import Link from 'next/link'
+import { Sidebar } from '@/components/Sidebar'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
 
 const moment = require('moment');
 
@@ -118,6 +122,23 @@ const formatTime = (timestamp: string) => {
     };
 }
 
+const buildLifecycleUrl = (apiGroup: string | undefined, apiVersion: string, resource: string, namespace: string | undefined, name: string) => {
+    const kind = resource.charAt(0).toUpperCase() + resource.slice(1, -1);
+
+    const params = new URLSearchParams();
+    if (apiGroup && apiGroup !== '') {
+        params.set('group', apiGroup);
+    }
+    params.set('version', apiVersion);
+    params.set('kind', kind);
+    if (namespace && namespace !== '') {
+        params.set('namespace', namespace);
+    }
+    params.set('name', name);
+
+    return `/lifecycle?${params.toString()}`;
+}
+
 export default function Events() {
     const router = useRouter()
 
@@ -143,44 +164,45 @@ export default function Events() {
             <Head>
                 <title>Kubernetes Auditing Dashboard</title>
             </Head>
-            <div className="drawer drawer-mobile">
-                <input id="drawer-indicator" type="checkbox" className="drawer-toggle" />
-                <div className="drawer-content flex flex-col p-4">
+            <Sidebar>
+                <div className="p-4">
                     <div className='m-4'>
-                        <h2 className='text-4xl'>Recent Changes</h2>
+                        <h2 className='text-4xl font-bold'>Recent Changes</h2>
                     </div>
                     <div className='m-4'>
                         <div className="overflow-x-auto">
-                            <table className="table w-full">
-                                {/* head*/}
-                                <thead>
-                                    <tr>
-                                        <th>Verb</th>
-                                        <th>Resource / Name</th>
-                                        <th>Component / User-Agent</th>
-                                        <th>Time</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Verb</TableHead>
+                                        <TableHead>Resource / Name</TableHead>
+                                        <TableHead>Component / User-Agent</TableHead>
+                                        <TableHead>Time</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
                                     {
                                         eventsListQuery.data?.completedRequestResponseAuditEvents.rows?.map((item, index) => {
                                             const userAgent = formatUserAgent(item?.useragent || '');
                                             const verbInfo = formatVerb(item?.verb || '');
                                             const resourceInfo = formatResource(item?.apigroup, item?.apiversion!, item?.resource!, item?.namespace, item?.name!);
                                             const timeInfo = formatTime(item?.stagetimestamp);
-                                            return (<tr key={item?.id}>
-                                                <td>
+                                            const lifecycleUrl = buildLifecycleUrl(item?.apigroup, item?.apiversion!, item?.resource!, item?.namespace, item?.name!);
+                                            return (<TableRow key={item?.id}>
+                                                <TableCell>
                                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold text-white ${verbInfo.color}`}>
                                                         {verbInfo.verb}
                                                     </span>
-                                                </td>
-                                                <td>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-medium text-gray-700">{resourceInfo.resource}</span>
-                                                        <span className="text-xs text-gray-500">{resourceInfo.name}</span>
-                                                    </div>
-                                                </td>
-                                                <td>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Link href={lifecycleUrl} className="hover:opacity-80 transition-opacity">
+                                                        <div className="flex flex-col cursor-pointer">
+                                                            <span className="text-sm font-medium text-gray-700">{resourceInfo.resource}</span>
+                                                            <span className="text-xs text-blue-600 hover:text-blue-800 underline">{resourceInfo.name}</span>
+                                                        </div>
+                                                    </Link>
+                                                </TableCell>
+                                                <TableCell>
                                                     {userAgent.isKnown ? (
                                                         <span className={`px-2 py-1 rounded-full text-xs font-semibold text-white ${userAgent.color}`}>
                                                             {userAgent.name}
@@ -188,49 +210,56 @@ export default function Events() {
                                                     ) : (
                                                         userAgent.name
                                                     )}
-                                                </td>
-                                                <td>
+                                                </TableCell>
+                                                <TableCell>
                                                     <div className="flex flex-col">
                                                         <span className="text-sm font-medium text-gray-700">{timeInfo.time}</span>
                                                         <span className="text-xs text-gray-500">{timeInfo.date}</span>
                                                         <span className="text-xs text-gray-400">{timeInfo.fromNow}</span>
                                                     </div>
-                                                </td>
-                                            </tr>)
+                                                </TableCell>
+                                            </TableRow>)
                                         })
                                     }
-                                </tbody>
-                            </table>
+                                </TableBody>
+                            </Table>
                         </div>
                     </div>
-                    <div className='flex justify-center'>
-                        <div className="btn-group">
-                            <button className={`btn ${page > 0 ? "" : "btn-disabled"}`} onClick={() => {
-                                router.push(`/events/page/0`)
-                            }}>««</button>
-                            <button className={`btn ${eventsListQuery.data?.completedRequestResponseAuditEvents.hasPreviousPage ? "" : "btn-disabled"}`} onClick={() => {
-                                router.push(`/events/page/${page - 1}`)
-                            }}>«</button>
-                            <button className="btn">Page {`${page + 1} / ${eventsListQuery.data?.completedRequestResponseAuditEvents.totalPages}`}</button>
-                            <button className={`btn ${eventsListQuery.data?.completedRequestResponseAuditEvents.hasNextPage ? "" : "btn-disabled"}`} onClick={() => {
-                                router.push(`/events/page/${page + 1}`)
-                            }}>»</button>
-                            <button className={`btn ${page < (eventsListQuery.data?.completedRequestResponseAuditEvents.totalPages || 0) - 1 ? "" : "btn-disabled"}`} onClick={() => {
-                                router.push(`/events/page/${(eventsListQuery.data?.completedRequestResponseAuditEvents.totalPages || 1) - 1}`)
-                            }}>»»</button>
-                        </div>
+                    <div className='flex justify-center gap-2'>
+                        <Button
+                            variant="outline"
+                            disabled={page === 0}
+                            onClick={() => router.push(`/events/page/0`)}
+                        >
+                            ««
+                        </Button>
+                        <Button
+                            variant="outline"
+                            disabled={!eventsListQuery.data?.completedRequestResponseAuditEvents.hasPreviousPage}
+                            onClick={() => router.push(`/events/page/${page - 1}`)}
+                        >
+                            «
+                        </Button>
+                        <Button variant="outline" disabled>
+                            Page {`${page + 1} / ${eventsListQuery.data?.completedRequestResponseAuditEvents.totalPages}`}
+                        </Button>
+                        <Button
+                            variant="outline"
+                            disabled={!eventsListQuery.data?.completedRequestResponseAuditEvents.hasNextPage}
+                            onClick={() => router.push(`/events/page/${page + 1}`)}
+                        >
+                            »
+                        </Button>
+                        <Button
+                            variant="outline"
+                            disabled={page >= (eventsListQuery.data?.completedRequestResponseAuditEvents.totalPages || 0) - 1}
+                            onClick={() => router.push(`/events/page/${(eventsListQuery.data?.completedRequestResponseAuditEvents.totalPages || 1) - 1}`)}
+                        >
+                            »»
+                        </Button>
                     </div>
                 </div>
-
-                <div className="drawer-side">
-                    <label htmlFor="drawer-indicator" className="drawer-overlay"></label>
-                    <ul className="menu p-4 w-80 bg-base-100 text-base-content">
-                        <li><a href='/'>Home</a></li>
-                        <li><a href='/events'>Recent Changes</a></li>
-                        <li><a href='/lifecycle'>Resource Lifecycle(TBD)</a></li>
-                    </ul>
-                </div>
-            </div>
+            </Sidebar>
         </>
     )
 }

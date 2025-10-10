@@ -5,6 +5,7 @@ schema:
   - mutation.graphql
   - auditevents.graphql
   - resourcekind.graphql
+  - lifecycle.graphql
 
 # resolver reports where the resolver implementations go.
 resolver:

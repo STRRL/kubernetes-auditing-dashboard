@@ -1,0 +1,325 @@
+# GraphQL Contract: Resource Lifecycle Query
+
+## Query Definition
+
+```graphql
+type Query {
+  """
+  Retrieve the complete lifecycle history of a Kubernetes resource.
+  Returns events in reverse chronological order (newest first).
+  """
+  resourceLifecycle(
+    apiGroup: String!
+    version: String!
+    kind: String!
+    namespace: String
+    name: String!
+  ): [LifecycleEvent!]!
+}
+```
+
+## Response Types
+
+```graphql
+type LifecycleEvent {
+  """Unique identifier for the audit event"""
+  id: ID!
+
+  """Type of lifecycle event: CREATE, UPDATE, or DELETE"""
+  type: EventType!
+
+  """ISO 8601 timestamp when the event occurred"""
+  timestamp: Time!
+
+  """User or service account that triggered the event"""
+  user: String!
+
+  """Complete resource state at the time of this event (YAML as JSON)"""
+  resourceState: JSON!
+
+  """Diff showing changes from previous version (null for CREATE and DELETE events)"""
+  diff: ResourceDiff
+}
+
+enum EventType {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+type ResourceDiff {
+  """Fields that were added in this update"""
+  added: JSON
+
+  """Fields that were removed in this update"""
+  removed: JSON
+
+  """Fields that were modified, with old and new values"""
+  modified: [DiffEntry!]!
+}
+
+type DiffEntry {
+  """JSON path to the changed field (e.g., "spec.replicas")"""
+  path: String!
+
+  """Previous value before the change"""
+  oldValue: JSON!
+
+  """New value after the change"""
+  newValue: JSON!
+}
+
+"""ISO 8601 timestamp scalar"""
+scalar Time
+
+"""Arbitrary JSON data"""
+scalar JSON
+```
+
+## Input Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `apiGroup` | String | Yes | Kubernetes API group (empty string for core resources) |
+| `version` | String | Yes | API version (e.g., "v1") |
+| `kind` | String | Yes | Resource kind (e.g., "Deployment") |
+| `namespace` | String | No | Namespace for namespaced resources (omit for cluster-scoped) |
+| `name` | String | Yes | Resource name |
+
+## Response Guarantees
+
+### Success Response (HTTP 200)
+- Returns array of `LifecycleEvent` objects
+- Array is empty if no audit events found (not an error)
+- Events ordered by `timestamp` descending (newest first)
+- Each event has non-null `id`, `type`, `timestamp`, `user`, `resourceState`
+- `diff` is null for CREATE and DELETE events
+- `diff` is populated for UPDATE events with at least one changed field
+
+### Error Response (HTTP 400/500)
+```graphql
+{
+  "errors": [
+    {
+      "message": "Invalid resource identifier: kind cannot be empty",
+      "path": ["resourceLifecycle"],
+      "extensions": {
+        "code": "BAD_USER_INPUT"
+      }
+    }
+  ]
+}
+```
+
+## Example Requests & Responses
+
+### Example 1: Namespaced Resource (Deployment)
+
+**Request:**
+```graphql
+query {
+  resourceLifecycle(
+    apiGroup: "apps"
+    version: "v1"
+    kind: "Deployment"
+    namespace: "default"
+    name: "webapp"
+  ) {
+    id
+    type
+    timestamp
+    user
+    resourceState
+    diff {
+      added
+      removed
+      modified {
+        path
+        oldValue
+        newValue
+      }
+    }
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "resourceLifecycle": [
+      {
+        "id": "103",
+        "type": "UPDATE",
+        "timestamp": "2025-10-06T15:30:00Z",
+        "user": "kubectl/v1.28.0",
+        "resourceState": {
+          "apiVersion": "apps/v1",
+          "kind": "Deployment",
+          "metadata": { "name": "webapp", "namespace": "default" },
+          "spec": { "replicas": 3 }
+        },
+        "diff": {
+          "added": null,
+          "removed": null,
+          "modified": [
+            {
+              "path": "spec.replicas",
+              "oldValue": 1,
+              "newValue": 3
+            }
+          ]
+        }
+      },
+      {
+        "id": "42",
+        "type": "CREATE",
+        "timestamp": "2025-10-06T10:00:00Z",
+        "user": "admin",
+        "resourceState": {
+          "apiVersion": "apps/v1",
+          "kind": "Deployment",
+          "metadata": { "name": "webapp", "namespace": "default" },
+          "spec": { "replicas": 1 }
+        },
+        "diff": null
+      }
+    ]
+  }
+}
+```
+
+### Example 2: Cluster-Scoped Resource (Namespace)
+
+**Request:**
+```graphql
+query {
+  resourceLifecycle(
+    apiGroup: ""
+    version: "v1"
+    kind: "Namespace"
+    name: "production"
+  ) {
+    id
+    type
+    timestamp
+    user
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "resourceLifecycle": [
+      {
+        "id": "201",
+        "type": "CREATE",
+        "timestamp": "2025-10-05T08:00:00Z",
+        "user": "cluster-admin"
+      }
+    ]
+  }
+}
+```
+
+### Example 3: No Events Found
+
+**Request:**
+```graphql
+query {
+  resourceLifecycle(
+    apiGroup: "apps"
+    version: "v1"
+    kind: "Deployment"
+    namespace: "default"
+    name: "nonexistent"
+  ) {
+    id
+    type
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "resourceLifecycle": []
+  }
+}
+```
+
+### Example 4: Deleted Resource
+
+**Request:**
+```graphql
+query {
+  resourceLifecycle(
+    apiGroup: "apps"
+    version: "v1"
+    kind: "Deployment"
+    namespace: "default"
+    name: "old-app"
+  ) {
+    id
+    type
+    timestamp
+    diff
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "resourceLifecycle": [
+      {
+        "id": "305",
+        "type": "DELETE",
+        "timestamp": "2025-10-06T16:00:00Z",
+        "diff": null
+      },
+      {
+        "id": "304",
+        "type": "UPDATE",
+        "timestamp": "2025-10-06T14:00:00Z",
+        "diff": { "added": null, "removed": null, "modified": [...] }
+      },
+      {
+        "id": "300",
+        "type": "CREATE",
+        "timestamp": "2025-10-06T12:00:00Z",
+        "diff": null
+      }
+    ]
+  }
+}
+```
+
+## Validation Rules
+
+1. **Required Fields**: `apiGroup`, `version`, `kind`, `name` must be provided (apiGroup can be empty string)
+2. **Kind Validation**: Must not be empty string
+3. **Version Validation**: Must not be empty string
+4. **Name Validation**: Must not be empty string
+5. **Namespace Validation**: Optional; when omitted, queries cluster-scoped resources
+
+## Performance Characteristics
+
+- **Query Time**: O(log n) index lookup + O(m) result scan where m = number of lifecycle events
+- **Expected Response Time**: <500ms for resources with <100 events
+- **Maximum Events**: No hard limit, pagination may be added in future iterations
+- **Index Requirements**: Composite index on (apiGroup, apiVersion, resource, namespace, name, requestTimestamp)
+
+## Error Codes
+
+| Code | Condition | HTTP Status |
+|------|-----------|-------------|
+| `BAD_USER_INPUT` | Invalid query parameters (empty kind, version, or name) | 400 |
+| `INTERNAL_SERVER_ERROR` | Database error or diff computation failure | 500 |
+| `FORBIDDEN` | Future: authentication/authorization failure | 403 |
+
+---

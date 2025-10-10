@@ -4,7 +4,9 @@ import { useQuery } from '@tanstack/react-query'
 import request from 'graphql-request'
 import Head from 'next/head'
 import { useState } from 'react'
-import { useParams } from 'next/navigation';
+import { useParams } from 'next/navigation'
+import { Sidebar } from '@/components/Sidebar'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
 const eventsCountDocumentations = graphql(/* GraphQL */ `
   query eventsCount{
@@ -100,43 +102,31 @@ export default function Home() {
       <Head>
         <title>Kubernetes Auditing Dashboard</title>
       </Head>
-      <div className="drawer drawer-mobile">
-        <input id="drawer-indicator" type="checkbox" className="drawer-toggle" />
-        <div className="drawer-content flex flex-col p-4">
+      <Sidebar>
+        <div className="p-4">
           <div className='m-4'>
-            <h2 className='text-4xl'>Discovery</h2>
+            <h2 className='text-4xl font-bold'>Discovery</h2>
           </div>
-          <div className='flex'>
-            <div className="flex stats shadow mx-4 w-1/4">
-              <div className="stat">
-                <div className="stat-title">Total Events</div>
-                <div className="stat-value">{eventsCountQuery.data?.auditEvents.totalCount.toLocaleString()}</div>
-                <div className="stat-desc"></div>
-              </div>
-            </div>
-            <div className="flex stats shadow mx-4 w-1/4">
-              <div className="stat">
-                <div className="stat-title">Non-Get Events</div>
-                <div className="stat-value">{nonGetEventsCountQuery.data?.auditEvents.totalCount.toLocaleString()}</div>
-                <div className="stat-desc"></div>
-              </div>
-            </div>
+          <div className='flex gap-4 mx-4'>
+            <Card className="w-1/4">
+              <CardHeader>
+                <CardDescription>Total Events</CardDescription>
+                <CardTitle className="text-3xl">{eventsCountQuery.data?.auditEvents.totalCount.toLocaleString()}</CardTitle>
+              </CardHeader>
+            </Card>
+            <Card className="w-1/4">
+              <CardHeader>
+                <CardDescription>Non-Get Events</CardDescription>
+                <CardTitle className="text-3xl">{nonGetEventsCountQuery.data?.auditEvents.totalCount.toLocaleString()}</CardTitle>
+              </CardHeader>
+            </Card>
           </div>
           <div className='m-4'>
             <div className="overflow-x-auto">
             </div>
           </div>
         </div>
-
-        <div className="drawer-side">
-          <label htmlFor="drawer-indicator" className="drawer-overlay"></label>
-          <ul className="menu p-4 w-80 bg-base-100 text-base-content">
-            <li><a href='/'>Home</a></li>
-            <li><a href='/events'>Recent Changes</a></li>
-            <li><a href='/lifecycle'>Resource Lifecycle(TBD)</a></li>
-          </ul>
-        </div>
-      </div>
+      </Sidebar>
     </>
   )
 }

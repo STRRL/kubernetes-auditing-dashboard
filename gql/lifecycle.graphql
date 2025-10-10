@@ -1,0 +1,99 @@
+# Resource Lifecycle Query Schema
+
+"""
+Represents arbitrary JSON data
+"""
+scalar JSON
+
+extend type Query {
+  """
+  Retrieve the complete lifecycle history of a Kubernetes resource.
+  Returns events in reverse chronological order (newest first).
+  """
+  resourceLifecycle(
+    """API group (empty string for core resources)"""
+    apiGroup: String!
+
+    """API version (e.g., "v1")"""
+    version: String!
+
+    """Resource kind (e.g., "Deployment")"""
+    kind: String!
+
+    """Namespace for namespaced resources (omit for cluster-scoped)"""
+    namespace: String
+
+    """Resource name"""
+    name: String!
+  ): [LifecycleEvent!]!
+}
+
+"""
+Represents a single lifecycle event for a Kubernetes resource
+"""
+type LifecycleEvent {
+  """Unique identifier for the audit event"""
+  id: ID!
+
+  """Type of lifecycle event"""
+  type: EventType!
+
+  """ISO 8601 timestamp when the event occurred"""
+  timestamp: Time!
+
+  """User or service account that triggered the event"""
+  user: String!
+
+  """Complete resource state at the time of this event (YAML as JSON)"""
+  resourceState: JSON!
+
+  """Diff showing changes from previous version (null for CREATE and DELETE events)"""
+  diff: ResourceDiff
+}
+
+"""
+Type of lifecycle event
+"""
+enum EventType {
+  """Resource was created"""
+  CREATE
+
+  """Resource was updated or patched"""
+  UPDATE
+
+  """Resource was deleted"""
+  DELETE
+
+  """Resource was read/accessed"""
+  GET
+}
+
+"""
+Represents the diff between two consecutive resource versions
+"""
+type ResourceDiff {
+  """Fields that were added in this update"""
+  added: JSON
+
+  """Fields that were removed in this update"""
+  removed: JSON
+
+  """Fields that were modified, with old and new values"""
+  modified: [DiffEntry!]!
+}
+
+"""
+Represents a single field change in a diff
+"""
+type DiffEntry {
+  """JSON path to the changed field (e.g., "spec.replicas")"""
+  path: String!
+
+  """Previous value before the change"""
+  oldValue: JSON!
+
+  """New value after the change"""
+  newValue: JSON!
+}
+
+# Note: The Time scalar is already defined in gql/time.graphql

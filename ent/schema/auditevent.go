@@ -50,6 +50,8 @@ func (AuditEvent) Indexes() []ent.Index {
 		index.Fields("userAgent"),
 		index.Fields("requestTimestamp"),
 		index.Fields("stageTimestamp"),
+		// Composite index for lifecycle query optimization
+		index.Fields("apiGroup", "apiVersion", "resource", "namespace", "name", "requestTimestamp"),
 	}
 }
 
