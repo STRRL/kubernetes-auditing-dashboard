@@ -19,5 +19,12 @@ Add Go tests alongside the package under test (e.g., `pkg/<area>/*_test.go`). Ex
 ## Commit & Pull Request Guidelines
 Follow the Conventional Commits pattern visible in the log (`feat:`, `fix:`, `chore:`). Keep the subject imperative and under 72 characters; details belong in the body. PRs should describe the change, reference related issues, list manual or automated checks (e.g., `go test ./...`, `npm run lint`), and attach UI screenshots when the front end shifts. Request review once CI or local checks pass.
 
+## AI Assistant Workflow
+When using AI assistants (like Claude Code) for development:
+- **NEVER run `git commit`** - Always stage changes with `git add` and let the human developer review and commit
+- Show changes with `git status` and `git diff` when work is complete
+- Run build/lint checks (`npm run build`, `npm run lint`, `go test ./...`) to verify changes compile
+- The developer will review all staged changes before committing
+
 ## Security & Configuration Tips
 Treat `script/kube-apiserver-config` as the source of truth for Minikube auditing setup—update both the manifest patch and README instructions together. Never commit real auditing data; refresh or redact `data.db` before pushing. Store sensitive connection strings in environment variables or Kubernetes secrets rather than hardcoding them in Go or Next.js modules.
