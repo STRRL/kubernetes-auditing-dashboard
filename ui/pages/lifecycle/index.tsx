@@ -155,7 +155,10 @@ export default function LifecyclePage() {
                 ) : filteredEvents.length === 0 ? (
                   <EmptyState variant="filtered-empty" />
                 ) : (
-                  <TimelineView events={filteredEvents as any} />
+                  <TimelineView
+                    events={filteredEvents as any}
+                    allEvents={data.resourceLifecycle as any}
+                  />
                 )}
               </>
             )}

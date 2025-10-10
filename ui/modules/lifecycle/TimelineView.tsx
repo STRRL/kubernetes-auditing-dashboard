@@ -23,6 +23,7 @@ interface LifecycleEvent {
 
 interface TimelineViewProps {
   events: LifecycleEvent[];
+  allEvents?: LifecycleEvent[]; // Full unfiltered events for previousState lookup
 }
 
 const eventTypeConfig: Record<EventType, { color: string; label: string }> = {
@@ -32,12 +33,21 @@ const eventTypeConfig: Record<EventType, { color: string; label: string }> = {
   GET: { color: 'bg-gray-500', label: 'GET' },
 };
 
-export const TimelineView: React.FC<TimelineViewProps> = ({ events }) => {
+export const TimelineView: React.FC<TimelineViewProps> = ({ events, allEvents }) => {
+  // Use allEvents for previousState lookup if provided, otherwise fall back to events
+  const eventsForLookup = allEvents || events;
+
   return (
     <div className="space-y-4">
       {events.map((event, index) => {
         const config = eventTypeConfig[event.type];
         const isLast = index === events.length - 1;
+
+        // Find the previous state from the full unfiltered events array
+        const eventIndexInAll = eventsForLookup.findIndex(e => e.id === event.id);
+        const previousState = eventIndexInAll < eventsForLookup.length - 1
+          ? eventsForLookup[eventIndexInAll + 1].resourceState
+          : undefined;
 
         return (
           <div key={event.id} className="flex gap-4">
@@ -65,7 +75,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events }) => {
                   <DiffViewer
                     diff={event.diff}
                     currentState={event.resourceState}
-                    previousState={index < events.length - 1 ? events[index + 1].resourceState : undefined}
+                    previousState={previousState}
                   />
                 )}
 
