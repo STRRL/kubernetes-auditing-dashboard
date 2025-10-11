@@ -12,13 +12,12 @@ interface ResourceDiff {
 }
 
 interface DiffViewerProps {
-  diff: ResourceDiff | null | undefined;
   currentState?: string;
   previousState?: string;
 }
 
-export const DiffViewer: React.FC<DiffViewerProps> = ({ diff, currentState, previousState }) => {
-  if (!diff || !currentState || !previousState) return null;
+export const DiffViewer: React.FC<DiffViewerProps> = ({ currentState, previousState }) => {
+  if (!currentState || !previousState) return null;
 
   try {
     const oldObj = JSON.parse(previousState);
@@ -57,8 +56,6 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({ diff, currentState, prev
               },
             },
             line: {
-              fontSize: '12px',
-              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
             },
           }}
         />

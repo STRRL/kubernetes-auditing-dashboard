@@ -1,7 +1,7 @@
+import { getVerbColor } from '@/lib/verb-colors';
 import React from 'react';
 import { TimestampDisplay } from '../common/TimestampDisplay';
 import { DiffViewer } from './DiffViewer';
-import { getVerbColor } from '@/lib/verb-colors';
 
 interface LifecycleEvent {
   id: string;
@@ -10,15 +10,6 @@ interface LifecycleEvent {
   user: string;
   resourceState: string;
   previousState?: string | null;
-  diff?: {
-    added?: string | null;
-    removed?: string | null;
-    modified: Array<{
-      path: string;
-      oldValue: string;
-      newValue: string;
-    }>;
-  } | null;
 }
 
 interface TimelineViewProps {
@@ -47,30 +38,27 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events }) => {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className={`px-3 py-1 rounded-full text-sm font-semibold text-white ${verbColor}`}>
-                      {event.type}
+                      {event.type ? event.type.toUpperCase() : 'UNKNOWN'}
                     </span>
                     <span className="text-sm text-gray-600">by {event.user}</span>
                   </div>
                   <TimestampDisplay timestamp={event.timestamp} />
                 </div>
 
-                {(event.type === 'update' || event.type === 'patch') && event.diff && event.previousState && (
+                {(event.type === 'update' || event.type === 'patch' || event.type === 'create') && event.previousState && (
                   <DiffViewer
-                    diff={event.diff}
                     currentState={event.resourceState}
                     previousState={event.previousState}
                   />
                 )}
 
-                {event.type === 'create' && event.resourceState && (
-                  <details className="mt-2">
-                    <summary className="cursor-pointer text-sm text-blue-600 hover:text-blue-800">
-                      View resource state
-                    </summary>
-                    <pre className="mt-2 p-2 bg-gray-50 rounded text-xs overflow-x-auto">
-                      {JSON.stringify(JSON.parse(event.resourceState), null, 2)}
-                    </pre>
-                  </details>
+                {(event.type === 'create') && (
+                  <div>
+                    <DiffViewer
+                      currentState={event.resourceState}
+                      previousState={'{}'}
+                    />
+                  </div>
                 )}
               </div>
             </div>
