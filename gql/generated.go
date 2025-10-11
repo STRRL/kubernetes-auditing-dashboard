@@ -100,6 +100,7 @@ type ComplexityRoot struct {
 		Timestamp     func(childComplexity int) int
 		Type          func(childComplexity int) int
 		User          func(childComplexity int) int
+		UserAgent     func(childComplexity int) int
 	}
 
 	PageInfo struct {
@@ -397,6 +398,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.LifecycleEvent.User(childComplexity), true
+	case "LifecycleEvent.userAgent":
+		if e.complexity.LifecycleEvent.UserAgent == nil {
+			break
+		}
+
+		return e.complexity.LifecycleEvent.UserAgent(childComplexity), true
 
 	case "PageInfo.endCursor":
 		if e.complexity.PageInfo.EndCursor == nil {
@@ -1961,6 +1968,35 @@ func (ec *executionContext) fieldContext_LifecycleEvent_user(_ context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _LifecycleEvent_userAgent(ctx context.Context, field graphql.CollectedField, obj *LifecycleEvent) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_LifecycleEvent_userAgent,
+		func(ctx context.Context) (any, error) {
+			return obj.UserAgent, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_LifecycleEvent_userAgent(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LifecycleEvent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _LifecycleEvent_resourceState(ctx context.Context, field graphql.CollectedField, obj *LifecycleEvent) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2413,6 +2449,8 @@ func (ec *executionContext) fieldContext_Query_resourceLifecycle(ctx context.Con
 				return ec.fieldContext_LifecycleEvent_timestamp(ctx, field)
 			case "user":
 				return ec.fieldContext_LifecycleEvent_user(ctx, field)
+			case "userAgent":
+				return ec.fieldContext_LifecycleEvent_userAgent(ctx, field)
 			case "resourceState":
 				return ec.fieldContext_LifecycleEvent_resourceState(ctx, field)
 			case "diff":
@@ -6625,6 +6663,11 @@ func (ec *executionContext) _LifecycleEvent(ctx context.Context, sel ast.Selecti
 			}
 		case "user":
 			out.Values[i] = ec._LifecycleEvent_user(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "userAgent":
+			out.Values[i] = ec._LifecycleEvent_userAgent(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
