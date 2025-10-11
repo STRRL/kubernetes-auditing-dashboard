@@ -2,6 +2,9 @@ extend type Query{
     completedRequestResponseAuditEvents(
         page:Int,
         pageSize:Int,
+        verbs:[String!],
+        resources:[String!],
+        userAgents:[String!],
     ): AuditEventPagination!
 }
 

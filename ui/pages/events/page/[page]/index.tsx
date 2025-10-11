@@ -2,33 +2,20 @@ import { graphql } from '@/modules/gql'
 import { useQuery } from '@tanstack/react-query'
 import request from 'graphql-request'
 import Head from 'next/head'
-import { use, useEffect, useState } from 'react'
-import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { Sidebar } from '@/components/Sidebar'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import { FilterSection } from '@/modules/events/FilterSection'
+import { getVerbColor, VERB_COLORS } from '@/lib/verb-colors'
 
 const moment = require('moment');
 
-const eventsCountDocumentations = graphql(/* GraphQL */ `
-  query eventsCount{
-    auditEvents{
-      totalCount
-      pageInfo{
-        hasNextPage
-        hasPreviousPage
-        startCursor
-        endCursor
-      }
-    }
-  }
-`)
-
 const completedRequestResponseAuditEventsDocumentations = graphql(/* GraphQL */ `
-  query completedRequestResponseAuditEvents($page: Int, $pageSize: Int){
-    completedRequestResponseAuditEvents(page: $page, pageSize: $pageSize) {
+  query completedRequestResponseAuditEvents($page: Int, $pageSize: Int, $verbs: [String!], $resources: [String!], $userAgents: [String!]){
+    completedRequestResponseAuditEvents(page: $page, pageSize: $pageSize, verbs: $verbs, resources: $resources, userAgents: $userAgents) {
     total
     page
     pageSize
@@ -65,7 +52,6 @@ const namespacedName = (namespace: string | undefined, name: string) => {
     return `${namespace}/${name}`
 }
 
-// 更新 formatUserAgent 函数
 const formatUserAgent = (userAgent: string) => {
     const wellKnownComponents = {
         'kubelet': { name: 'Kubelet', color: 'bg-blue-500' },
@@ -83,23 +69,11 @@ const formatUserAgent = (userAgent: string) => {
         }
     }
 
-    // 如果不是已知组件，返回原始字符串
     return { name: userAgent, color: '', isKnown: false };
 }
 
-// 添加这个新函数来处理 verb
 const formatVerb = (verb: string) => {
-    const verbColors: { [key: string]: string } = {
-        'get': 'bg-blue-500',
-        'list': 'bg-cyan-500',
-        'watch': 'bg-yellow-500',
-        'create': 'bg-green-500',
-        'update': 'bg-indigo-500',
-        'patch': 'bg-pink-500',
-        'delete': 'bg-red-500',
-    };
-
-    const color = verbColors[verb.toLowerCase()] || 'bg-gray-500';
+    const color = getVerbColor(verb);
     return { verb: verb.toUpperCase(), color };
 }
 
@@ -139,22 +113,46 @@ const buildLifecycleUrl = (apiGroup: string | undefined, apiVersion: string, res
     return `/lifecycle?${params.toString()}`;
 }
 
+const VERB_OPTIONS = ['create', 'update', 'patch', 'delete'];
+const RESOURCE_OPTIONS = ['pods', 'deployments', 'services', 'configmaps', 'secrets', 'endpoints', 'leases', 'endpointslices'];
+const USER_AGENT_OPTIONS = ['kubelet', 'kube-controller-manager', 'kube-scheduler', 'kubectl'];
+
 export default function Events() {
     const router = useRouter()
 
     const [page, setPage] = useState(0)
-    const [pageSize, setPageSize] = useState(12)  // 将这里的值从 15 改为 12
+    const [pageSize, setPageSize] = useState(12)
+    const [selectedVerbs, setSelectedVerbs] = useState<string[]>([])
+    const [selectedResources, setSelectedResources] = useState<string[]>([])
+    const [selectedUserAgents, setSelectedUserAgents] = useState<string[]>([])
 
     useEffect(() => {
         setPage(parseInt(router.query.page as string || '0'))
     }, [router.query.page])
 
+    const handleVerbsChange = (verbs: string[]) => {
+        setSelectedVerbs(verbs)
+        setPage(0)
+    }
+
+    const handleResourcesChange = (resources: string[]) => {
+        setSelectedResources(resources)
+        setPage(0)
+    }
+
+    const handleUserAgentsChange = (userAgents: string[]) => {
+        setSelectedUserAgents(userAgents)
+        setPage(0)
+    }
 
     const eventsListQuery = useQuery({
-        queryKey: ['eventsList', { page: page, pageSize: pageSize }],
+        queryKey: ['eventsList', { page: page, pageSize: pageSize, verbs: selectedVerbs, resources: selectedResources, userAgents: selectedUserAgents }],
         queryFn: async ({ queryKey }) => request('/api/query', completedRequestResponseAuditEventsDocumentations, {
             page: page,
             pageSize: pageSize,
+            verbs: selectedVerbs.length > 0 ? selectedVerbs : null,
+            resources: selectedResources.length > 0 ? selectedResources : null,
+            userAgents: selectedUserAgents.length > 0 ? selectedUserAgents : null,
         })
     })
 
@@ -169,6 +167,38 @@ export default function Events() {
                     <div className='m-4'>
                         <h2 className='text-4xl font-bold'>Recent Changes</h2>
                     </div>
+
+                    <div className='m-4 bg-gray-50 p-4 rounded-lg border border-gray-200'>
+                        <div className='flex gap-4'>
+                            <FilterSection
+                                title="Verbs"
+                                options={VERB_OPTIONS}
+                                selected={selectedVerbs}
+                                onChange={handleVerbsChange}
+                                uppercaseLabels={true}
+                                colorMap={VERB_COLORS}
+                            />
+                            <FilterSection
+                                title="Resource Types"
+                                options={RESOURCE_OPTIONS}
+                                selected={selectedResources}
+                                onChange={handleResourcesChange}
+                            />
+                            <FilterSection
+                                title="Components / User Agents"
+                                options={USER_AGENT_OPTIONS}
+                                selected={selectedUserAgents}
+                                onChange={handleUserAgentsChange}
+                                colorMap={{
+                                    'kubelet': 'bg-blue-500',
+                                    'kube-controller-manager': 'bg-yellow-500',
+                                    'kube-scheduler': 'bg-purple-500',
+                                    'kubectl': 'bg-teal-500',
+                                }}
+                            />
+                        </div>
+                    </div>
+
                     <div className='m-4'>
                         <div className="overflow-x-auto">
                             <Table>

@@ -96,6 +96,7 @@ type ComplexityRoot struct {
 	LifecycleEvent struct {
 		Diff          func(childComplexity int) int
 		ID            func(childComplexity int) int
+		PreviousState func(childComplexity int) int
 		ResourceState func(childComplexity int) int
 		Timestamp     func(childComplexity int) int
 		Type          func(childComplexity int) int
@@ -111,7 +112,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		AuditEvents                         func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.AuditEventOrder, where *ent.AuditEventWhereInput) int
-		CompletedRequestResponseAuditEvents func(childComplexity int, page *int, pageSize *int) int
+		CompletedRequestResponseAuditEvents func(childComplexity int, page *int, pageSize *int, verbs []string, resources []string, userAgents []string) int
 		Node                                func(childComplexity int, id int) int
 		Nodes                               func(childComplexity int, ids []int) int
 		ResourceKinds                       func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.ResourceKindWhereInput) int
@@ -153,7 +154,7 @@ type QueryResolver interface {
 	Nodes(ctx context.Context, ids []int) ([]ent.Noder, error)
 	AuditEvents(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.AuditEventOrder, where *ent.AuditEventWhereInput) (*ent.AuditEventConnection, error)
 	ResourceKinds(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.ResourceKindWhereInput) (*ent.ResourceKindConnection, error)
-	CompletedRequestResponseAuditEvents(ctx context.Context, page *int, pageSize *int) (*AuditEventPagination, error)
+	CompletedRequestResponseAuditEvents(ctx context.Context, page *int, pageSize *int, verbs []string, resources []string, userAgents []string) (*AuditEventPagination, error)
 	ResourceLifecycle(ctx context.Context, apiGroup string, version string, kind string, namespace *string, name string) ([]*LifecycleEvent, error)
 }
 
@@ -373,6 +374,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.LifecycleEvent.ID(childComplexity), true
+	case "LifecycleEvent.previousState":
+		if e.complexity.LifecycleEvent.PreviousState == nil {
+			break
+		}
+
+		return e.complexity.LifecycleEvent.PreviousState(childComplexity), true
 	case "LifecycleEvent.resourceState":
 		if e.complexity.LifecycleEvent.ResourceState == nil {
 			break
@@ -444,7 +451,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.CompletedRequestResponseAuditEvents(childComplexity, args["page"].(*int), args["pageSize"].(*int)), true
+		return e.complexity.Query.CompletedRequestResponseAuditEvents(childComplexity, args["page"].(*int), args["pageSize"].(*int), args["verbs"].([]string), args["resources"].([]string), args["userAgents"].([]string)), true
 	case "Query.node":
 		if e.complexity.Query.Node == nil {
 			break
@@ -756,6 +763,21 @@ func (ec *executionContext) field_Query_completedRequestResponseAuditEvents_args
 		return nil, err
 	}
 	args["pageSize"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "verbs", ec.unmarshalOString2ᚕstringᚄ)
+	if err != nil {
+		return nil, err
+	}
+	args["verbs"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "resources", ec.unmarshalOString2ᚕstringᚄ)
+	if err != nil {
+		return nil, err
+	}
+	args["resources"] = arg3
+	arg4, err := graphql.ProcessArgField(ctx, rawArgs, "userAgents", ec.unmarshalOString2ᚕstringᚄ)
+	if err != nil {
+		return nil, err
+	}
+	args["userAgents"] = arg4
 	return args, nil
 }
 
@@ -1884,7 +1906,7 @@ func (ec *executionContext) _LifecycleEvent_type(ctx context.Context, field grap
 			return obj.Type, nil
 		},
 		nil,
-		ec.marshalNEventType2githubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐEventType,
+		ec.marshalNEventType2string,
 		true,
 		true,
 	)
@@ -1978,6 +2000,35 @@ func (ec *executionContext) _LifecycleEvent_resourceState(ctx context.Context, f
 }
 
 func (ec *executionContext) fieldContext_LifecycleEvent_resourceState(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LifecycleEvent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type JSON does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LifecycleEvent_previousState(ctx context.Context, field graphql.CollectedField, obj *LifecycleEvent) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_LifecycleEvent_previousState,
+		func(ctx context.Context) (any, error) {
+			return obj.PreviousState, nil
+		},
+		nil,
+		ec.marshalOJSON2ᚖstring,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_LifecycleEvent_previousState(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "LifecycleEvent",
 		Field:      field,
@@ -2331,7 +2382,7 @@ func (ec *executionContext) _Query_completedRequestResponseAuditEvents(ctx conte
 		ec.fieldContext_Query_completedRequestResponseAuditEvents,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Query().CompletedRequestResponseAuditEvents(ctx, fc.Args["page"].(*int), fc.Args["pageSize"].(*int))
+			return ec.resolvers.Query().CompletedRequestResponseAuditEvents(ctx, fc.Args["page"].(*int), fc.Args["pageSize"].(*int), fc.Args["verbs"].([]string), fc.Args["resources"].([]string), fc.Args["userAgents"].([]string))
 		},
 		nil,
 		ec.marshalNAuditEventPagination2ᚖgithubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐAuditEventPagination,
@@ -2415,6 +2466,8 @@ func (ec *executionContext) fieldContext_Query_resourceLifecycle(ctx context.Con
 				return ec.fieldContext_LifecycleEvent_user(ctx, field)
 			case "resourceState":
 				return ec.fieldContext_LifecycleEvent_resourceState(ctx, field)
+			case "previousState":
+				return ec.fieldContext_LifecycleEvent_previousState(ctx, field)
 			case "diff":
 				return ec.fieldContext_LifecycleEvent_diff(ctx, field)
 			}
@@ -6633,6 +6686,8 @@ func (ec *executionContext) _LifecycleEvent(ctx context.Context, sel ast.Selecti
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "previousState":
+			out.Values[i] = ec._LifecycleEvent_previousState(ctx, field, obj)
 		case "diff":
 			out.Values[i] = ec._LifecycleEvent_diff(ctx, field, obj)
 		default:
@@ -7615,14 +7670,20 @@ func (ec *executionContext) marshalNDiffEntry2ᚖgithubᚗcomᚋstrrlᚋkubernet
 	return ec._DiffEntry(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNEventType2githubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐEventType(ctx context.Context, v any) (EventType, error) {
-	var res EventType
-	err := res.UnmarshalGQL(v)
+func (ec *executionContext) unmarshalNEventType2string(ctx context.Context, v any) (string, error) {
+	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNEventType2githubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐEventType(ctx context.Context, sel ast.SelectionSet, v EventType) graphql.Marshaler {
-	return v
+func (ec *executionContext) marshalNEventType2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	_ = sel
+	res := graphql.MarshalString(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) unmarshalNID2int(ctx context.Context, v any) (int, error) {

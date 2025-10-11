@@ -34,3 +34,6 @@ models:
   Node:
     model:
       - github.com/strrl/kubernetes-auditing-dashboard/ent.Noder
+  EventType:
+    model:
+      - github.com/99designs/gqlgen/graphql.String

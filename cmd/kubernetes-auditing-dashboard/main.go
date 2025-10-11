@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"io"
 	"log"
 
@@ -15,9 +16,43 @@ import (
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/migrate"
 	"github.com/strrl/kubernetes-auditing-dashboard/gql"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
+	serializerjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 	auditv1 "k8s.io/apiserver/pkg/apis/audit/v1"
 )
+
+func extractResourceName(event *auditv1.Event) string {
+	// First try objectRef.Name
+	if event.ObjectRef != nil && event.ObjectRef.Name != "" {
+		return event.ObjectRef.Name
+	}
+
+	// For resources created with generateName, objectRef.Name is empty
+	// Try to extract from responseObject.metadata.name
+	if event.ResponseObject != nil && event.ResponseObject.Raw != nil {
+		var obj map[string]interface{}
+		if err := json.Unmarshal(event.ResponseObject.Raw, &obj); err == nil {
+			if metadata, ok := obj["metadata"].(map[string]interface{}); ok {
+				if name, ok := metadata["name"].(string); ok && name != "" {
+					return name
+				}
+			}
+		}
+	}
+
+	// Fallback to requestObject.metadata.name
+	if event.RequestObject != nil && event.RequestObject.Raw != nil {
+		var obj map[string]interface{}
+		if err := json.Unmarshal(event.RequestObject.Raw, &obj); err == nil {
+			if metadata, ok := obj["metadata"].(map[string]interface{}); ok {
+				if name, ok := metadata["name"].(string); ok && name != "" {
+					return name
+				}
+			}
+		}
+	}
+
+	return ""
+}
 
 func main() {
 	entClient, err := ent.Open(dialect.SQLite, "file:data.db?_fk=1")
@@ -34,7 +69,7 @@ func main() {
 	if err := entClient.Schema.Create(ctx, migrate.WithGlobalUniqueID(true)); err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
-	codec := json.NewSerializerWithOptions(json.DefaultMetaFactory, scheme, scheme, json.SerializerOptions{Yaml: false, Pretty: false, Strict: false})
+	codec := serializerjson.NewSerializerWithOptions(serializerjson.DefaultMetaFactory, scheme, scheme, serializerjson.SerializerOptions{Yaml: false, Pretty: false, Strict: false})
 	app := gin.Default()
 	apiGroup := app.Group("/api")
 	apiGroup.POST("/audit-webhook", func(c *gin.Context) {
@@ -70,8 +105,9 @@ func main() {
 				SetRaw(string(raw))
 
 			if event.ObjectRef != nil {
+				resourceName := extractResourceName(&event)
 				item.SetNamespace(event.ObjectRef.Namespace).
-					SetName(event.ObjectRef.Name).
+					SetName(resourceName).
 					SetApiVersion(event.ObjectRef.APIVersion).
 					SetApiGroup(event.ObjectRef.APIGroup).
 					SetResource(event.ObjectRef.Resource).
