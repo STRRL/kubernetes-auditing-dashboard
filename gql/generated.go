@@ -1953,7 +1953,7 @@ func (ec *executionContext) _LifecycleEvent_type(ctx context.Context, field grap
 			return obj.Type, nil
 		},
 		nil,
-		ec.marshalNEventType2githubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐEventType,
+		ec.marshalNEventType2string,
 		true,
 		true,
 	)
@@ -7807,14 +7807,20 @@ func (ec *executionContext) marshalNDiffEntry2ᚖgithubᚗcomᚋstrrlᚋkubernet
 	return ec._DiffEntry(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNEventType2githubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐEventType(ctx context.Context, v any) (EventType, error) {
-	var res EventType
-	err := res.UnmarshalGQL(v)
+func (ec *executionContext) unmarshalNEventType2string(ctx context.Context, v any) (string, error) {
+	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNEventType2githubᚗcomᚋstrrlᚋkubernetesᚑauditingᚑdashboardᚋgqlᚐEventType(ctx context.Context, sel ast.SelectionSet, v EventType) graphql.Marshaler {
-	return v
+func (ec *executionContext) marshalNEventType2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	_ = sel
+	res := graphql.MarshalString(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) unmarshalNID2int(ctx context.Context, v any) (int, error) {

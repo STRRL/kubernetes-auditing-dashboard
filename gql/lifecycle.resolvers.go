@@ -80,6 +80,24 @@ func (r *queryResolver) ResourceLifecycle(ctx context.Context, apiGroup string, 
 			continue // Skip malformed events
 		}
 
+		// Filter based on subresource
+		// Only include:
+		// 1. Main resource operations (no subresource)
+		// 2. Important subresources that return full resource object (status, scale)
+		if event.SubResource != "" {
+			allowedSubresources := []string{"status", "scale"}
+			isAllowed := false
+			for _, allowed := range allowedSubresources {
+				if event.SubResource == allowed {
+					isAllowed = true
+					break
+				}
+			}
+			if !isAllowed {
+				continue
+			}
+		}
+
 		// Extract resource state from request or response object
 		var resourceState map[string]interface{}
 		if auditEvent.ResponseObject != nil && auditEvent.ResponseObject.Raw != nil {
@@ -113,26 +131,26 @@ func (r *queryResolver) ResourceLifecycle(ctx context.Context, apiGroup string, 
 			continue // Skip malformed events
 		}
 
-		// Map verb to event type
-		lifecycleEventType := lifecycle.MapVerbToEventType(event.Verb)
-
-		// Convert lifecycle.EventType to gql.EventType
-		var gqlEventType EventType
-		switch lifecycleEventType {
-		case lifecycle.EventTypeCreate:
-			gqlEventType = EventTypeCreate
-		case lifecycle.EventTypeUpdate:
-			gqlEventType = EventTypeUpdate
-		case lifecycle.EventTypeDelete:
-			gqlEventType = EventTypeDelete
-		case lifecycle.EventTypeGet:
-			gqlEventType = EventTypeGet
-		default:
-			gqlEventType = EventTypeUpdate
+		// Apply same subresource filter as first pass
+		if event.SubResource != "" {
+			allowedSubresources := []string{"status", "scale"}
+			isAllowed := false
+			for _, allowed := range allowedSubresources {
+				if event.SubResource == allowed {
+					isAllowed = true
+					break
+				}
+			}
+			if !isAllowed {
+				continue
+			}
 		}
 
-		// For UPDATE/PATCH events, require both requestObject and responseObject for meaningful diff
-		if gqlEventType == EventTypeUpdate {
+		// Use original verb as-is from audit event
+		eventType := event.Verb
+
+		// For update/patch events, require both requestObject and responseObject for meaningful diff
+		if event.Verb == "update" || event.Verb == "patch" {
 			hasRequest := auditEvent.RequestObject != nil && auditEvent.RequestObject.Raw != nil
 			hasResponse := auditEvent.ResponseObject != nil && auditEvent.ResponseObject.Raw != nil
 			if !hasRequest && !hasResponse {
@@ -173,14 +191,14 @@ func (r *queryResolver) ResourceLifecycle(ctx context.Context, apiGroup string, 
 		// Create lifecycle event
 		lifecycleEvent := &LifecycleEvent{
 			ID:            event.ID,
-			Type:          gqlEventType,
+			Type:          eventType,
 			Timestamp:     event.RequestTimestamp,
 			User:          user,
 			ResourceState: resourceStateJSON,
 		}
 
-		// Calculate diff and previousState for UPDATE events (not for CREATE or DELETE)
-		if gqlEventType == EventTypeUpdate && i < len(events)-1 {
+		// Calculate diff and previousState for update/patch events (not for create or delete)
+		if (event.Verb == "update" || event.Verb == "patch") && i < len(events)-1 {
 			// Find previous mutating event (skip GET/LIST/WATCH events)
 			var prevState map[string]interface{}
 			var hasPrevState bool

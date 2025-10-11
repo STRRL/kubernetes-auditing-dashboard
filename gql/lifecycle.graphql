@@ -55,21 +55,10 @@ type LifecycleEvent {
 }
 
 """
-Type of lifecycle event
+Type of lifecycle event (Kubernetes audit verb in uppercase)
+Examples: CREATE, UPDATE, PATCH, DELETE, GET, LIST, WATCH
 """
-enum EventType {
-  """Resource was created"""
-  CREATE
-
-  """Resource was updated or patched"""
-  UPDATE
-
-  """Resource was deleted"""
-  DELETE
-
-  """Resource was read/accessed"""
-  GET
-}
+scalar EventType
 
 """
 Represents the diff between two consecutive resource versions

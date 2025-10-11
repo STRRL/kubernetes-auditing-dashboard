@@ -1,41 +1,46 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { MultiSelect } from '@/components/ui/multi-select';
 
 interface FilterSectionProps {
   title: string;
   options: string[];
   selected: string[];
-  onToggle: (value: string) => void;
+  onChange: (values: string[]) => void;
   colorMap?: { [key: string]: string };
+  uppercaseLabels?: boolean;
 }
 
 export const FilterSection: React.FC<FilterSectionProps> = ({
   title,
   options,
   selected,
-  onToggle,
+  onChange,
   colorMap = {},
+  uppercaseLabels = false,
 }) => {
-  return (
-    <div className="space-y-2">
-      <h3 className="text-sm font-medium text-gray-700">{title}</h3>
-      <div className="flex flex-wrap gap-2">
-        {options.map((option) => {
-          const isSelected = selected.includes(option);
-          const color = colorMap[option.toLowerCase()] || 'bg-gray-500';
+  const multiSelectOptions = options.map((option) => ({
+    label: uppercaseLabels ? option.toUpperCase() : option,
+    value: option,
+    style: colorMap[option.toLowerCase()]
+      ? {
+        badgeColor: colorMap[option.toLowerCase()],
+      }
+      : undefined,
+  }));
 
-          return (
-            <Button
-              key={option}
-              variant={isSelected ? "default" : "outline"}
-              size="sm"
-              onClick={() => onToggle(option)}
-              className={isSelected ? `${color} text-white hover:opacity-80` : ''}
-            >
-              {option}
-            </Button>
-          );
-        })}
+  return (
+    <div className="space-y-2 flex-1">
+      <h3 className="text-sm font-medium text-gray-700">{title}</h3>
+      <div className="">
+        <MultiSelect
+          className='min-h-[42px]'
+          options={multiSelectOptions}
+          onValueChange={onChange}
+          defaultValue={selected}
+          placeholder={`Select ${title.toLowerCase()}...`}
+          maxCount={3}
+          searchable={true}
+        />
       </div>
     </div>
   );

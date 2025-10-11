@@ -77,7 +77,7 @@ export default function LifecyclePage() {
     if (!data?.resourceLifecycle) return [];
     if (showReadOnlyEvents) return data.resourceLifecycle;
 
-    const readOnlyEventTypes = ['GET', 'LIST', 'WATCH'];
+    const readOnlyEventTypes = ['get', 'list', 'watch'];
     return data.resourceLifecycle.filter(
       (event) => !readOnlyEventTypes.includes(event.type)
     );
@@ -130,7 +130,7 @@ export default function LifecyclePage() {
               htmlFor="show-readonly"
               className="text-sm font-medium text-gray-700 cursor-pointer"
             >
-              Show read-only events (GET, LIST, WATCH)
+              Show read-only events (get, list, watch)
             </label>
           </div>
 

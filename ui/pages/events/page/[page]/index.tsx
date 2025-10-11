@@ -9,6 +9,7 @@ import { Sidebar } from '@/components/Sidebar'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { FilterSection } from '@/modules/events/FilterSection'
+import { getVerbColor, VERB_COLORS } from '@/lib/verb-colors'
 
 const moment = require('moment');
 
@@ -72,17 +73,7 @@ const formatUserAgent = (userAgent: string) => {
 }
 
 const formatVerb = (verb: string) => {
-    const verbColors: { [key: string]: string } = {
-        'get': 'bg-blue-500',
-        'list': 'bg-cyan-500',
-        'watch': 'bg-yellow-500',
-        'create': 'bg-green-500',
-        'update': 'bg-indigo-500',
-        'patch': 'bg-pink-500',
-        'delete': 'bg-red-500',
-    };
-
-    const color = verbColors[verb.toLowerCase()] || 'bg-gray-500';
+    const color = getVerbColor(verb);
     return { verb: verb.toUpperCase(), color };
 }
 
@@ -139,24 +130,18 @@ export default function Events() {
         setPage(parseInt(router.query.page as string || '0'))
     }, [router.query.page])
 
-    const toggleVerb = (verb: string) => {
-        setSelectedVerbs(prev =>
-            prev.includes(verb) ? prev.filter(v => v !== verb) : [...prev, verb]
-        )
-        setPage(0) // Reset to first page when filter changes
-    }
-
-    const toggleResource = (resource: string) => {
-        setSelectedResources(prev =>
-            prev.includes(resource) ? prev.filter(r => r !== resource) : [...prev, resource]
-        )
+    const handleVerbsChange = (verbs: string[]) => {
+        setSelectedVerbs(verbs)
         setPage(0)
     }
 
-    const toggleUserAgent = (userAgent: string) => {
-        setSelectedUserAgents(prev =>
-            prev.includes(userAgent) ? prev.filter(ua => ua !== userAgent) : [...prev, userAgent]
-        )
+    const handleResourcesChange = (resources: string[]) => {
+        setSelectedResources(resources)
+        setPage(0)
+    }
+
+    const handleUserAgentsChange = (userAgents: string[]) => {
+        setSelectedUserAgents(userAgents)
         setPage(0)
     }
 
@@ -183,37 +168,35 @@ export default function Events() {
                         <h2 className='text-4xl font-bold'>Recent Changes</h2>
                     </div>
 
-                    <div className='m-4 space-y-4 bg-gray-50 p-4 rounded-lg border border-gray-200'>
-                        <FilterSection
-                            title="Verbs"
-                            options={VERB_OPTIONS}
-                            selected={selectedVerbs}
-                            onToggle={toggleVerb}
-                            colorMap={{
-                                'create': 'bg-green-500',
-                                'update': 'bg-indigo-500',
-                                'patch': 'bg-pink-500',
-                                'delete': 'bg-red-500',
-                            }}
-                        />
-                        <FilterSection
-                            title="Resource Types"
-                            options={RESOURCE_OPTIONS}
-                            selected={selectedResources}
-                            onToggle={toggleResource}
-                        />
-                        <FilterSection
-                            title="Components / User Agents"
-                            options={USER_AGENT_OPTIONS}
-                            selected={selectedUserAgents}
-                            onToggle={toggleUserAgent}
-                            colorMap={{
-                                'kubelet': 'bg-blue-500',
-                                'kube-controller-manager': 'bg-yellow-500',
-                                'kube-scheduler': 'bg-purple-500',
-                                'kubectl': 'bg-teal-500',
-                            }}
-                        />
+                    <div className='m-4 bg-gray-50 p-4 rounded-lg border border-gray-200'>
+                        <div className='flex gap-4'>
+                            <FilterSection
+                                title="Verbs"
+                                options={VERB_OPTIONS}
+                                selected={selectedVerbs}
+                                onChange={handleVerbsChange}
+                                uppercaseLabels={true}
+                                colorMap={VERB_COLORS}
+                            />
+                            <FilterSection
+                                title="Resource Types"
+                                options={RESOURCE_OPTIONS}
+                                selected={selectedResources}
+                                onChange={handleResourcesChange}
+                            />
+                            <FilterSection
+                                title="Components / User Agents"
+                                options={USER_AGENT_OPTIONS}
+                                selected={selectedUserAgents}
+                                onChange={handleUserAgentsChange}
+                                colorMap={{
+                                    'kubelet': 'bg-blue-500',
+                                    'kube-controller-manager': 'bg-yellow-500',
+                                    'kube-scheduler': 'bg-purple-500',
+                                    'kubectl': 'bg-teal-500',
+                                }}
+                            />
+                        </div>
                     </div>
 
                     <div className='m-4'>
