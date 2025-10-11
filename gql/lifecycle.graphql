@@ -47,6 +47,9 @@ type LifecycleEvent {
   """Complete resource state at the time of this event (YAML as JSON)"""
   resourceState: JSON!
 
+  """Previous resource state before this event (YAML as JSON). Only populated for UPDATE events."""
+  previousState: JSON
+
   """Diff showing changes from previous version (null for CREATE and DELETE events)"""
   diff: ResourceDiff
 }

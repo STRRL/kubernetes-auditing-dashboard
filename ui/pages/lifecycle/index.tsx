@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useQuery } from '@tanstack/react-query';
 import request from 'graphql-request';
@@ -8,6 +8,7 @@ import { graphql } from '@/modules/gql';
 import { TimelineView } from '@/modules/lifecycle/TimelineView';
 import { EmptyState } from '@/modules/lifecycle/EmptyState';
 import { Sidebar } from '@/components/Sidebar';
+import { Switch } from '@/components/ui/switch';
 
 const getResourceLifecycleQuery = graphql(/* GraphQL */ `
   query GetResourceLifecycle(
@@ -29,6 +30,7 @@ const getResourceLifecycleQuery = graphql(/* GraphQL */ `
       timestamp
       user
       resourceState
+      previousState
       diff {
         added
         removed
@@ -45,6 +47,7 @@ const getResourceLifecycleQuery = graphql(/* GraphQL */ `
 export default function LifecyclePage() {
   const router = useRouter();
   const { group, version, kind, namespace, name } = router.query;
+  const [showReadOnlyEvents, setShowReadOnlyEvents] = useState(false);
 
   const apiGroup = (group as string) || '';
   const apiVersion = version as string;
@@ -69,6 +72,16 @@ export default function LifecyclePage() {
     },
     enabled: !!isValid,
   });
+
+  const filteredEvents = React.useMemo(() => {
+    if (!data?.resourceLifecycle) return [];
+    if (showReadOnlyEvents) return data.resourceLifecycle;
+
+    const readOnlyEventTypes = ['GET', 'LIST', 'WATCH'];
+    return data.resourceLifecycle.filter(
+      (event) => !readOnlyEventTypes.includes(event.type)
+    );
+  }, [data?.resourceLifecycle, showReadOnlyEvents]);
 
   if (!isValid) {
     return (
@@ -107,6 +120,20 @@ export default function LifecyclePage() {
             </div>
           </div>
 
+          <div className="m-4 flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <Switch
+              id="show-readonly"
+              checked={showReadOnlyEvents}
+              onCheckedChange={setShowReadOnlyEvents}
+            />
+            <label
+              htmlFor="show-readonly"
+              className="text-sm font-medium text-gray-700 cursor-pointer"
+            >
+              Show read-only events (GET, LIST, WATCH)
+            </label>
+          </div>
+
           <div className="m-4">
             {isLoading && (
               <div className="flex items-center justify-center min-h-[400px]">
@@ -128,10 +155,10 @@ export default function LifecyclePage() {
 
             {!isLoading && !isError && data?.resourceLifecycle && (
               <>
-                {data.resourceLifecycle.length === 0 ? (
+                {filteredEvents.length === 0 ? (
                   <EmptyState />
                 ) : (
-                  <TimelineView events={data.resourceLifecycle} />
+                  <TimelineView events={filteredEvents} />
                 )}
               </>
             )}

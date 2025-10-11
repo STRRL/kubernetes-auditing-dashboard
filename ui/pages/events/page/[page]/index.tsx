@@ -8,12 +8,13 @@ import Link from 'next/link'
 import { Sidebar } from '@/components/Sidebar'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import { FilterSection } from '@/modules/events/FilterSection'
 
 const moment = require('moment');
 
 const completedRequestResponseAuditEventsDocumentations = graphql(/* GraphQL */ `
-  query completedRequestResponseAuditEvents($page: Int, $pageSize: Int){
-    completedRequestResponseAuditEvents(page: $page, pageSize: $pageSize) {
+  query completedRequestResponseAuditEvents($page: Int, $pageSize: Int, $verbs: [String!], $resources: [String!], $userAgents: [String!]){
+    completedRequestResponseAuditEvents(page: $page, pageSize: $pageSize, verbs: $verbs, resources: $resources, userAgents: $userAgents) {
     total
     page
     pageSize
@@ -121,22 +122,52 @@ const buildLifecycleUrl = (apiGroup: string | undefined, apiVersion: string, res
     return `/lifecycle?${params.toString()}`;
 }
 
+const VERB_OPTIONS = ['create', 'update', 'patch', 'delete'];
+const RESOURCE_OPTIONS = ['pods', 'deployments', 'services', 'configmaps', 'secrets', 'endpoints', 'leases', 'endpointslices'];
+const USER_AGENT_OPTIONS = ['kubelet', 'kube-controller-manager', 'kube-scheduler', 'kubectl'];
+
 export default function Events() {
     const router = useRouter()
 
     const [page, setPage] = useState(0)
     const [pageSize, setPageSize] = useState(12)
+    const [selectedVerbs, setSelectedVerbs] = useState<string[]>([])
+    const [selectedResources, setSelectedResources] = useState<string[]>([])
+    const [selectedUserAgents, setSelectedUserAgents] = useState<string[]>([])
 
     useEffect(() => {
         setPage(parseInt(router.query.page as string || '0'))
     }, [router.query.page])
 
+    const toggleVerb = (verb: string) => {
+        setSelectedVerbs(prev =>
+            prev.includes(verb) ? prev.filter(v => v !== verb) : [...prev, verb]
+        )
+        setPage(0) // Reset to first page when filter changes
+    }
+
+    const toggleResource = (resource: string) => {
+        setSelectedResources(prev =>
+            prev.includes(resource) ? prev.filter(r => r !== resource) : [...prev, resource]
+        )
+        setPage(0)
+    }
+
+    const toggleUserAgent = (userAgent: string) => {
+        setSelectedUserAgents(prev =>
+            prev.includes(userAgent) ? prev.filter(ua => ua !== userAgent) : [...prev, userAgent]
+        )
+        setPage(0)
+    }
 
     const eventsListQuery = useQuery({
-        queryKey: ['eventsList', { page: page, pageSize: pageSize }],
+        queryKey: ['eventsList', { page: page, pageSize: pageSize, verbs: selectedVerbs, resources: selectedResources, userAgents: selectedUserAgents }],
         queryFn: async ({ queryKey }) => request('/api/query', completedRequestResponseAuditEventsDocumentations, {
             page: page,
             pageSize: pageSize,
+            verbs: selectedVerbs.length > 0 ? selectedVerbs : null,
+            resources: selectedResources.length > 0 ? selectedResources : null,
+            userAgents: selectedUserAgents.length > 0 ? selectedUserAgents : null,
         })
     })
 
@@ -151,6 +182,40 @@ export default function Events() {
                     <div className='m-4'>
                         <h2 className='text-4xl font-bold'>Recent Changes</h2>
                     </div>
+
+                    <div className='m-4 space-y-4 bg-gray-50 p-4 rounded-lg border border-gray-200'>
+                        <FilterSection
+                            title="Verbs"
+                            options={VERB_OPTIONS}
+                            selected={selectedVerbs}
+                            onToggle={toggleVerb}
+                            colorMap={{
+                                'create': 'bg-green-500',
+                                'update': 'bg-indigo-500',
+                                'patch': 'bg-pink-500',
+                                'delete': 'bg-red-500',
+                            }}
+                        />
+                        <FilterSection
+                            title="Resource Types"
+                            options={RESOURCE_OPTIONS}
+                            selected={selectedResources}
+                            onToggle={toggleResource}
+                        />
+                        <FilterSection
+                            title="Components / User Agents"
+                            options={USER_AGENT_OPTIONS}
+                            selected={selectedUserAgents}
+                            onToggle={toggleUserAgent}
+                            colorMap={{
+                                'kubelet': 'bg-blue-500',
+                                'kube-controller-manager': 'bg-yellow-500',
+                                'kube-scheduler': 'bg-purple-500',
+                                'kubectl': 'bg-teal-500',
+                            }}
+                        />
+                    </div>
+
                     <div className='m-4'>
                         <div className="overflow-x-auto">
                             <Table>

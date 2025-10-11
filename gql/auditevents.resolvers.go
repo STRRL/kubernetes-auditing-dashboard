@@ -9,23 +9,46 @@ import (
 
 	"github.com/strrl/kubernetes-auditing-dashboard/ent"
 	"github.com/strrl/kubernetes-auditing-dashboard/ent/auditevent"
+	"github.com/strrl/kubernetes-auditing-dashboard/ent/predicate"
 )
 
 // CompletedRequestResponseAuditEvents is the resolver for the completedRequestResponseAuditEvents field.
-func (r *queryResolver) CompletedRequestResponseAuditEvents(ctx context.Context, page *int, pageSize *int) (*AuditEventPagination, error) {
-	count, err := r.Resolver.entClient.AuditEvent.Query().
-		Where(auditevent.LevelEQ("RequestResponse")).
-		Where(auditevent.StageEQ("ResponseComplete")).
-		Where(auditevent.VerbNotIn("get", "list", "watch")).
-		Count(ctx)
+func (r *queryResolver) CompletedRequestResponseAuditEvents(ctx context.Context, page *int, pageSize *int, verbs []string, resources []string, userAgents []string) (*AuditEventPagination, error) {
+	// Build base query with filters
+	buildQuery := func() *ent.AuditEventQuery {
+		q := r.Resolver.entClient.AuditEvent.Query().
+			Where(auditevent.LevelEQ("RequestResponse")).
+			Where(auditevent.StageEQ("ResponseComplete")).
+			Where(auditevent.VerbNotIn("get", "list", "watch"))
+
+		// Apply verb filter if provided
+		if len(verbs) > 0 {
+			q = q.Where(auditevent.VerbIn(verbs...))
+		}
+
+		// Apply resource filter if provided
+		if len(resources) > 0 {
+			q = q.Where(auditevent.ResourceIn(resources...))
+		}
+
+		// Apply userAgent filter if provided (case-insensitive contains)
+		if len(userAgents) > 0 {
+			predicates := make([]predicate.AuditEvent, len(userAgents))
+			for i, ua := range userAgents {
+				predicates[i] = auditevent.UserAgentContainsFold(ua)
+			}
+			q = q.Where(auditevent.Or(predicates...))
+		}
+
+		return q
+	}
+
+	count, err := buildQuery().Count(ctx)
 	if err != nil {
 		return nil, err
 	}
 	offset, limit := paginationToSQL(page, pageSize)
-	rows, err := r.Resolver.entClient.AuditEvent.Query().
-		Where(auditevent.LevelEQ("RequestResponse")).
-		Where(auditevent.StageEQ("ResponseComplete")).
-		Where(auditevent.VerbNotIn("get", "list", "watch")).
+	rows, err := buildQuery().
 		Order(ent.Desc(auditevent.FieldID)).
 		Offset(offset).
 		Limit(limit).

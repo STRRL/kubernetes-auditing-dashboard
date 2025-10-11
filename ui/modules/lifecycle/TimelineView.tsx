@@ -2,7 +2,7 @@ import React from 'react';
 import { TimestampDisplay } from '../common/TimestampDisplay';
 import { DiffViewer } from './DiffViewer';
 
-type EventType = 'CREATE' | 'UPDATE' | 'DELETE' | 'GET';
+type EventType = 'CREATE' | 'UPDATE' | 'DELETE' | 'GET' | 'LIST' | 'WATCH';
 
 interface LifecycleEvent {
   id: string;
@@ -10,6 +10,7 @@ interface LifecycleEvent {
   timestamp: string;
   user: string;
   resourceState: string;
+  previousState?: string | null;
   diff?: {
     added?: string | null;
     removed?: string | null;
@@ -29,7 +30,9 @@ const eventTypeConfig: Record<EventType, { color: string; label: string }> = {
   CREATE: { color: 'bg-green-500', label: 'CREATE' },
   UPDATE: { color: 'bg-blue-500', label: 'UPDATE' },
   DELETE: { color: 'bg-red-500', label: 'DELETE' },
-  GET: { color: 'bg-gray-500', label: 'GET' },
+  GET: { color: 'bg-gray-400', label: 'GET' },
+  LIST: { color: 'bg-gray-400', label: 'LIST' },
+  WATCH: { color: 'bg-gray-400', label: 'WATCH' },
 };
 
 export const TimelineView: React.FC<TimelineViewProps> = ({ events }) => {
@@ -61,11 +64,11 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events }) => {
                   <TimestampDisplay timestamp={event.timestamp} />
                 </div>
 
-                {event.type === 'UPDATE' && event.diff && (
+                {event.type === 'UPDATE' && event.diff && event.previousState && (
                   <DiffViewer
                     diff={event.diff}
                     currentState={event.resourceState}
-                    previousState={index < events.length - 1 ? events[index + 1].resourceState : undefined}
+                    previousState={event.previousState}
                   />
                 )}
 

@@ -581,3 +581,267 @@ func TestResourceLifecycle_ErrorHandling(t *testing.T) {
 		assert.Empty(t, result)
 	})
 }
+
+func TestResourceLifecycle_PreviousState(t *testing.T) {
+	t.Run("should populate previousState for UPDATE events", func(t *testing.T) {
+		ctx := context.Background()
+		client := setupTestDB(t)
+		defer client.Close()
+
+		now := time.Now()
+
+		// Create initial state - CREATE event
+		createEvent := map[string]interface{}{
+			"level":   "RequestResponse",
+			"auditID": "create-event",
+			"verb":    "create",
+			"user":    map[string]interface{}{"username": "admin"},
+			"objectRef": map[string]interface{}{
+				"apiGroup": "apps", "apiVersion": "v1",
+				"resource": "deployments", "namespace": "default", "name": "test-prev-state",
+			},
+			"requestReceivedTimestamp": now.Add(-2 * time.Hour).Format(time.RFC3339Nano),
+			"stageTimestamp":          now.Add(-2 * time.Hour).Format(time.RFC3339Nano),
+			"requestObject":           json.RawMessage(`{"apiVersion":"apps/v1","kind":"Deployment","metadata":{"name":"test-prev-state"},"spec":{"replicas":1}}`),
+			"responseObject":          json.RawMessage(`{"apiVersion":"apps/v1","kind":"Deployment","metadata":{"name":"test-prev-state"},"spec":{"replicas":1}}`),
+		}
+
+		raw1, _ := json.Marshal(createEvent)
+		_, err := client.AuditEvent.Create().
+			SetRaw(string(raw1)).
+			SetLevel("RequestResponse").
+			SetAuditID("create-event").
+			SetVerb("create").
+			SetUserAgent("kubectl").
+			SetRequestTimestamp(now.Add(-2 * time.Hour)).
+			SetStageTimestamp(now.Add(-2 * time.Hour)).
+			SetNamespace("default").
+			SetName("test-prev-state").
+			SetApiVersion("v1").
+			SetApiGroup("apps").
+			SetResource("deployments").
+			SetSubResource("").
+			SetStage("ResponseComplete").
+			Save(ctx)
+		require.NoError(t, err)
+
+		// Update event - change replicas from 1 to 3
+		updateEvent := map[string]interface{}{
+			"level":   "RequestResponse",
+			"auditID": "update-event",
+			"verb":    "update",
+			"user":    map[string]interface{}{"username": "admin"},
+			"objectRef": map[string]interface{}{
+				"apiGroup": "apps", "apiVersion": "v1",
+				"resource": "deployments", "namespace": "default", "name": "test-prev-state",
+			},
+			"requestReceivedTimestamp": now.Format(time.RFC3339Nano),
+			"stageTimestamp":          now.Format(time.RFC3339Nano),
+			"requestObject":           json.RawMessage(`{"apiVersion":"apps/v1","kind":"Deployment","metadata":{"name":"test-prev-state"},"spec":{"replicas":3}}`),
+			"responseObject":          json.RawMessage(`{"apiVersion":"apps/v1","kind":"Deployment","metadata":{"name":"test-prev-state"},"spec":{"replicas":3}}`),
+		}
+
+		raw2, _ := json.Marshal(updateEvent)
+		_, err = client.AuditEvent.Create().
+			SetRaw(string(raw2)).
+			SetLevel("RequestResponse").
+			SetAuditID("update-event").
+			SetVerb("update").
+			SetUserAgent("kubectl").
+			SetRequestTimestamp(now).
+			SetStageTimestamp(now).
+			SetNamespace("default").
+			SetName("test-prev-state").
+			SetApiVersion("v1").
+			SetApiGroup("apps").
+			SetResource("deployments").
+			SetSubResource("").
+			SetStage("ResponseComplete").
+			Save(ctx)
+		require.NoError(t, err)
+
+		// Query and verify
+		resolver := gql.NewResolver(client)
+		namespace := "default"
+		result, err := resolver.Query().ResourceLifecycle(ctx, "apps", "v1", "Deployment", &namespace, "test-prev-state")
+
+		require.NoError(t, err)
+		require.Len(t, result, 2)
+
+		// First event (UPDATE) should have previousState
+		updateResult := result[0]
+		assert.Equal(t, gql.EventTypeUpdate, updateResult.Type)
+		assert.NotNil(t, updateResult.PreviousState, "UPDATE event should have previousState")
+
+		// Parse previous state and verify it has replicas=1
+		var prevState map[string]interface{}
+		err = json.Unmarshal([]byte(*updateResult.PreviousState), &prevState)
+		require.NoError(t, err)
+		assert.Equal(t, float64(1), prevState["spec"].(map[string]interface{})["replicas"])
+
+		// Parse current state and verify it has replicas=3
+		var currentState map[string]interface{}
+		err = json.Unmarshal([]byte(updateResult.ResourceState), &currentState)
+		require.NoError(t, err)
+		assert.Equal(t, float64(3), currentState["spec"].(map[string]interface{})["replicas"])
+
+		// CREATE event should not have previousState
+		createResult := result[1]
+		assert.Equal(t, gql.EventTypeCreate, createResult.Type)
+		assert.Nil(t, createResult.PreviousState, "CREATE event should not have previousState")
+	})
+
+	t.Run("should skip GET events when finding previousState", func(t *testing.T) {
+		ctx := context.Background()
+		client := setupTestDB(t)
+		defer client.Close()
+
+		now := time.Now()
+
+		// Create initial state - CREATE event
+		createEvent := map[string]interface{}{
+			"level":   "RequestResponse",
+			"auditID": "create-with-gets",
+			"verb":    "create",
+			"user":    map[string]interface{}{"username": "admin"},
+			"objectRef": map[string]interface{}{
+				"apiGroup": "apps", "apiVersion": "v1",
+				"resource": "deployments", "namespace": "default", "name": "test-skip-gets",
+			},
+			"requestReceivedTimestamp": now.Add(-4 * time.Hour).Format(time.RFC3339Nano),
+			"stageTimestamp":          now.Add(-4 * time.Hour).Format(time.RFC3339Nano),
+			"requestObject":           json.RawMessage(`{"apiVersion":"apps/v1","kind":"Deployment","metadata":{"name":"test-skip-gets"},"spec":{"replicas":1}}`),
+			"responseObject":          json.RawMessage(`{"apiVersion":"apps/v1","kind":"Deployment","metadata":{"name":"test-skip-gets"},"spec":{"replicas":1}}`),
+		}
+
+		raw1, _ := json.Marshal(createEvent)
+		_, err := client.AuditEvent.Create().
+			SetRaw(string(raw1)).
+			SetLevel("RequestResponse").
+			SetAuditID("create-with-gets").
+			SetVerb("create").
+			SetUserAgent("kubectl").
+			SetRequestTimestamp(now.Add(-4 * time.Hour)).
+			SetStageTimestamp(now.Add(-4 * time.Hour)).
+			SetNamespace("default").
+			SetName("test-skip-gets").
+			SetApiVersion("v1").
+			SetApiGroup("apps").
+			SetResource("deployments").
+			SetSubResource("").
+			SetStage("ResponseComplete").
+			Save(ctx)
+		require.NoError(t, err)
+
+		// Insert some GET events in between (should be skipped in previousState lookup)
+		for i := 0; i < 3; i++ {
+			resourceObject := map[string]interface{}{
+				"apiVersion": "apps/v1",
+				"kind":       "Deployment",
+				"metadata": map[string]interface{}{
+					"name":      "test-skip-gets",
+					"namespace": "default",
+				},
+				"spec": map[string]interface{}{
+					"replicas": 1,
+				},
+			}
+			resourceJSON, _ := json.Marshal(resourceObject)
+
+			getEvent := map[string]interface{}{
+				"level":   "RequestResponse",
+				"auditID": fmt.Sprintf("get-event-%d", i),
+				"verb":    "get",
+				"user":    map[string]interface{}{"username": "reader"},
+				"objectRef": map[string]interface{}{
+					"apiGroup": "apps", "apiVersion": "v1",
+					"resource": "deployments", "namespace": "default", "name": "test-skip-gets",
+				},
+				"requestReceivedTimestamp": now.Add(time.Duration(-3+i) * time.Hour).Format(time.RFC3339Nano),
+				"stageTimestamp":          now.Add(time.Duration(-3+i) * time.Hour).Format(time.RFC3339Nano),
+				"responseObject":          json.RawMessage(resourceJSON),
+			}
+
+			rawGet, _ := json.Marshal(getEvent)
+			_, err = client.AuditEvent.Create().
+				SetRaw(string(rawGet)).
+				SetLevel("RequestResponse").
+				SetAuditID(fmt.Sprintf("get-event-%d", i)).
+				SetVerb("get").
+				SetUserAgent("kubectl").
+				SetRequestTimestamp(now.Add(time.Duration(-3+i) * time.Hour)).
+				SetStageTimestamp(now.Add(time.Duration(-3+i) * time.Hour)).
+				SetNamespace("default").
+				SetName("test-skip-gets").
+				SetApiVersion("v1").
+				SetApiGroup("apps").
+				SetResource("deployments").
+				SetSubResource("").
+				SetStage("ResponseComplete").
+				Save(ctx)
+			require.NoError(t, err)
+		}
+
+		// Update event - should skip GET events and find CREATE as previous state
+		updateEvent := map[string]interface{}{
+			"level":   "RequestResponse",
+			"auditID": "update-after-gets",
+			"verb":    "update",
+			"user":    map[string]interface{}{"username": "admin"},
+			"objectRef": map[string]interface{}{
+				"apiGroup": "apps", "apiVersion": "v1",
+				"resource": "deployments", "namespace": "default", "name": "test-skip-gets",
+			},
+			"requestReceivedTimestamp": now.Format(time.RFC3339Nano),
+			"stageTimestamp":          now.Format(time.RFC3339Nano),
+			"requestObject":           json.RawMessage(`{"apiVersion":"apps/v1","kind":"Deployment","metadata":{"name":"test-skip-gets"},"spec":{"replicas":5}}`),
+			"responseObject":          json.RawMessage(`{"apiVersion":"apps/v1","kind":"Deployment","metadata":{"name":"test-skip-gets"},"spec":{"replicas":5}}`),
+		}
+
+		rawUpdate, _ := json.Marshal(updateEvent)
+		_, err = client.AuditEvent.Create().
+			SetRaw(string(rawUpdate)).
+			SetLevel("RequestResponse").
+			SetAuditID("update-after-gets").
+			SetVerb("update").
+			SetUserAgent("kubectl").
+			SetRequestTimestamp(now).
+			SetStageTimestamp(now).
+			SetNamespace("default").
+			SetName("test-skip-gets").
+			SetApiVersion("v1").
+			SetApiGroup("apps").
+			SetResource("deployments").
+			SetSubResource("").
+			SetStage("ResponseComplete").
+			Save(ctx)
+		require.NoError(t, err)
+
+		// Query and verify
+		resolver := gql.NewResolver(client)
+		namespace := "default"
+		result, err := resolver.Query().ResourceLifecycle(ctx, "apps", "v1", "Deployment", &namespace, "test-skip-gets")
+
+		require.NoError(t, err)
+		// Should have UPDATE + GET events + CREATE = 5 events total
+		require.Len(t, result, 5)
+
+		// First event should be UPDATE
+		updateResult := result[0]
+		assert.Equal(t, gql.EventTypeUpdate, updateResult.Type)
+		assert.NotNil(t, updateResult.PreviousState, "UPDATE event should have previousState")
+
+		// Previous state should be from CREATE (replicas=1), not from GET events
+		var prevState map[string]interface{}
+		err = json.Unmarshal([]byte(*updateResult.PreviousState), &prevState)
+		require.NoError(t, err)
+		assert.Equal(t, float64(1), prevState["spec"].(map[string]interface{})["replicas"],
+			"previousState should come from CREATE event, skipping GET events")
+
+		// Current state should have replicas=5
+		var currentState map[string]interface{}
+		err = json.Unmarshal([]byte(updateResult.ResourceState), &currentState)
+		require.NoError(t, err)
+		assert.Equal(t, float64(5), currentState["spec"].(map[string]interface{})["replicas"])
+	})
+}

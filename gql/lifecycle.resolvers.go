@@ -179,11 +179,37 @@ func (r *queryResolver) ResourceLifecycle(ctx context.Context, apiGroup string, 
 			ResourceState: resourceStateJSON,
 		}
 
-		// Calculate diff for UPDATE events (not for CREATE or DELETE)
+		// Calculate diff and previousState for UPDATE events (not for CREATE or DELETE)
 		if gqlEventType == EventTypeUpdate && i < len(events)-1 {
-			// Get previous state (next in the list since we're in DESC order)
-			prevEvent := events[i+1]
-			if prevState, hasPrevState := resourceStates[prevEvent.ID]; hasPrevState && hasCurrentState {
+			// Find previous mutating event (skip GET/LIST/WATCH events)
+			var prevState map[string]interface{}
+			var hasPrevState bool
+			for j := i + 1; j < len(events); j++ {
+				prevEventType := lifecycle.MapVerbToEventType(events[j].Verb)
+				// Only use CREATE/UPDATE/DELETE events as previous state
+				if prevEventType == lifecycle.EventTypeCreate ||
+					prevEventType == lifecycle.EventTypeUpdate ||
+					prevEventType == lifecycle.EventTypeDelete {
+					prevState, hasPrevState = resourceStates[events[j].ID]
+					break
+				}
+			}
+
+			if hasPrevState && hasCurrentState {
+				// Convert previous state to JSON string
+				var previousStateJSON string
+				yamlBytes, err := yaml.Marshal(prevState)
+				if err == nil {
+					var jsonObj interface{}
+					if err := yaml.Unmarshal(yamlBytes, &jsonObj); err == nil {
+						jsonBytes, err := json.Marshal(jsonObj)
+						if err == nil {
+							previousStateJSON = string(jsonBytes)
+							lifecycleEvent.PreviousState = &previousStateJSON
+						}
+					}
+				}
+
 				// Convert states to YAML for diff calculation
 				prevYAML, _ := yaml.Marshal(prevState)
 				currentYAML, _ := yaml.Marshal(currentState)

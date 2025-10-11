@@ -44,6 +44,8 @@ type LifecycleEvent struct {
 	User string `json:"user"`
 	// Complete resource state at the time of this event (YAML as JSON)
 	ResourceState string `json:"resourceState"`
+	// Previous resource state before this event (YAML as JSON). Only populated for UPDATE events.
+	PreviousState *string `json:"previousState,omitempty"`
 	// Diff showing changes from previous version (null for CREATE and DELETE events)
 	Diff *ResourceDiff `json:"diff,omitempty"`
 }
