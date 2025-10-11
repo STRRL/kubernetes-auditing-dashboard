@@ -331,16 +331,6 @@ export type LifecycleEvent = {
   user: Scalars['String'];
 };
 
-export type Mutation = {
-  __typename?: 'Mutation';
-  importResourceKindTSV: Scalars['Int'];
-};
-
-
-export type MutationImportResourceKindTsvArgs = {
-  tsv: Scalars['String'];
-};
-
 /**
  * An object with an ID.
  * Follows the [Relay Global Object Identification Specification](https://relay.dev/graphql/objectidentification.htm)

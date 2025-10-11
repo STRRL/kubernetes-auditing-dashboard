@@ -41,7 +41,6 @@ type Config struct {
 }
 
 type ResolverRoot interface {
-	Mutation() MutationResolver
 	Query() QueryResolver
 }
 
@@ -103,10 +102,6 @@ type ComplexityRoot struct {
 		User          func(childComplexity int) int
 	}
 
-	Mutation struct {
-		ImportResourceKindTsv func(childComplexity int, tsv string) int
-	}
-
 	PageInfo struct {
 		EndCursor       func(childComplexity int) int
 		HasNextPage     func(childComplexity int) int
@@ -153,9 +148,6 @@ type ComplexityRoot struct {
 	}
 }
 
-type MutationResolver interface {
-	ImportResourceKindTsv(ctx context.Context, tsv string) (int, error)
-}
 type QueryResolver interface {
 	Node(ctx context.Context, id int) (ent.Noder, error)
 	Nodes(ctx context.Context, ids []int) ([]ent.Noder, error)
@@ -406,18 +398,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.LifecycleEvent.User(childComplexity), true
 
-	case "Mutation.importResourceKindTSV":
-		if e.complexity.Mutation.ImportResourceKindTsv == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_importResourceKindTSV_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.ImportResourceKindTsv(childComplexity, args["tsv"].(string)), true
-
 	case "PageInfo.endCursor":
 		if e.complexity.PageInfo.EndCursor == nil {
 			break
@@ -645,21 +625,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 
 			return &response
 		}
-	case ast.Mutation:
-		return func(ctx context.Context) *graphql.Response {
-			if !first {
-				return nil
-			}
-			first = false
-			ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
-			data := ec._Mutation(ctx, opCtx.Operation.SelectionSet)
-			var buf bytes.Buffer
-			data.MarshalGQL(&buf)
-
-			return &graphql.Response{
-				Data: buf.Bytes(),
-			}
-		}
 
 	default:
 		return graphql.OneShot(graphql.ErrorResponse(ctx, "unsupported GraphQL operation"))
@@ -707,7 +672,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "time.graphql" "ent.graphql" "mutation.graphql" "auditevents.graphql" "resourcekind.graphql" "lifecycle.graphql"
+//go:embed "time.graphql" "ent.graphql" "auditevents.graphql" "resourcekind.graphql" "lifecycle.graphql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -721,7 +686,6 @@ func sourceData(filename string) string {
 var sources = []*ast.Source{
 	{Name: "time.graphql", Input: sourceData("time.graphql"), BuiltIn: false},
 	{Name: "ent.graphql", Input: sourceData("ent.graphql"), BuiltIn: false},
-	{Name: "mutation.graphql", Input: sourceData("mutation.graphql"), BuiltIn: false},
 	{Name: "auditevents.graphql", Input: sourceData("auditevents.graphql"), BuiltIn: false},
 	{Name: "resourcekind.graphql", Input: sourceData("resourcekind.graphql"), BuiltIn: false},
 	{Name: "lifecycle.graphql", Input: sourceData("lifecycle.graphql"), BuiltIn: false},
@@ -731,17 +695,6 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
-
-func (ec *executionContext) field_Mutation_importResourceKindTSV_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "tsv", ec.unmarshalNString2string)
-	if err != nil {
-		return nil, err
-	}
-	args["tsv"] = arg0
-	return args, nil
-}
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
@@ -2070,47 +2023,6 @@ func (ec *executionContext) fieldContext_LifecycleEvent_diff(_ context.Context, 
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ResourceDiff", field.Name)
 		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_importResourceKindTSV(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Mutation_importResourceKindTSV,
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Mutation().ImportResourceKindTsv(ctx, fc.Args["tsv"].(string))
-		},
-		nil,
-		ec.marshalNInt2int,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Mutation_importResourceKindTSV(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_importResourceKindTSV_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }
@@ -6723,55 +6635,6 @@ func (ec *executionContext) _LifecycleEvent(ctx context.Context, sel ast.Selecti
 			}
 		case "diff":
 			out.Values[i] = ec._LifecycleEvent_diff(ctx, field, obj)
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var mutationImplementors = []string{"Mutation"}
-
-func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, mutationImplementors)
-	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
-		Object: "Mutation",
-	})
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		innerCtx := graphql.WithRootFieldContext(ctx, &graphql.RootFieldContext{
-			Object: field.Name,
-			Field:  field,
-		})
-
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Mutation")
-		case "importResourceKindTSV":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_importResourceKindTSV(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
