@@ -28,6 +28,7 @@ const getResourceLifecycleQuery = graphql(/* GraphQL */ `
       type
       timestamp
       user
+      userAgent
       resourceState
       diff {
         added

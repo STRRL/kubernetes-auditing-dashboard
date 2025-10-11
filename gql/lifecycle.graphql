@@ -44,6 +44,9 @@ type LifecycleEvent {
   """User or service account that triggered the event"""
   user: String!
 
+  """User agent of the client that triggered the event"""
+  userAgent: String!
+
   """Complete resource state at the time of this event (YAML as JSON)"""
   resourceState: JSON!
 

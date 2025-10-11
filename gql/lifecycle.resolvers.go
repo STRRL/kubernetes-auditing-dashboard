@@ -176,6 +176,7 @@ func (r *queryResolver) ResourceLifecycle(ctx context.Context, apiGroup string, 
 			Type:          gqlEventType,
 			Timestamp:     event.RequestTimestamp,
 			User:          user,
+			UserAgent:     event.UserAgent,
 			ResourceState: resourceStateJSON,
 		}
 
