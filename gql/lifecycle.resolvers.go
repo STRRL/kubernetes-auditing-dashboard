@@ -194,6 +194,7 @@ func (r *queryResolver) ResourceLifecycle(ctx context.Context, apiGroup string, 
 			Type:          eventType,
 			Timestamp:     event.RequestTimestamp,
 			User:          user,
+			UserAgent:     event.UserAgent,
 			ResourceState: resourceStateJSON,
 		}
 

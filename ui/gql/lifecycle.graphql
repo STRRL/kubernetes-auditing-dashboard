@@ -16,7 +16,9 @@ query GetResourceLifecycle(
     type
     timestamp
     user
+    userAgent
     resourceState
+    previousState
     diff {
       added
       removed

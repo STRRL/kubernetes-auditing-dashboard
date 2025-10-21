@@ -38,6 +38,8 @@ type LifecycleEvent struct {
 	Timestamp time.Time `json:"timestamp"`
 	// User or service account that triggered the event
 	User string `json:"user"`
+	// User agent of the client that triggered the event
+	UserAgent string `json:"userAgent"`
 	// Complete resource state at the time of this event (YAML as JSON)
 	ResourceState string `json:"resourceState"`
 	// Previous resource state before this event (YAML as JSON). Only populated for UPDATE events.
